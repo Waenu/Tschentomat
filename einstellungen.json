@@ -1,0 +1,15 @@
+{
+  "_hinweis": "Nur die Zahlen und die Version ändern, sonst nichts. Beträge in CHF. Nach dem Speichern dauert es etwa eine Minute, bis alle die neuen Werte sehen.",
+  "version": "2.0",
+  "gueltigAb": "20.10.2026",
+  "famPausch": 70,
+  "gast": 70,
+  "gastZimmer": 55,
+  "famAnteil": 35,
+  "reinigung": 240,
+  "sparEin": 15,
+  "sparMaxPers": 4,
+  "minNaechte": 2,
+  "maxNaechte": 14,
+  "maxPersonen": 6
+}

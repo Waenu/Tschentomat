@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TSCHENT-O-MAT</title>
+<meta name="theme-color" content="#1F5D4D">
+<meta name="apple-mobile-web-app-title" content="TSCHENT-O-MAT">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+  /* Layout: schmale Handy-Spalte, oben ein Schild-Band wie an einer Bergbahnstation, darunter die Fragen von oben nach unten */
+  :root {
+    --bg: #EEF2F1;
+    --surface: #FFFFFF;
+    --fg: #16302B;
+    --muted: #55696A;
+    --accent: #1F5D4D;
+    --accent-fg: #FFFFFF;
+    --line: #CBD8D5;
+    --missing-bg: #FFEBC9;
+    --missing-line: #D8962B;
+    --done-bg: #DCF1E2;
+    --done-line: #4F9E6E;
+    --error-bg: #FAD7D7;
+    --error-line: #C24545;
+    --error-fg: #7E1D1D;
+    --note-bg: #E4EEEB;
+    --display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+    --body: "Source Sans 3", "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0E1A18;
+      --surface: #16272A;
+      --fg: #E5EEEB;
+      --muted: #9CB1AC;
+      --accent: #7ACBB0;
+      --accent-fg: #08201A;
+      --line: #2B4341;
+      --missing-bg: #4B3813;
+      --missing-line: #C98C25;
+      --done-bg: #1B3F2D;
+      --done-line: #4C9A6B;
+      --error-bg: #4C1F1F;
+      --error-line: #D06666;
+      --error-fg: #FFC2C2;
+      --note-bg: #1E3331;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0E1A18;
+    --surface: #16272A;
+    --fg: #E5EEEB;
+    --muted: #9CB1AC;
+    --accent: #7ACBB0;
+    --accent-fg: #08201A;
+    --line: #2B4341;
+    --missing-bg: #4B3813;
+    --missing-line: #C98C25;
+    --done-bg: #1B3F2D;
+    --done-line: #4C9A6B;
+    --error-bg: #4C1F1F;
+    --error-line: #D06666;
+    --error-fg: #FFC2C2;
+    --note-bg: #1E3331;
+    color-scheme: dark;
+  }
+
+  [hidden] { display: none !important; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--body);
+    font-size: 17px;
+    line-height: 1.4;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 16px 120px;
+  }
+  .wrap { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+
+  .sign {
+    background: var(--accent);
+    color: var(--accent-fg);
+    border-radius: 6px;
+    padding: 18px 18px 16px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .sign h1 {
+    margin: 0;
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 2.6rem;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    text-wrap: balance;
+  }
+  .sign .ver { display: inline-block; align-self: flex-start; margin-top: 8px; padding: 3px 10px; border: 2px solid currentColor; border-radius: 4px; font-weight: 700; letter-spacing: 0.04em; opacity: 1; }
+  .sign p { margin: 0; font-size: 0.95rem; letter-spacing: 0.02em; opacity: 0.92; }
+
+  .intro { margin: 0; color: var(--muted); font-size: 0.95rem; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 14px; font-size: 0.85rem; color: var(--muted); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend i { width: 14px; height: 14px; border-radius: 3px; border: 2px solid; display: inline-block; }
+  .legend .l-missing { background: var(--missing-bg); border-color: var(--missing-line); }
+  .legend .l-done { background: var(--done-bg); border-color: var(--done-line); }
+
+  .notice {
+    background: var(--error-bg); border: 2px solid var(--error-line); color: var(--error-fg);
+    border-radius: 6px; padding: 10px 12px; font-weight: 600;
+  }
+
+  form { display: flex; flex-direction: column; gap: 14px; margin: 0; }
+  .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .field label { font-weight: 700; }
+  .field select {
+    width: 100%; min-height: 50px;
+    font: inherit; color: var(--fg);
+    padding: 10px 12px;
+    border: 2px solid var(--line); border-radius: 6px;
+    background-color: var(--surface);
+  }
+  .field select {
+    -webkit-appearance: none; -moz-appearance: none; appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'><path d='M1 1l6 6 6-6' fill='none' stroke='%23556' stroke-width='2'/></svg>");
+    background-repeat: no-repeat; background-position: right 14px center;
+    padding-right: 40px;
+  }
+  .field select.missing { background-color: var(--missing-bg) !important; border-color: var(--missing-line) !important; }
+  .field select.done { background-color: var(--done-bg) !important; border-color: var(--done-line) !important; }
+  .field select.locked { background-color: var(--note-bg) !important; border-color: var(--line) !important; color: var(--muted); opacity: 0.85; }
+  .field select option { background-color: var(--surface); color: var(--fg); }
+  .field select:focus-visible, button:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .hint { margin: 0; font-size: 0.88rem; color: var(--muted); }
+
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .card h2 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 1.5rem; letter-spacing: 0.03em; text-transform: uppercase; }
+  .total { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .total .big { font-family: var(--display); font-weight: 700; font-size: 3rem; line-height: 1; font-variant-numeric: tabular-nums; }
+  .total .small { color: var(--muted); font-size: 0.9rem; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  th, td { padding: 8px 0; border-top: 1px solid var(--line); text-align: left; }
+  td:last-child, th:last-child { text-align: right; }
+  td.sub { color: var(--muted); font-size: 0.88rem; }
+  tr.strong td { font-weight: 700; }
+  .empty { color: var(--muted); margin: 0; }
+  details summary { cursor: pointer; font-weight: 700; min-height: 44px; display: flex; align-items: center; }
+  details .rows { display: flex; flex-direction: column; gap: 8px; }
+  .note { background: var(--note-bg); border-radius: 6px; padding: 10px 12px; font-size: 0.92rem; margin: 0; }
+
+  button.reset {
+    font: inherit; font-weight: 700; color: var(--accent); background: transparent;
+    border: 2px solid var(--accent); border-radius: 6px; min-height: 48px; padding: 8px 14px; cursor: pointer;
+  }
+
+  .bar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
+    background: var(--accent); color: var(--accent-fg);
+    padding: 10px max(16px, env(safe-area-inset-right, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  }
+  .bar .in { max-width: 560px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 40px; }
+  .bar .lab { font-size: 0.95rem; min-width: 0; }
+  .bar .val { font-family: var(--display); font-weight: 700; font-size: 1.9rem; line-height: 1; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .bar.err { background: var(--error-bg); color: var(--error-fg); }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="sign">
+    <h1>TSCHENT-O-MAT</h1>
+    <p>Preisrechner Chalet Tschenten, Adelboden · Familie 2027</p>
+    <p class="ver" id="ver"></p>
+  </header>
+
+  <p class="intro">Von oben nach unten antworten. Der Preis erscheint, sobald alles gewählt ist.</p>
+  <div class="legend" aria-hidden="true">
+    <span><i class="l-missing"></i>noch wählen</span>
+    <span><i class="l-done"></i>gewählt</span>
+  </div>
+
+  <details class="card rooms">
+    <summary>Die Zimmer im Überblick</summary>
+    <div class="rows">
+      <p class="note"><b>Zimmer 1:</b> Schlafzimmer mit eigenem Bad (das rote Badezimmer, nur von Zimmer 1 aus zugänglich). Normalerweise von Papi und Mami belegt.</p>
+      <p class="note"><b>Zimmer 2:</b> Schlafzimmer mit Doppelbett.</p>
+      <p class="note"><b>Zimmer 3:</b> Schlafzimmer mit Etagenbett, für Kinder.</p>
+      <p class="note"><b>Blaues Badezimmer:</b> von der ganzen Wohnung aus zugänglich.</p>
+    </div>
+  </details>
+
+  <div id="notice" class="notice" role="status" hidden></div>
+
+  <form id="form" onsubmit="return false" autocomplete="off"></form>
+
+  <section id="result" class="card" aria-live="polite"></section>
+
+  <button type="button" class="reset" id="reset">Neu starten</button>
+</div>
+
+<div class="bar" id="bar" role="status"><div class="in"><span class="lab" id="barLab"></span><span class="val" id="barVal"></span></div></div>
+
+<script>
+/* ============================================================
+   VERSION UND PREISE  (nur die Zahlen und Texte zwischen den Anführungszeichen ändern)
+   Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
+   ============================================================ */
+// Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
+let VERSION = "2.0";
+let GUELTIG_AB = "20.10.2026";
+// CALC-START
+const P = {
+  // Alle Beträge in CHF. Pro Nacht = pro Nacht und Person bzw. Gruppe, wie beschriftet.
+  famPausch: 70,        // Familie pro Nacht
+  gast: 70,             // Gast pro Nacht (eigenes Zimmer)
+  reinigung: 240,       // pro Buchung, pauschal
+  minNaechte: 2,
+  maxNaechte: 14,
+  maxPersonen: 6,       // Betten (Personen mit normalem Bett, ohne Kinder ohne eigenes Bett)
+  gastZimmer: 55,       // Gast im selben Zimmer wie Sohn/Tochter
+  sparMaxPers: 4,       // bis zu dieser Zahl Personen insgesamt (Familie inkl. Kleinkinder + Gäste) kann Zimmer 1 abgeschlossen bleiben
+  sparEin: 15,          // Ermässigung pro Nacht für die Familie, wenn Zimmer 1 (mit rotem Bad) abgeschlossen bleibt
+  famAnteil: 35         // Familie, wenn Sohn/Tochter das Zimmer mit einem Gast teilt
+};
+const MFG = "Meine Familie und Geschwister";
+const WERL = ["Nur ich", "Ich und Partner", "Ich und 1 Kind", "Ich und 2 Kinder",
+              "Ich, Partner und 1 Kind", "Ich, Partner und 2 Kinder", MFG];
+const REINIG = [
+  "Gleichmässig: Familie zählt als 1, jeder Gast als 1",
+  "Nach Personen: ab 2 Jahren zählt jede Person gleich",
+  "Gäste zahlen die ganze Reinigung",
+  "Familie ¼, Gäste ¾",
+  "Hälfte Familie, Hälfte Gäste",
+  "Familie ¾, Gäste ¼",
+  "Familie zahlt die ganze Reinigung"
+];
+const nz = (v) => (typeof v === "number" && isFinite(v)) ? v : 0;
+const isYN = (v) => v === "Ja" || v === "Nein";
+
+function derive(s) {
+  const wer = s.wer;
+  const lock = /Partner/.test(wer) || wer === MFG;
+  let base = 1;
+  if (wer === "Nur ich") base = 1;
+  else if (wer === "Ich und Partner") base = 2;
+  else if (wer === "Ich und 1 Kind") base = 2;
+  else if (wer === "Ich und 2 Kinder") base = 3;
+  else if (wer === "Ich, Partner und 1 Kind") base = 3;
+  else if (wer === "Ich, Partner und 2 Kinder") base = 4;
+  else if (wer === MFG) base = nz(s.fam);
+  let kkMax = 0;
+  if (wer === "Ich und 1 Kind" || wer === "Ich, Partner und 1 Kind") kkMax = 1;
+  else if (wer === "Ich und 2 Kinder" || wer === "Ich, Partner und 2 Kinder") kkMax = 2;
+  else if (wer === MFG) kkMax = (typeof s.fam === "number") ? Math.min(2, s.fam - 1) : 0;
+  const KK = Math.min(nz(s.kk), kkMax);
+  const FP = Math.max(1, base - KK);
+  const frei = Math.max(0, P.maxPersonen - FP);
+  const GE = Math.min(nz(s.gaeste), frei);
+  const PT = FP + GE;
+  const ZE = lock ? "Nein" : (s.zimmer === "Ja" ? "Ja" : "Nein");
+  const SO = wer === "Nur ich" && GE >= 1 && ZE === "Ja";
+  const sparGrund = SO ? "so" : (base + GE > P.sparMaxPers ? "pers" : "");
+  const sparLock = sparGrund !== "";
+  const sp = s.spar === "Ja" && !sparLock;
+  const FN = SO ? P.famAnteil : P.famPausch - (sp ? P.sparEin : 0);
+  const HN = GE === 0 ? 0 : (ZE === "Ja" ? P.gastZimmer : P.gast);
+  const WN = Math.max(0, GE - 1) * P.gast;
+  const PN = FN + HN + WN;
+  const nights = nz(s.nights);
+  const UE = PN * nights;
+  const AF = 0;
+  const AG = 0;
+  const RE = P.reinigung;
+  const ri = REINIG.indexOf(s.reinig);
+  let FA = RE;
+  if (GE > 0) {
+    if (ri === 1) FA = RE * FP / (FP + GE);
+    else if (ri === 2) FA = 0;
+    else if (ri === 3) FA = RE / 4;
+    else if (ri === 4) FA = RE / 2;
+    else if (ri === 5) FA = RE * 3 / 4;
+    else if (ri === 6) FA = RE;
+    else FA = RE / (1 + GE);
+  }
+  const GS = GE > 0 ? (RE - FA) / GE : 0;
+  return { lock, base, kkMax, KK, sp, sparLock, sparGrund, FP, frei, GE, PT, ZE, SO, FN, HN, WN, PN, nights, UE, AF, AG, RE, FA, GS };
+}
+
+function check(s, d) {
+  if (typeof s.nights !== "number") return "Bitte wählen: Anzahl Nächte";
+  if (WERL.indexOf(s.wer) < 0) return "Bitte wählen: Wer von der Familie kommt";
+  if (s.wer === MFG && typeof s.fam !== "number") return "Bitte wählen: Anzahl Personen der Familie";
+  if (d.kkMax > 0 && typeof s.kk !== "number") return "Bitte wählen: Kinder ohne normales Bett";
+  if (d.FP > P.maxPersonen) return "Maximal " + P.maxPersonen + " Personen mit Bett. Bitte Personenzahl oder Kinder im Bettchen prüfen.";
+  if (typeof s.gaeste !== "number") return "Bitte wählen: Gäste";
+  if (s.gaeste > d.frei && d.frei === 0) return "Kein Platz mehr für Gäste. Bitte Gäste neu wählen.";
+  if (s.gaeste > d.frei) return "Nur noch " + d.frei + " Gast frei. Bitte Gäste neu wählen.";
+  if (d.GE > 0 && !d.lock && !isYN(s.zimmer)) return "Bitte wählen: Gast im selben Zimmer";
+  if (!d.sparLock && !isYN(s.spar)) return "Bitte wählen: Bleibt Zimmer 1 abgeschlossen";
+  if (d.GE > 0 && REINIG.indexOf(s.reinig) < 0) return "Bitte wählen: Aufteilung der Reinigung";
+  if (d.nights < P.minNaechte) return "Mindestens " + P.minNaechte + " Nächte";
+  if (d.FP + d.GE > P.maxPersonen) return "Maximal " + P.maxPersonen + " Personen";
+  return "OK";
+}
+
+function calc(s) {
+  const d = derive(s);
+  const msg = check(s, d);
+  const ok = msg === "OK";
+  const out = { d, msg, ok };
+  if (ok) {
+    out.TOT = d.UE + d.AF + d.AG + d.RE;
+    out.FZ = d.FN * d.nights + d.AF + d.FA;
+    out.HZ = d.GE === 0 ? 0 : d.HN * d.nights + d.GS;
+    out.WZ = d.WN * d.nights + Math.max(0, d.GE - 1) * d.GS;
+    out.KON = Math.abs(out.FZ + out.HZ + out.WZ - out.TOT) < 0.005;
+  }
+  return out;
+}
+// CALC-END
+
+/* ============ Oberfläche ============ */
+const EMPTY = { nights: null, wer: "", fam: null, gaeste: null, zimmer: "", kk: null, spar: "", sparAuto: false, reinig: "" };
+let S = Object.assign({}, EMPTY);
+let notice = "";
+
+const range = (a, b) => { const r = []; for (let i = a; i <= b; i++) r.push(i); return r; };
+const chf = (n) => "CHF " + Math.round(n).toLocaleString("de-CH").replace(/[’']/g, "’") + ".–";
+const gastWort = (n) => n === 1 ? "Gast" : "Gäste";
+
+const FIELDS = [
+  { id: "nights", label: "Anzahl Nächte", type: "num", hint: () => P.minNaechte + " bis " + P.maxNaechte + " Nächte.",
+    opts: () => range(P.minNaechte, P.maxNaechte) },
+  { id: "wer", label: "Wer von der Familie kommt?", type: "str",
+    hint: () => "«Ich» ist Sohn oder Tochter, «Kind» ist ein Enkelkind. Hier zählen alle, die mitkommen, auch Kleinkinder. Kleinkinder ohne eigenes Bett gibst du in der übernächsten Frage an.",
+    opts: () => WERL },
+  { id: "fam", label: "Wie viele Personen aus der Familie kommen?", type: "num",
+    hint: () => "Alle zählen, auch Kleinkinder: du selbst, Geschwister, Partner, Enkelkinder. Beispiel: Tochter, Sohn und 2 Enkel sind 4. Kleinkinder ohne eigenes Bett gibst du in der nächsten Frage an.",
+    visible: (d) => S.wer === MFG, opts: () => range(2, P.maxPersonen + 2) },
+  { id: "kk", label: "Wie viele davon brauchen kein normales Bett (Kinderbettchen oder bei den Eltern im Bett)?", type: "num",
+    hint: () => "Kinder unter etwa 2 Jahren, die im Kinderbettchen oder bei den Eltern im Bett schlafen. Sie belegen keinen Platz und zählen bei der Reinigung nicht, aber bei der Frage zu Zimmer 1. Höchstens 2.",
+    visible: (d) => d.kkMax > 0, opts: (d) => range(0, d.kkMax) },
+  { id: "gaeste", label: "Gäste (ausserhalb der Familie)", type: "num",
+    hint: (d) => d.frei === 0 ? "Es ist kein Platz mehr frei." : (d.frei === 1 ? "Es ist noch 1 Platz frei." : "Es sind noch " + d.frei + " Plätze frei.") + " Maximal " + P.maxPersonen + " Personen mit Bett.",
+    opts: (d) => range(0, d.frei) },
+  { id: "zimmer", label: "Schläft ein Gast im selben Zimmer wie ich?", type: "str",
+    hint: (d) => S.wer === "Nur ich"
+      ? "Ein Gast im selben Zimmer zahlt " + P.gastZimmer + " statt " + P.gast + " pro Nacht, die Familie dann nur " + P.famAnteil + " statt " + P.famPausch + ". Grund: ein Zimmer und ein Doppelbett weniger zu beziehen und zu reinigen."
+      : "Ein Gast im selben Zimmer zahlt " + P.gastZimmer + " statt " + P.gast + " pro Nacht. Grund: ein Zimmer und ein Doppelbett weniger zu beziehen und zu reinigen.",
+    visible: (d) => d.GE > 0 && !d.lock, opts: () => ["Ja", "Nein"] },
+  { id: "spar", label: "Bleibt Zimmer 1 (Schlafzimmer mit rotem Bad) abgeschlossen?", type: "str",
+    hint: (d) => d.sparGrund === "so" ? "Ihr teilt Zimmer 2 und das blaue Bad, Zimmer 1 bleibt zu. Der Sonderpreis von " + P.famAnteil + " pro Nacht gilt dafür." : d.sparGrund === "pers" ? "Nicht möglich: Bei mehr als " + P.sparMaxPers + " Personen insgesamt (auch Kleinkinder) wird Zimmer 1 gebraucht." : "Ja: nur Zimmer 2, Zimmer 3 und das blaue Bad werden benutzt. Die Familie zahlt " + P.sparEin + " weniger pro Nacht (" + (P.famPausch - P.sparEin) + " statt " + P.famPausch + "). Nein: das ganze Chalet steht zur Verfügung.",
+    opts: () => ["Ja", "Nein"] },
+  { id: "reinig", label: "Wie wird die Reinigung (CHF " + P.reinigung + ") aufgeteilt?", type: "str",
+    hint: () => "Das entscheidet ihr selbst. Das Total ändert sich nicht, nur wer wie viel zahlt. Die Familie gilt immer als ein Block. Bei «Nach Personen» zählen Kinder ab 2 Jahren wie Erwachsene, Kinder unter 2 Jahren zählen nicht.",
+    visible: (d) => d.GE > 0, opts: () => REINIG }
+];
+
+function normalize() {
+  notice = "";
+  if (S.wer !== MFG) S.fam = null;
+  let d = derive(S);
+  if (typeof S.gaeste === "number" && S.gaeste > d.frei) {
+    if (d.frei === 0) { S.gaeste = 0; notice = "Kein Platz mehr für Gäste. Die Gäste wurden automatisch auf 0 gesetzt."; }
+    else { S.gaeste = null; notice = "Es ist nur noch Platz für " + d.frei + " " + gastWort(d.frei) + ". Bitte die Gäste neu wählen."; }
+    d = derive(S);
+  }
+  if (d.GE === 0) { S.zimmer = ""; S.reinig = ""; }
+  if (d.kkMax === 0) S.kk = null;
+  else if (typeof S.kk === "number" && S.kk > d.kkMax) { S.kk = null; notice = "Die Auswahl hat weniger Kinder, bitte die Kinder ohne eigenes Bett neu wählen."; }
+  if (d.sparLock) {
+    const ziel = d.sparGrund === "so" ? "Ja" : "Nein";
+    if (S.spar === "Ja" && ziel === "Nein" && !S.sparAuto) notice = "Mit dieser Auswahl wird Zimmer 1 gebraucht. Die Frage wurde auf Nein gesetzt.";
+    S.spar = ziel; S.sparAuto = true;
+  } else if (S.sparAuto) { S.spar = ""; S.sparAuto = false; }
+}
+
+function build() {
+  const form = document.getElementById("form");
+  FIELDS.forEach((f) => {
+    const wrap = document.createElement("div");
+    wrap.className = "field"; wrap.id = "f-" + f.id;
+    const lab = document.createElement("label"); lab.htmlFor = "s-" + f.id; lab.textContent = f.label;
+    const sel = document.createElement("select"); sel.id = "s-" + f.id;
+    const hint = document.createElement("p"); hint.className = "hint"; hint.id = "h-" + f.id;
+    sel.addEventListener("change", () => {
+      const v = sel.value;
+      if (f.id === "spar") S.sparAuto = false;
+      S[f.id] = v === "" ? (f.type === "num" ? null : "") : (f.type === "num" ? Number(v) : v);
+      normalize(); render();
+    });
+    wrap.append(lab, sel, hint);
+    form.appendChild(wrap);
+  });
+}
+
+function render() {
+  const d = derive(S);
+  FIELDS.forEach((f) => {
+    const wrap = document.getElementById("f-" + f.id);
+    const sel = document.getElementById("s-" + f.id);
+    const vis = f.visible ? f.visible(d) : true;
+    wrap.hidden = !vis;
+    const cur = S[f.id] === null || S[f.id] === undefined ? "" : String(S[f.id]);
+    const list = f.opts(d).map(String);
+    const sig = list.join("|");
+    if (sel.dataset.sig !== sig) {
+      sel.innerHTML = "";
+      const ph = document.createElement("option"); ph.value = ""; ph.textContent = "– wählen –"; sel.appendChild(ph);
+      list.forEach((o) => { const op = document.createElement("option"); op.value = o; op.textContent = o; sel.appendChild(op); });
+      sel.dataset.sig = sig;
+    }
+    if (sel.value !== cur) sel.value = cur;
+    const chosen = cur !== "";
+    const locked = f.id === "spar" && d.sparLock;
+    sel.disabled = locked;
+    wrap.classList.toggle("done", chosen && !locked);
+    wrap.classList.toggle("missing", !chosen && !locked);
+    wrap.classList.toggle("locked", locked);
+    sel.classList.toggle("done", chosen && !locked);
+    sel.classList.toggle("missing", !chosen && !locked);
+    sel.classList.toggle("locked", locked);
+    document.getElementById("h-" + f.id).textContent = f.hint(d);
+  });
+  const nb = document.getElementById("notice");
+  nb.hidden = !notice; nb.textContent = notice;
+
+  const r = calc(S);
+  const res = document.getElementById("result");
+  const bar = document.getElementById("bar");
+  const lab = document.getElementById("barLab"), val = document.getElementById("barVal");
+  if (!r.ok) {
+    res.innerHTML = '<h2>Preis</h2><p class="empty">' + r.msg.replace(/&/g, "&amp;").replace(/</g, "&lt;") + '</p>';
+    bar.classList.add("err"); lab.textContent = r.msg; val.textContent = "";
+    return;
+  }
+  bar.classList.remove("err");
+  lab.textContent = "Total für " + r.d.nights + " " + (r.d.nights === 1 ? "Nacht" : "Nächte"); val.textContent = chf(r.TOT);
+  const x = r.d;
+  let who = "";
+  who += '<tr><td>Familie zahlt</td><td>' + chf(r.FZ) + '</td></tr>';
+  if (x.GE >= 1) who += '<tr><td>Gast 1 (Hauptgast) zahlt</td><td>' + chf(r.HZ) + '</td></tr>';
+  for (let g = 2; g <= x.GE; g++) who += '<tr><td>Gast ' + g + ' zahlt</td><td>' + chf(r.WZ / (x.GE - 1)) + '</td></tr>';
+  let det = "";
+  const row = (a, b) => '<tr><td>' + a + '</td><td>' + b + '</td></tr>';
+  det += row("Familie pro Nacht", chf(x.FN));
+  if (x.GE >= 1) det += row("Gast 1 (Hauptgast) pro Nacht", chf(x.HN));
+  for (let g = 2; g <= x.GE; g++) det += row('Gast ' + g + ' pro Nacht', chf(P.gast));
+  det += row("Übernachtung (" + x.nights + " Nächte)", chf(x.UE));
+  det += row("Reinigung", chf(x.RE));
+  det += row("Reinigung: Anteil Familie", chf(x.FA));
+  if (x.GE >= 1) det += row("Reinigung: Anteil pro Gast", chf(x.GS));
+  let notes = "";
+  if (x.sp) notes += '<p class="note">Zimmer 1 bleibt abgeschlossen: ' + chf(P.sparEin) + ' weniger pro Nacht, die Familie zahlt ' + chf(x.FN) + ' statt ' + chf(P.famPausch) + '.</p>';
+  if (x.SO) notes += '<p class="note">Du teilst das Zimmer mit einem Gast: Die Familie zahlt nur ' + chf(P.famAnteil) + ' pro Nacht statt ' + chf(P.famPausch) + '. Weitere Gäste ändern daran nichts.</p>';
+  if (x.ZE === "Ja" && x.GE >= 1) notes += '<p class="note">Ein Gast im selben Zimmer zahlt ' + chf(P.gastZimmer) + ' statt ' + chf(P.gast) + ' pro Nacht: ein Zimmer und ein Doppelbett weniger zu beziehen und zu reinigen.</p>';
+  if (x.GE >= 1) notes += '<p class="note">Reinigung aufgeteilt: ' + S.reinig + '.</p>';
+  res.innerHTML =
+    '<h2>Preis</h2>' +
+    '<div class="total"><span class="big">' + chf(r.TOT) + '</span><span class="small">für ' + x.nights + ' ' + (x.nights === 1 ? "Nacht" : "Nächte") + ', ' + x.PT + ' ' + (x.PT === 1 ? "Person" : "Personen") + ' mit Bett' + (x.KK > 0 ? ', ' + x.KK + (x.KK === 1 ? ' Kind' : ' Kinder') + ' ohne eigenes Bett' : '') + '</span></div>' +
+    '<table><tbody>' + who + '</tbody></table>' +
+    '<details><summary>So wird gerechnet</summary><div class="rows"><table><tbody>' + det + '</tbody></table>' + notes + '</div></details>';
+}
+
+document.getElementById("reset").addEventListener("click", () => { S = Object.assign({}, EMPTY); notice = ""; render(); window.scrollTo({ top: 0 }); });
+function wendeEinstellungenAn(j) {
+  if (!j || typeof j !== "object") return;
+  Object.keys(P).forEach((k) => {
+    if (typeof j[k] === "number" && isFinite(j[k]) && j[k] >= 0) P[k] = j[k];
+  });
+  if (typeof j.version === "string" && j.version) VERSION = j.version;
+  if (typeof j.gueltigAb === "string" && j.gueltigAb) GUELTIG_AB = j.gueltigAb;
+}
+async function ladeEinstellungen() {
+  try {
+    const ctl = new AbortController();
+    const to = setTimeout(() => ctl.abort(), 4000);
+    const r = await fetch("einstellungen.json?v=" + Date.now(), { cache: "no-store", signal: ctl.signal });
+    clearTimeout(to);
+    if (!r.ok) throw new Error("http " + r.status);
+    const j = await r.json();
+    wendeEinstellungenAn(j);
+    try { localStorage.setItem("tm_einstellungen", JSON.stringify(j)); } catch (e) {}
+  } catch (e) {
+    try { const c = localStorage.getItem("tm_einstellungen"); if (c) wendeEinstellungenAn(JSON.parse(c)); } catch (e2) {}
+  }
+}
+ladeEinstellungen().then(() => {
+  document.getElementById("ver").textContent = "Version " + VERSION + " · gültig ab " + GUELTIG_AB;
+  build(); render();
+});
+if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
+  window.addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(() => {}); });
+}
+</script>
+</body>
+</html>
