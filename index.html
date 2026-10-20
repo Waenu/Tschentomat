@@ -256,7 +256,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "1.02";
+let VERSION = "1.03";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -353,7 +353,7 @@ function check(s, d) {
   if (d.GE > 0 && !d.lock && !isYN(s.zimmer)) return "Bitte wählen: Gast im selben Zimmer";
   if (!d.sparLock && !isYN(s.spar)) return "Bitte wählen: Bleibt Zimmer 1 abgeschlossen";
   if (d.GE > 0 && REINIG.indexOf(s.reinig) < 0) return "Bitte wählen: Aufteilung der Reinigung";
-  if (d.nights < P.minNaechte && !s.luecke) return "Mindestens " + P.minNaechte + " Nächte";
+  if (d.nights < P.minNaechte) return "Mindestens " + P.minNaechte + " Nächte";
   if (d.nights > P.maxNaechte) return "Höchstens " + P.maxNaechte + " Nächte";
   if (d.FP + d.GE > P.maxPersonen) return "Maximal " + P.maxPersonen + " Personen";
   return "OK";
@@ -376,7 +376,7 @@ function calc(s) {
 // CALC-END
 
 /* ============ Oberfläche ============ */
-const EMPTY = { luecke: false, nights: null, wer: "", fam: null, gaeste: null, zimmer: "", kk: null, spar: "", sparAuto: false, reinig: "" };
+const EMPTY = { nights: null, wer: "", fam: null, gaeste: null, zimmer: "", kk: null, spar: "", sparAuto: false, reinig: "" };
 let S = Object.assign({}, EMPTY);
 let notice = "";
 
@@ -470,7 +470,7 @@ function kannAbreise(k) {
   if (!ARR || k <= ARR) return false;
   const n = diffDays(ARR, k);
   if (n > P.maxNaechte || !naechteFrei(ARR, k)) return false;
-  return n >= P.minNaechte || nurLuecke(ARR, k);
+  return n >= P.minNaechte;
 }
 const istHoch = (k) => HOCH.some((a) => k >= a[0] && k <= a[1]);
 let GAP = new Set();
@@ -480,12 +480,11 @@ function berechneLuecken() {
   const b = Array.from(BELEGT).sort();
   for (let i = 0; i + 1 < b.length; i++) {
     const n = diffDays(b[i], b[i + 1]) - 1;
-    if (n >= 1 && n <= LUECKE_MAX) {
+    if (n >= P.minNaechte && n <= LUECKE_MAX) {
       for (let k = addDays(b[i], 1); k < b[i + 1]; k = addDays(k, 1)) if (k >= heute) GAP.add(k);
     }
   }
 }
-function nurLuecke(von, bis) { for (let k = von; k < bis; k = addDays(k, 1)) if (!GAP.has(k)) return false; return true; }
 function initKalenderMonat() { const n = new Date(); calY = n.getFullYear(); calM = n.getMonth(); }
 
 function kalenderKlick(k) {
@@ -494,7 +493,6 @@ function kalenderKlick(k) {
   else if (kannAbreise(k)) { DEP = k; }
   else if (kannAnreise(k)) { ARR = k; DEP = ""; }
   S.nights = (ARR && DEP) ? diffDays(ARR, DEP) : null;
-  S.luecke = !!(ARR && DEP && S.nights < P.minNaechte && nurLuecke(ARR, DEP));
   normalize(); render(); renderKalender();
 }
 
@@ -545,14 +543,14 @@ function renderKalender() {
   if (ARR && DEP) sel.textContent = fmtTag(ARR) + " bis " + fmtTag(DEP) + " = " + S.nights + " " + (S.nights === 1 ? "Nacht" : "Nächte");
   else if (ARR) sel.textContent = "Anreise: " + fmtTag(ARR) + ". Jetzt den Abreisetag antippen.";
   else sel.textContent = "Tippe den Anreisetag an.";
-  document.getElementById("calHoch").textContent = "In der Hochsaison vermieten wir über Airbnb. Bitte meidet diese Zeit wenn möglich" + (HOCH.length ? " (gelb umrandet)" : "") + ". Sehr willkommen sind dafür Lücken zwischen zwei Airbnb-Gästen" + (GAP.size ? " (grün markiert)" : "") + ": Lücken bis " + LUECKE_MAX + " Nächte kann Airbnb nicht vermieten (Mindestaufenthalt dort " + (LUECKE_MAX + 1) + " Nächte). In einer Lücke dürft ihr auch nur 1 oder 2 Nächte bleiben.";
+  document.getElementById("calHoch").textContent = "In der Hochsaison vermieten wir über Airbnb. Bitte meidet diese Zeit wenn möglich" + (HOCH.length ? " (gelb umrandet)" : "") + ". Sehr willkommen sind dafür Lücken zwischen zwei Airbnb-Gästen" + (GAP.size ? " (grün markiert)" : "") + ": Lücken bis " + LUECKE_MAX + " Nächte kann Airbnb nicht vermieten (Mindestaufenthalt dort " + (LUECKE_MAX + 1) + " Nächte). Die dürft ihr gern füllen. Für euch gilt wie immer: mindestens " + P.minNaechte + " Nächte.";
   const warn = document.getElementById("calWarn");
   let hochTermin = false;
   if (ARR && DEP) for (let k = ARR; k < DEP; k = addDays(k, 1)) if (istHoch(k)) { hochTermin = true; break; }
   warn.hidden = !hochTermin;
   warn.textContent = hochTermin ? "Dieser Termin liegt in der Hochsaison. Bitte wenn möglich einen anderen wählen." : "";
   document.getElementById("calHint").textContent = BELEGT_OK
-    ? "Erst Anreise-, dann Abreisetag antippen. " + P.minNaechte + " bis " + P.maxNaechte + " Nächte (in einer Lücke auch weniger). Graue, durchgestrichene Tage sind belegt. Die Belegung wird alle paar Stunden aktualisiert."
+    ? "Erst Anreise-, dann Abreisetag antippen. " + P.minNaechte + " bis " + P.maxNaechte + " Nächte. Graue, durchgestrichene Tage sind belegt. Die Belegung wird alle paar Stunden aktualisiert."
     : "Die Belegung konnte nicht geladen werden, alle Tage erscheinen frei. Der Termin ist nur eine Anfrage, die Eltern prüfen ihn.";
 }
 document.getElementById("calPrev").addEventListener("click", () => { calM--; if (calM < 0) { calM = 11; calY--; } renderKalender(); });
