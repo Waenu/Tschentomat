@@ -17,6 +17,8 @@ Preisrechner für die Familie, Chalet Tschenten, Adelboden.
 | `gastZimmer` | Gast im selben Zimmer wie Sohn oder Tochter, pro Nacht |
 | `famAnteil` | Familie pro Nacht, wenn Sohn oder Tochter das Zimmer mit einem Gast teilt |
 | `reinigung` | Reinigung pro Aufenthalt |
+| `reinigungSelbst` | Reinigung, wenn die Familie selbst reinigt und frische Wäsche mitbringt (0 = gratis) |
+| `selbstReinigung` | Zeiten (jedes Jahr gleich), in denen die Familie selbst reinigen darf. Format `[["11-01","12-18"]]` (Monat-Tag von, bis). Weitere Zeiträume mit Komma anfügen |
 | `sparEin` | Reduktion pro Nacht, wenn Zimmer 1 abgeschlossen bleibt |
 | `sparMaxPers` | Bis so viele Personen insgesamt kann Zimmer 1 abgeschlossen bleiben |
 | `minNaechte` / `maxNaechte` | Kleinste und grösste Anzahl Nächte |

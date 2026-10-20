@@ -267,6 +267,7 @@
     </div>
     <p class="cal-sel" id="calSel" role="status"></p>
     <p class="note spitz" id="calSpitz" hidden></p>
+    <p class="note" id="calRuhe" hidden></p>
     <p class="note" id="calWarn" hidden></p>
   </section>
 
@@ -285,7 +286,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "1.07";
+let VERSION = "1.08";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -293,6 +294,7 @@ let ZAHL_TAGE = 7;
 let LUECKE_MAX = 3;  // Luecken zwischen zwei Buchungen bis zu dieser Zahl Naechte gelten als "Luecke" (Airbnb verlangt mindestens 4)
 let HOCH_MONATE = [];  // Hochsaison: ganze Monate, z.B. [2] fuer Februar (jedes Jahr)
 let SPITZ = [];      // Spitzenzeit (nur hohe Preise, z.B. Skirennen): Liste von ["von", "bis", "Name"]
+let RUHE = [];       // Ruhezeiten, jedes Jahr gleich: Liste von ["MM-TT", "MM-TT"] (von, bis), dort darf die Familie selbst reinigen
 let HOCH = [];       // Hochsaison: Liste von ["JJJJ-MM-TT", "JJJJ-MM-TT"] (von, bis, beide eingeschlossen)
 // CALC-START
 const P = {
@@ -307,6 +309,7 @@ const P = {
   sparMaxPers: 4,       // bis zu dieser Zahl Personen insgesamt (Familie inkl. Kleinkinder + Gäste) kann Zimmer 1 abgeschlossen bleiben
   sparEin: 15,          // Ermässigung pro Nacht für die Familie, wenn Zimmer 1 (mit rotem Bad) abgeschlossen bleibt
   famAnteil: 35,        // Familie, wenn Sohn/Tochter das Zimmer mit einem Gast teilt
+  reinigungSelbst: 0,   // Reinigung, wenn die Familie selbst reinigt (frische Waesche mitbringen, Betten selbst beziehen)
   lueckeRabatt: 50      // Prozent Ermässigung auf die Übernachtungen, wenn der Aufenthalt in einer Lücke zwischen zwei Airbnb-Buchungen liegt (Reinigung bleibt gleich)
 };
 const MFG = "Meine Familie und Geschwister";
@@ -361,7 +364,9 @@ function derive(s) {
   const UE = PN * nights;
   const AF = 0;
   const AG = 0;
-  const RE = P.reinigung;
+  const SM = s.selbstOK === true && GE === 0;
+  const SB = SM && s.selbst === "Ja";
+  const RE = SB ? P.reinigungSelbst : P.reinigung;
   const ri = REINIG.indexOf(s.reinig);
   let FA = RE;
   if (GE > 0) {
@@ -374,7 +379,7 @@ function derive(s) {
     else FA = RE / (1 + GE);
   }
   const GS = GE > 0 ? (RE - FA) / GE : 0;
-  return { lock, base, kkMax, KK, sp, sparLock, sparGrund, FP, frei, GE, PT, ZE, SO, LR, FN0, FN, GN, HN, WN, PN, nights, UE, AF, AG, RE, FA, GS };
+  return { lock, base, kkMax, KK, sp, sparLock, sparGrund, FP, frei, GE, PT, ZE, SO, SM, SB, LR, FN0, FN, GN, HN, WN, PN, nights, UE, AF, AG, RE, FA, GS };
 }
 
 function check(s, d) {
@@ -388,6 +393,7 @@ function check(s, d) {
   if (s.gaeste > d.frei) return "Nur noch " + d.frei + " Gast frei. Bitte Gäste neu wählen.";
   if (d.GE > 0 && !d.lock && !isYN(s.zimmer)) return "Bitte wählen: Gast im selben Zimmer";
   if (!d.sparLock && !isYN(s.spar)) return "Bitte wählen: Bleibt Zimmer 1 abgeschlossen";
+  if (d.SM && !isYN(s.selbst)) return "Bitte wählen: Selbstreinigung";
   if (d.GE > 0 && REINIG.indexOf(s.reinig) < 0) return "Bitte wählen: Aufteilung der Reinigung";
   if (d.nights < P.minNaechte) return "Mindestens " + P.minNaechte + " Nächte";
   if (d.nights > P.maxNaechte) return "Höchstens " + P.maxNaechte + " Nächte";
@@ -412,7 +418,7 @@ function calc(s) {
 // CALC-END
 
 /* ============ Oberfläche ============ */
-const EMPTY = { luecke: false, nights: null, wer: "", fam: null, gaeste: null, zimmer: "", kk: null, spar: "", sparAuto: false, reinig: "" };
+const EMPTY = { luecke: false, selbstOK: false, selbst: "", nights: null, wer: "", fam: null, gaeste: null, zimmer: "", kk: null, spar: "", sparAuto: false, reinig: "" };
 let S = Object.assign({}, EMPTY);
 let notice = "";
 
@@ -441,6 +447,9 @@ const FIELDS = [
   { id: "spar", label: "Bleibt Zimmer 1 (Schlafzimmer mit rotem Bad) abgeschlossen?", type: "str",
     hint: (d) => d.sparGrund === "so" ? "Ihr teilt Zimmer 2 und das blaue Bad, Zimmer 1 bleibt zu. Der Sonderpreis von " + P.famAnteil + " pro Nacht gilt dafür." : d.sparGrund === "pers" ? "Nicht möglich: Bei mehr als " + P.sparMaxPers + " Personen insgesamt (auch Kleinkinder) wird Zimmer 1 gebraucht." : "Ja: nur Zimmer 2, Zimmer 3 und das blaue Bad werden benutzt. Die Familie zahlt " + P.sparEin + " weniger pro Nacht (" + (P.famPausch - P.sparEin) + " statt " + P.famPausch + "). Nein: das ganze Chalet steht zur Verfügung.",
     opts: () => ["Ja", "Nein"] },
+  { id: "selbst", label: "Bringt ihr frische Bettwäsche, Handtücher und Küchentücher mit und reinigt selbst?", type: "str",
+    hint: () => "Ja: Ihr bringt nur frische Bettwäsche, frische Handtücher und frische Küchentücher mit, bezieht die Betten selbst, reinigt die Wohnung selbst und nehmt alle Wäsche wieder mit. Die Reinigung kostet dann CHF " + P.reinigungSelbst + ". Nein: Es gilt die normale Reinigung (CHF " + P.reinigung + ").",
+    visible: (d) => d.SM, opts: () => ["Ja", "Nein"] },
   { id: "reinig", label: "Wie wird die Reinigung (CHF " + P.reinigung + ") aufgeteilt?", type: "str",
     hint: () => "Das entscheidet ihr selbst. Das Total ändert sich nicht, nur wer wie viel zahlt. Die Familie gilt immer als ein Block. Bei «Nach Personen» zählen Kinder ab 2 Jahren wie Erwachsene, Kinder unter 2 Jahren zählen nicht.",
     visible: (d) => d.GE > 0, opts: () => REINIG }
@@ -456,6 +465,7 @@ function normalize() {
     d = derive(S);
   }
   if (d.GE === 0) { S.zimmer = ""; S.reinig = ""; }
+  if (!d.SM) S.selbst = "";
   if (d.kkMax === 0) S.kk = null;
   else if (typeof S.kk === "number" && S.kk > d.kkMax) { S.kk = null; notice = "Die Auswahl hat weniger Kinder, bitte die Kinder ohne eigenes Bett neu wählen."; }
   if (d.sparLock) {
@@ -510,6 +520,13 @@ function kannAbreise(k) {
 }
 const spitzVon = (k) => { for (const a of SPITZ) if (k >= a[0] && k <= a[1]) return a; return null; };
 function spitzTermin() { if (!(ARR && DEP)) return null; for (let k = ARR; k < DEP; k = addDays(k, 1)) { const a = spitzVon(k); if (a) return a; } return null; }
+const istRuhe = (k) => RUHE.some((a) => k.slice(5) >= a[0] && k.slice(5) <= a[1]);
+function ruheStay() {
+  if (!(ARR && DEP) || RUHE.length === 0) return false;
+  for (let k = ARR; k < DEP; k = addDays(k, 1)) if (!istRuhe(k) || istHoch(k) || spitzVon(k)) return false;
+  return true;
+}
+const fmtMD = (md) => parseInt(md.slice(3), 10) + ". " + MONATE[parseInt(md.slice(0, 2), 10) - 1];
 const istHoch = (k) => HOCH_MONATE.indexOf(Number(k.slice(5, 7))) >= 0 || HOCH.some((a) => k >= a[0] && k <= a[1]);
 let GAP = new Set();           // alle Naechte, die in einer Luecke liegen
 let GAPSTART = new Map();      // erste Nacht der Luecke -> Abreisetag (Tag der naechsten Belegung)
@@ -536,6 +553,7 @@ function kalenderKlick(k) {
   else if (kannAnreise(k)) { ARR = k; DEP = ""; }
   S.nights = (ARR && DEP) ? diffDays(ARR, DEP) : null;
   S.luecke = !!(ARR && DEP && P.lueckeRabatt > 0 && GAPSTART.get(ARR) === DEP);
+  S.selbstOK = ruheStay();
   normalize(); render(); renderKalender();
 }
 
@@ -594,13 +612,16 @@ function renderKalender() {
   }
   else sel.textContent = "Tippe den Anreisetag an.";
   document.getElementById("calHoch").textContent = "Hochsaison" + (HOCH_MONATE.length ? " (" + HOCH_MONATE.map((m) => MONATE[m - 1]).join(", ") + ")" : "") + ": Dort vermieten wir über Airbnb. Bitte meidet diese Zeit wenn möglich" + ((HOCH.length || HOCH_MONATE.length) ? " (gelb)" : "") + ". Eine Anfrage ist trotzdem möglich. Sehr willkommen sind Lücken zwischen zwei Airbnb-Gästen (grün, mit Rabatt).";
-  document.getElementById("calInfo").textContent = "Lücken bis " + LUECKE_MAX + " Nächte kann Airbnb nicht vermieten (Mindestaufenthalt dort " + (LUECKE_MAX + 1) + " Nächte). Wer die ganze Lücke bucht, vom ersten bis zum letzten freien Tag, zahlt für die Übernachtungen " + P.lueckeRabatt + " Prozent weniger. Die Reinigung bleibt gleich. Weniger Nächte als die ganze Lücke gelten zum normalen Preis, mindestens " + P.minNaechte + " Nächte." + (SPITZ.length ? " Rot markiert sind Spitzenzeiten, in denen wir nur zu hohen Preisen vermieten. Dort gibt es keinen Familienpreis, nur eine Anfrage, und der Preis wird von den Eltern festgelegt." : "");
+  document.getElementById("calInfo").textContent = "Lücken bis " + LUECKE_MAX + " Nächte kann Airbnb nicht vermieten (Mindestaufenthalt dort " + (LUECKE_MAX + 1) + " Nächte). Wer die ganze Lücke bucht, vom ersten bis zum letzten freien Tag, zahlt für die Übernachtungen " + P.lueckeRabatt + " Prozent weniger. Die Reinigung bleibt gleich. Weniger Nächte als die ganze Lücke gelten zum normalen Preis, mindestens " + P.minNaechte + " Nächte." + (RUHE.length ? " Selbstreinigung: Vom " + RUHE.map((a) => fmtMD(a[0]) + " bis " + fmtMD(a[1])).join(" und vom ") + " dürft ihr (nur Familie, ohne externe Gäste) die Reinigung selbst machen. Ihr bringt dafür frische Bettwäsche, Handtücher und Küchentücher mit, beziehst die Betten selbst und nehmt alles wieder mit. Dann kostet die Reinigung " + P.reinigungSelbst + " Franken. Kommt nach euch kein Familienmitglied, sondern ein Airbnb-Gast, zahlt die letzte Familienpartei die " + P.reinigung + " Franken für die Endreinigung an uns und holt sich den Anteil bei den anderen Parteien seit dem letzten Gast zurück. Die Kosten teilen sich alle Parteien dieser Kette, das regelt ihr untereinander. Die Eltern zählen dabei nicht als Familie: Wenn wir selbst hinaufgehen, putzen wir und verrechnen separat." : "") + (SPITZ.length ? " Rot markiert sind Spitzenzeiten, in denen wir nur zu hohen Preisen vermieten. Dort gibt es keinen Familienpreis, nur eine Anfrage, und der Preis wird von den Eltern festgelegt." : "");
   document.getElementById("calLegHoch").hidden = HOCH.length === 0 && HOCH_MONATE.length === 0;
   document.getElementById("calLegSpitz").hidden = SPITZ.length === 0;
   const sp = spitzTermin();
   const spEl = document.getElementById("calSpitz");
   spEl.hidden = !sp;
   spEl.textContent = sp ? "Spitzenzeit" + (sp[2] ? " (" + sp[2] + ")" : "") + ": In dieser Zeit vermieten wir nur zu hohen Preisen. Es gibt dafür keinen Familienpreis, der Preis wird von den Eltern festgelegt. Eine Anfrage ist trotzdem möglich." : "";
+  const ruheEl = document.getElementById("calRuhe");
+  ruheEl.hidden = !S.selbstOK;
+  ruheEl.textContent = S.selbstOK ? "In dieser Zeit könnt ihr die Reinigung selbst übernehmen (ohne externe Gäste): Frage weiter unten." : "";
   const warn = document.getElementById("calWarn");
   const msgs = [];
   if (ARR && DEP) {
@@ -649,6 +670,7 @@ function anfrageText(r) {
   if (x.GE > 0 && !x.lock) z.push("Gast im selben Zimmer: " + x.ZE);
   z.push("Zimmer 1 abgeschlossen: " + (S.spar === "Ja" ? "Ja" : "Nein"));
   if (x.GE > 0) z.push("Reinigung: " + S.reinig);
+  if (x.SB) z.push("Selbstreinigung: Ja (frische Wäsche mitbringen, selbst reinigen). Kommt nach uns ein Airbnb-Gast statt jemand aus der Familie, zahlt die letzte Familienpartei die " + chf(P.reinigung) + " Endreinigung an die Eltern und holt sich den Anteil bei den anderen Parteien der Kette zurück.");
   if (x.LR > 0 && !spitzTermin()) z.push("Lückenpreis (" + x.LR + " % auf die Übernachtungen)");
   const spA = spitzTermin();
   if (spA) z.push("Spitzenzeit" + (spA[2] ? " (" + spA[2] + ")" : "") + ": Preis auf Anfrage");
@@ -658,6 +680,19 @@ function anfrageText(r) {
   return z.join("\n");
 }
 
+function familienText() {
+  return [
+    "Hallo zusammen",
+    "",
+    "Ich bin vom " + fmtTag(ARR) + " bis " + fmtTag(DEP) + " im Chalet Tschenten und reinige selbst (frische Bettwäsche, Handtücher und Küchentücher, alles wieder mitnehmen).",
+    "Kommt jemand von euch direkt nach mir (Anreise " + fmtTag(DEP) + ")? Dann entfällt für mich die Endreinigung. Wer nach mir kommt, bringt wieder frische Wäsche mit.",
+    "Kommt nach mir kein Familienmitglied, sondern ein Airbnb-Gast, zahlt die letzte Familienpartei die " + chf(P.reinigung) + " Endreinigung an die Eltern und holt sich den Anteil von allen Parteien seit dem letzten Gast zurück (Kosten werden geteilt). Bitte meldet euch, wenn ihr im Anschluss kommen wollt.",
+    "Die Eltern zählen nicht als Familie: Wenn sie hinaufgehen, putzen sie selbst und verrechnen separat.",
+    "",
+    "Gruss"
+  ].join("\n");
+}
+
 function anfrageKasten(r) {
   if (!(ARR && DEP)) return "";
   const t = anfrageText(r);
@@ -665,7 +700,15 @@ function anfrageKasten(r) {
   let h = '<div class="pay"><strong>Anfrage an die Eltern senden</strong>' +
     '<span class="hint">Das ist nur eine Anfrage und noch keine Buchung. Die Eltern bestätigen den Termin. WhatsApp öffnet sich mit dem fertigen Text, dort wählst du den Familienchat.</span><div class="btns">';
   h += '<a class="btn" href="https://wa.me/?text=' + encodeURIComponent(t) + '" target="_blank" rel="noopener">Per WhatsApp senden</a>';
-  h += '<button type="button" class="btn" id="copyReq">Anfrage kopieren</button></div></div>';
+  h += '<button type="button" class="btn" id="copyReq">Anfrage kopieren</button></div>';
+  if (r.d.SB) {
+    const f = familienText();
+    LETZTE_FAMILIE = f;
+    h += '<span class="hint" style="margin-top:12px"><b>Kommt jemand aus der Familie nach dir?</b> Frag im Familienchat. Folgt direkt ein Familienmitglied, fällt für dich keine Endreinigung an. Folgt ein Airbnb-Gast, zahlt die letzte Familienpartei die ' + chf(P.reinigung) + ' an die Eltern und holt sich den Anteil bei den anderen Parteien zurück.</span><div class="btns">' +
+      '<a class="btn" href="https://wa.me/?text=' + encodeURIComponent(f) + '" target="_blank" rel="noopener">Familie fragen: Kommt jemand nach mir?</a>' +
+      '<button type="button" class="btn" id="copyFam">Text kopieren</button></div>';
+  }
+  h += '</div>';
   return h;
 }
 function render() {
@@ -737,11 +780,13 @@ function render() {
   if (x.sp) notes += '<p class="note">Zimmer 1 bleibt abgeschlossen: ' + chf(P.sparEin) + ' weniger pro Nacht, die Familie zahlt ' + chf(x.FN0) + ' statt ' + chf(P.famPausch) + '.</p>';
   if (x.SO) notes += '<p class="note">Du teilst das Zimmer mit einem Gast: Die Familie zahlt nur ' + chf(P.famAnteil) + ' pro Nacht statt ' + chf(P.famPausch) + '. Weitere Gäste ändern daran nichts.</p>';
   if (x.ZE === "Ja" && x.GE >= 1) notes += '<p class="note">Ein Gast im selben Zimmer zahlt ' + chf(P.gastZimmer) + ' statt ' + chf(P.gast) + ' pro Nacht: ein Zimmer und ein Doppelbett weniger zu beziehen und zu reinigen.</p>';
+  if (x.SB) notes += '<p class="note">Selbstreinigung: Ihr bringt nur frische Bettwäsche, Handtücher und Küchentücher mit, reinigt selbst und nehmt alles wieder mit. Reinigung: ' + chf(P.reinigungSelbst) + '.</p>';
   if (x.LR > 0) notes += '<p class="note">Lückenpreis: Alle Nachtpreise sind ' + x.LR + ' Prozent günstiger, auf ganze Franken gerundet.</p>';
   if (x.GE >= 1) notes += '<p class="note">Reinigung aufgeteilt: ' + S.reinig + '.</p>';
   res.innerHTML =
     '<h2>Preis</h2>' +
     '<div class="total"><span class="big">' + chf(r.TOT) + '</span><span class="small">für ' + x.nights + ' ' + (x.nights === 1 ? "Nacht" : "Nächte") + ', ' + x.PT + ' ' + (x.PT === 1 ? "Person" : "Personen") + ' mit Bett' + (x.KK > 0 ? ', ' + x.KK + (x.KK === 1 ? ' Kind' : ' Kinder') + ' ohne eigenes Bett' : '') + '</span></div>' +
+    (x.SB ? '<p class="note"><b>Selbstreinigung:</b> Kommt nach euch kein Familienmitglied, sondern ein Airbnb-Gast, zahlt die letzte Familienpartei die ' + chf(P.reinigung) + ' für die Endreinigung an uns und holt sich den Anteil bei den anderen Parteien seit dem letzten Gast zurück (die Kosten teilen sich alle Parteien der Kette). Folgt direkt jemand aus der Familie, fällt für euch nichts an. Die Eltern zählen nicht als Familie: Wenn wir selbst hinaufgehen, putzen wir und verrechnen separat. Es darf nur frische Wäsche in die Wohnung.</p>' : '') +
     (x.LR > 0 ? '<p class="note"><b>Lückenpreis:</b> Euer Aufenthalt füllt eine Lücke zwischen zwei Airbnb-Gästen. Die Übernachtungen sind ' + x.LR + ' Prozent günstiger. Die Reinigung bleibt gleich.</p>' : '') +
     (ARR && DEP ? '<p class="hint">' + esc(fmtTag(ARR)) + ' bis ' + esc(fmtTag(DEP)) + '</p>' : '') +
     '<div class="pay"><strong>Die Familie überweist den ganzen Betrag: ' + chf(r.TOT) + '</strong>' +
@@ -770,6 +815,7 @@ function wendeEinstellungenAn(j) {
   if (typeof j.zahlTage === "number" && isFinite(j.zahlTage) && j.zahlTage >= 0) ZAHL_TAGE = Math.round(j.zahlTage);
   if (typeof j.lueckeMax === "number" && isFinite(j.lueckeMax) && j.lueckeMax >= 0) LUECKE_MAX = Math.round(j.lueckeMax);
   if (Array.isArray(j.spitzenzeiten)) SPITZ = j.spitzenzeiten.filter((a) => Array.isArray(a) && a.length >= 2 && /^\d{4}-\d{2}-\d{2}$/.test(a[0]) && /^\d{4}-\d{2}-\d{2}$/.test(a[1])).map((a) => [a[0], a[1], typeof a[2] === "string" ? a[2] : ""]);
+  if (Array.isArray(j.selbstReinigung)) RUHE = j.selbstReinigung.filter((a) => Array.isArray(a) && a.length === 2 && /^\d{2}-\d{2}$/.test(a[0]) && /^\d{2}-\d{2}$/.test(a[1]));
   if (Array.isArray(j.hochsaisonMonate)) HOCH_MONATE = j.hochsaisonMonate.filter((m) => Number.isInteger(m) && m >= 1 && m <= 12);
   if (Array.isArray(j.hochsaison)) HOCH = j.hochsaison.filter((a) => Array.isArray(a) && a.length === 2 && /^\d{4}-\d{2}-\d{2}$/.test(a[0]) && /^\d{4}-\d{2}-\d{2}$/.test(a[1]));
 }
@@ -785,11 +831,14 @@ function kopiere(text, btn, fertig, vorher) {
   }
 }
 let LETZTE_ANFRAGE = "";
+let LETZTE_FAMILIE = "";
 document.getElementById("result").addEventListener("click", (e) => {
   const b = e.target.closest("#copyIban");
   if (b) { kopiere(IBAN.replace(/\s+/g, ""), b, "IBAN kopiert", "IBAN kopieren"); return; }
   const q = e.target.closest("#copyReq");
   if (q) kopiere(LETZTE_ANFRAGE, q, "Anfrage kopiert", "Anfrage kopieren");
+  const fb = e.target.closest("#copyFam");
+  if (fb) kopiere(LETZTE_FAMILIE, fb, "Text kopiert", "Text kopieren");
 });
 async function ladeEinstellungen() {
   try {
