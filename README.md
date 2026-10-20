@@ -21,3 +21,14 @@ Preisrechner für die Familie, Chalet Tschenten, Adelboden.
 | `sparMaxPers` | Bis so viele Personen insgesamt kann Zimmer 1 abgeschlossen bleiben |
 | `minNaechte` / `maxNaechte` | Kleinste und grösste Anzahl Nächte |
 | `maxPersonen` | Personen mit Bett |
+| `iban` / `bank` | Konto für die Überweisung, wird im Ergebnis angezeigt |
+| `zahlTage` | Frist in Tagen nach dem letzten Ferientag |
+| `lueckeMax` | Freie Nächte zwischen zwei Belegungen bis zu dieser Zahl gelten als Lücke (Airbnb-Mindestaufenthalt minus 1) |
+| `lueckeRabatt` | Prozent Rabatt auf die Übernachtungen, wenn die ganze Lücke gebucht wird (Reinigung bleibt gleich) |
+| `hochsaison` | Zeiträume, die gelb markiert werden. Format: `[["2026-12-19","2027-01-03"], ["2027-02-06","2027-02-20"]]` (von, bis, beide eingeschlossen) |
+
+## Belegung aus Airbnb
+
+- Die Datei `belegt.json` wird alle 3 Stunden automatisch aus dem Airbnb-Kalender erzeugt (Reiter «Actions», «Belegung aktualisieren»). Nicht von Hand ändern.
+- Der Airbnb-Link steht nur als geheimer Eintrag `AIRBNB_ICAL` unter Settings, Secrets and variables, Actions.
+- Von Hand starten: Reiter «Actions», «Belegung aktualisieren», «Run workflow».
