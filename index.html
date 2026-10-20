@@ -34,6 +34,8 @@
     --hoch-bg: #FFF1C2;
     --spitz-bg: #FAD2C8;
     --spitz-line: #C5432B;
+    --ruhe-bg: #D6E6F7;
+    --ruhe-line: #3A78B8;
     --display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
     --body: "Source Sans 3", "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
   }
@@ -57,6 +59,8 @@
       --hoch-bg: #3B3213;
       --spitz-bg: #4B2219;
       --spitz-line: #E2735C;
+      --ruhe-bg: #16293D;
+      --ruhe-line: #6AA6E3;
       color-scheme: dark;
     }
   }
@@ -79,6 +83,8 @@
     --hoch-bg: #3B3213;
     --spitz-bg: #4B2219;
     --spitz-line: #E2735C;
+      --ruhe-bg: #16293D;
+      --ruhe-line: #6AA6E3;
     color-scheme: dark;
   }
 
@@ -191,6 +197,15 @@
   .cal-d.occ.hoch { background-color: var(--hoch-bg); }
   .cal-d.spitz { background-color: var(--spitz-bg); border-color: var(--spitz-line); border-width: 2px; }
   .cal-d.occ.spitz { background-color: var(--spitz-bg); }
+  .cal-d.ruhe { background-color: var(--ruhe-bg); border-color: var(--ruhe-line); border-width: 2px; }
+  .cal-d.in.ruhe { background-color: var(--note-bg); border-color: var(--accent); }
+  .cal-d.sel.ruhe { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+  .sw { display: inline-block; width: 14px; height: 14px; border-radius: 3px; border: 2px solid; vertical-align: -2px; margin-right: 6px; }
+  .sw-hoch { border-color: #C98A1B; background: var(--hoch-bg); }
+  .sw-gap { border-color: var(--done-line); background: var(--done-bg); }
+  .sw-ruhe { border-color: var(--ruhe-line); background: var(--ruhe-bg); }
+  #calHoch p { margin: 0 0 8px; }
+  #calHoch p:last-child { margin-bottom: 0; }
   .cal-d.sel.hoch, .cal-d.sel.spitz, .cal-d.sel.occ, .cal-d.sel.gap { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
   .cal-d.in.hoch, .cal-d.in.spitz { border-color: var(--accent); }
   .cal-info summary { cursor: pointer; font-weight: 700; color: var(--accent); }
@@ -202,6 +217,7 @@
   .cal-leg .l-gap { background: var(--done-bg); border-color: var(--done-line); }
   .cal-leg .l-occ { background: repeating-linear-gradient(45deg, transparent 0 3px, var(--line) 3px 5px); border-color: var(--line); }
   .cal-leg .l-hoch { border-color: #C98A1B; background: var(--hoch-bg); }
+  .cal-leg .l-ruhe { border-color: var(--ruhe-line); background: var(--ruhe-bg); }
   .cal-leg .l-spitz { border-color: var(--spitz-line); background: var(--spitz-bg); }
   a.btn, button.btn { font: inherit; font-weight: 700; color: var(--accent); background: transparent; border: 2px solid var(--accent); border-radius: 6px; min-height: 48px; padding: 8px 14px; cursor: pointer; display: inline-flex; align-items: center; text-decoration: none; }
   .pay .btns { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -253,7 +269,7 @@
 
   <section id="cal" class="card cal" aria-label="Wunschtermin">
     <h2>Wunschtermin</h2>
-    <p class="note" id="calHoch"></p>
+    <div class="note" id="calHoch"></div>
     <details class="cal-info"><summary>Lücken, Rabatt und Spitzenzeiten erklärt</summary><p id="calInfo"></p></details>
     <p class="hint" id="calHint"></p>
     <div class="cal-nav">
@@ -266,6 +282,7 @@
       <span><i class="l-gap"></i>Lücke: ganze Lücke buchen = Rabatt</span>
       <span><i class="l-occ"></i>belegt</span>
       <span id="calLegHoch" hidden><i class="l-hoch"></i>Hochsaison</span>
+      <span id="calLegRuhe" hidden><i class="l-ruhe"></i>Eigene Wäsche möglich</span>
       <span id="calLegSpitz" hidden><i class="l-spitz"></i>Spitzenzeit: Preis auf Anfrage</span>
     </div>
     <p class="cal-sel" id="calSel" role="status"></p>
@@ -289,7 +306,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "1.31";
+let VERSION = "1.32";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -595,6 +612,7 @@ function renderKalender() {
     if (!BELEGT.has(k) && k >= heute && GAP.has(k)) b.classList.add("gap");
     if (spitzVon(k)) b.classList.add("spitz");
     else if (istHoch(k)) b.classList.add("hoch");
+    else if (istRuhe(k) && !BELEGT.has(k)) b.classList.add("ruhe");
     if (istArr || istDep) b.classList.add("sel");
     if (k === heute) b.classList.add("today");
     b.disabled = !ok;
@@ -614,7 +632,17 @@ function renderKalender() {
     if (GAPSTART.has(ARR) && P.lueckeRabatt > 0) sel.textContent += " Für den Lückenpreis (−" + P.lueckeRabatt + " %) Abreise am " + fmtTag(GAPSTART.get(ARR)) + " wählen.";
   }
   else sel.textContent = "Tippe den Anreisetag an.";
-  document.getElementById("calHoch").textContent = "Hochsaison" + (HOCH_MONATE.length ? " (" + HOCH_MONATE.map((m) => MONATE[m - 1]).join(", ") + ")" : "") + ": Dort vermieten wir über Airbnb. Bitte meidet diese Zeit wenn möglich" + ((HOCH.length || HOCH_MONATE.length) ? " (gelb)" : "") + ". Eine Anfrage ist trotzdem möglich. Sehr willkommen sind Lücken zwischen zwei Airbnb-Gästen (grün, mit Rabatt).";
+  {
+    const el = document.getElementById("calHoch");
+    const hochOn = HOCH.length > 0 || HOCH_MONATE.length > 0;
+    let h = "";
+    if (hochOn) h += '<p><i class="sw sw-hoch"></i><b>Gelb = Hochsaison</b>' + (HOCH_MONATE.length ? " (" + HOCH_MONATE.map((m) => MONATE[m - 1]).join(", ") + ")" : "") + ": Dort vermieten wir über Airbnb. Bitte meidet diese Zeit, wenn möglich. Eine Anfrage ist trotzdem möglich.</p>";
+    if (P.lueckeRabatt > 0) h += '<p><i class="sw sw-gap"></i><b>Grün = Lücke:</b> Lücken zwischen Airbnb-Gästen bieten ' + P.lueckeRabatt + " % Rabatt auf die Übernachtungen. Dafür müsst ihr die ganze Lücke buchen.</p>";
+    if (RUHE.length) h += '<p><i class="sw sw-ruhe"></i><b>Blau = eigene Wäsche möglich</b> (' + RUHE.map((a) => fmtMD(a[0]) + " bis " + fmtMD(a[1])).join(" und ") + "): Dort könnt ihr selbst reinigen, mit eigener frischer Wäsche und ohne externe Gäste.</p>";
+    el.innerHTML = h;
+    el.hidden = h === "";
+  }
+  document.getElementById("calLegRuhe").hidden = RUHE.length === 0;
   document.getElementById("calInfo").textContent = "Lücken bis " + LUECKE_MAX + " Nächte kann Airbnb nicht vermieten (Mindestaufenthalt dort " + (LUECKE_MAX + 1) + " Nächte). Wer die ganze Lücke bucht, vom ersten bis zum letzten freien Tag, zahlt für die Übernachtungen " + P.lueckeRabatt + " Prozent weniger. Die Reinigung bleibt gleich. Weniger Nächte als die ganze Lücke gelten zum normalen Preis, mindestens " + P.minNaechte + " Nächte." + (RUHE.length ? " Selbstreinigung: Vom " + RUHE.map((a) => fmtMD(a[0]) + " bis " + fmtMD(a[1])).join(" und vom ") + " könnt ihr die Reinigung selbst machen. Das geht nur für euch Kinder (Jerome, Deborah, Miriam und Manuel mit Partnern und Kindern) und nur ohne externe Gäste. Sonst gilt immer die normale Reinigung von " + P.reinigung + " Franken. Ihr bringt dafür frische Bettwäsche, Handtücher und Küchentücher mit, beziehst die Betten selbst und nehmt alles wieder mit. Dann kostet die Reinigung " + P.reinigungSelbst + " Franken. Ihr zahlt uns dann keine Reinigung. " + ketteText() + " " + putzText() : "") + (SPITZ.length ? " Rot markiert sind Spitzenzeiten, in denen wir nur zu hohen Preisen vermieten. Dort gibt es keinen Familienpreis, nur eine Anfrage, und der Preis wird von den Eltern festgelegt." : "");
   document.getElementById("calLegHoch").hidden = HOCH.length === 0 && HOCH_MONATE.length === 0;
   document.getElementById("calLegSpitz").hidden = SPITZ.length === 0;
