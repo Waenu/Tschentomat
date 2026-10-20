@@ -26,6 +26,7 @@ Preisrechner für die Familie, Chalet Tschenten, Adelboden.
 | `lueckeMax` | Freie Nächte zwischen zwei Belegungen bis zu dieser Zahl gelten als Lücke (Airbnb-Mindestaufenthalt minus 1) |
 | `lueckeRabatt` | Prozent Rabatt auf die Übernachtungen, wenn die ganze Lücke gebucht wird (Reinigung bleibt gleich) |
 | `hochsaisonMonate` | Ganze Monate, die jedes Jahr gelb markiert werden. Februar ist `[2]`, mehrere zum Beispiel `[2, 7]` |
+| `spitzenzeiten` | Zeiten, in denen nur zu hohen Preisen vermietet wird (zum Beispiel Skirennen). Rot markiert, ohne Familienpreis: nur «Preis auf Anfrage». Format: `[["2027-01-15","2027-01-17","Skirennen"]]` (von, bis, Name) |
 | `hochsaison` | Zeiträume, die gelb markiert werden. Format: `[["2026-12-19","2027-01-03"], ["2027-02-06","2027-02-20"]]` (von, bis, beide eingeschlossen) |
 
 ## Belegung aus Airbnb
