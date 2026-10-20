@@ -286,7 +286,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "1.09";
+let VERSION = "1.10";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -448,7 +448,7 @@ const FIELDS = [
     hint: (d) => d.sparGrund === "so" ? "Ihr teilt Zimmer 2 und das blaue Bad, Zimmer 1 bleibt zu. Der Sonderpreis von " + P.famAnteil + " pro Nacht gilt dafür." : d.sparGrund === "pers" ? "Nicht möglich: Bei mehr als " + P.sparMaxPers + " Personen insgesamt (auch Kleinkinder) wird Zimmer 1 gebraucht." : "Ja: nur Zimmer 2, Zimmer 3 und das blaue Bad werden benutzt. Die Familie zahlt " + P.sparEin + " weniger pro Nacht (" + (P.famPausch - P.sparEin) + " statt " + P.famPausch + "). Nein: das ganze Chalet steht zur Verfügung.",
     opts: () => ["Ja", "Nein"] },
   { id: "selbst", label: "Bringt ihr frische Bettwäsche, Handtücher und Küchentücher mit und reinigt selbst?", type: "str",
-    hint: () => "Ja: Ihr bringt nur frische Bettwäsche, frische Handtücher und frische Küchentücher mit, bezieht die Betten selbst, reinigt die Wohnung selbst und nehmt alle Wäsche wieder mit. Die Reinigung kostet dann CHF " + P.reinigungSelbst + ". Nein: Es gilt die normale Reinigung (CHF " + P.reinigung + ").",
+    hint: () => "Ja: Ihr bringt nur frische Bettwäsche, frische Handtücher und frische Küchentücher mit, bezieht die Betten selbst, reinigt die Wohnung selbst und nehmt alle Wäsche wieder mit. Die Reinigung kostet dann CHF " + P.reinigungSelbst + ". Jeder, der die Wohnung verlässt, reinigt selbst: WC putzen, staubsaugen, alles picobello. Die Endreinigung durch uns ist trotzdem Pflicht, weil unser Standard so nie erreicht wird. Nein: Es gilt die normale Reinigung (CHF " + P.reinigung + ").",
     visible: (d) => d.SM, opts: () => ["Ja", "Nein"] },
   { id: "reinig", label: "Wie wird die Reinigung (CHF " + P.reinigung + ") aufgeteilt?", type: "str",
     hint: () => "Das entscheidet ihr selbst. Das Total ändert sich nicht, nur wer wie viel zahlt. Die Familie gilt immer als ein Block. Bei «Nach Personen» zählen Kinder ab 2 Jahren wie Erwachsene, Kinder unter 2 Jahren zählen nicht.",
@@ -612,7 +612,7 @@ function renderKalender() {
   }
   else sel.textContent = "Tippe den Anreisetag an.";
   document.getElementById("calHoch").textContent = "Hochsaison" + (HOCH_MONATE.length ? " (" + HOCH_MONATE.map((m) => MONATE[m - 1]).join(", ") + ")" : "") + ": Dort vermieten wir über Airbnb. Bitte meidet diese Zeit wenn möglich" + ((HOCH.length || HOCH_MONATE.length) ? " (gelb)" : "") + ". Eine Anfrage ist trotzdem möglich. Sehr willkommen sind Lücken zwischen zwei Airbnb-Gästen (grün, mit Rabatt).";
-  document.getElementById("calInfo").textContent = "Lücken bis " + LUECKE_MAX + " Nächte kann Airbnb nicht vermieten (Mindestaufenthalt dort " + (LUECKE_MAX + 1) + " Nächte). Wer die ganze Lücke bucht, vom ersten bis zum letzten freien Tag, zahlt für die Übernachtungen " + P.lueckeRabatt + " Prozent weniger. Die Reinigung bleibt gleich. Weniger Nächte als die ganze Lücke gelten zum normalen Preis, mindestens " + P.minNaechte + " Nächte." + (RUHE.length ? " Selbstreinigung: Vom " + RUHE.map((a) => fmtMD(a[0]) + " bis " + fmtMD(a[1])).join(" und vom ") + " dürft ihr (nur Familie, ohne externe Gäste) die Reinigung selbst machen. Ihr bringt dafür frische Bettwäsche, Handtücher und Küchentücher mit, beziehst die Betten selbst und nehmt alles wieder mit. Dann kostet die Reinigung " + P.reinigungSelbst + " Franken. Ihr zahlt uns dann keine Reinigung, aber später einen Anteil: Die " + P.reinigung + " Franken für die Endreinigung zahlt der letzte Familiengast, bevor ein Airbnb-Gast kommt, an uns und verrechnet sie anteilig an alle Parteien dieser Kette, auch an euch. Die Eltern zählen dabei nicht als Familie: Wenn wir selbst hinaufgehen, putzen wir und verrechnen separat." : "") + (SPITZ.length ? " Rot markiert sind Spitzenzeiten, in denen wir nur zu hohen Preisen vermieten. Dort gibt es keinen Familienpreis, nur eine Anfrage, und der Preis wird von den Eltern festgelegt." : "");
+  document.getElementById("calInfo").textContent = "Lücken bis " + LUECKE_MAX + " Nächte kann Airbnb nicht vermieten (Mindestaufenthalt dort " + (LUECKE_MAX + 1) + " Nächte). Wer die ganze Lücke bucht, vom ersten bis zum letzten freien Tag, zahlt für die Übernachtungen " + P.lueckeRabatt + " Prozent weniger. Die Reinigung bleibt gleich. Weniger Nächte als die ganze Lücke gelten zum normalen Preis, mindestens " + P.minNaechte + " Nächte." + (RUHE.length ? " Selbstreinigung: Vom " + RUHE.map((a) => fmtMD(a[0]) + " bis " + fmtMD(a[1])).join(" und vom ") + " dürft ihr (nur Familie, ohne externe Gäste) die Reinigung selbst machen. Ihr bringt dafür frische Bettwäsche, Handtücher und Küchentücher mit, beziehst die Betten selbst und nehmt alles wieder mit. Dann kostet die Reinigung " + P.reinigungSelbst + " Franken. Ihr zahlt uns dann keine Reinigung, aber später einen Anteil: Die " + P.reinigung + " Franken für die Endreinigung zahlt der letzte Familiengast, bevor ein Airbnb-Gast kommt, an uns und verrechnet sie anteilig an alle Parteien dieser Kette, auch an euch. Jeder, der die Wohnung verlässt, reinigt selbst: WC putzen, staubsaugen, alles picobello. Die Endreinigung durch uns ist trotzdem Pflicht, weil unser Standard so nie erreicht wird. Die Eltern zählen dabei nicht als Familie: Wenn wir selbst hinaufgehen, putzen wir und verrechnen separat." : "") + (SPITZ.length ? " Rot markiert sind Spitzenzeiten, in denen wir nur zu hohen Preisen vermieten. Dort gibt es keinen Familienpreis, nur eine Anfrage, und der Preis wird von den Eltern festgelegt." : "");
   document.getElementById("calLegHoch").hidden = HOCH.length === 0 && HOCH_MONATE.length === 0;
   document.getElementById("calLegSpitz").hidden = SPITZ.length === 0;
   const sp = spitzTermin();
@@ -670,7 +670,7 @@ function anfrageText(r) {
   if (x.GE > 0 && !x.lock) z.push("Gast im selben Zimmer: " + x.ZE);
   z.push("Zimmer 1 abgeschlossen: " + (S.spar === "Ja" ? "Ja" : "Nein"));
   if (x.GE > 0) z.push("Reinigung: " + S.reinig);
-  if (x.SB) z.push("Selbstreinigung: Ja (frische Wäsche mitbringen, selbst reinigen). Die " + chf(P.reinigung) + " Endreinigung fallen erst nach dem letzten Familiengast an, bevor ein Airbnb-Gast kommt. Der letzte Familiengast zahlt sie an die Eltern und verrechnet sie anteilig an alle Parteien der Kette (auch an uns).");
+  if (x.SB) z.push("Selbstreinigung: Ja (frische Wäsche mitbringen, selbst reinigen). Die " + chf(P.reinigung) + " Endreinigung fallen erst nach dem letzten Familiengast an, bevor ein Airbnb-Gast kommt. Der letzte Familiengast zahlt sie an die Eltern und verrechnet sie anteilig an alle Parteien der Kette (auch an uns). Wir hinterlassen die Wohnung sauber (WC, staubsaugen).");
   if (x.LR > 0 && !spitzTermin()) z.push("Lückenpreis (" + x.LR + " % auf die Übernachtungen)");
   const spA = spitzTermin();
   if (spA) z.push("Spitzenzeit" + (spA[2] ? " (" + spA[2] + ")" : "") + ": Preis auf Anfrage");
@@ -686,7 +686,7 @@ function familienText() {
     "",
     "Ich bin vom " + fmtTag(ARR) + " bis " + fmtTag(DEP) + " im Chalet Tschenten und reinige selbst (frische Bettwäsche, Handtücher und Küchentücher, alles wieder mitnehmen).",
     "Kommt jemand von euch direkt nach mir (Anreise " + fmtTag(DEP) + ")? Dann reinigt nicht ich, sondern der letzte Familiengast der Kette macht die Endreinigung. Wer nach mir kommt, bringt wieder frische Wäsche mit.",
-    "Die " + chf(P.reinigung) + " Endreinigung fallen erst an, wenn nach der Familie ein Airbnb-Gast kommt. Der letzte Familiengast zahlt sie an die Eltern und verrechnet sie anteilig an alle Parteien seit dem letzten Gast, auch an mich. Bitte meldet euch, wenn ihr im Anschluss kommen wollt.",
+    "Die " + chf(P.reinigung) + " Endreinigung fallen erst an, wenn nach der Familie ein Airbnb-Gast kommt. Der letzte Familiengast zahlt sie an die Eltern und verrechnet sie anteilig an alle Parteien seit dem letzten Gast, auch an mich. Wer geht, putzt selbst (WC, staubsaugen, alles picobello). Bitte meldet euch, wenn ihr im Anschluss kommen wollt.",
     "Die Eltern zählen nicht als Familie: Wenn sie hinaufgehen, putzen sie selbst und verrechnen separat.",
     "",
     "Gruss"
@@ -704,7 +704,7 @@ function anfrageKasten(r) {
   if (r.d.SB) {
     const f = familienText();
     LETZTE_FAMILIE = f;
-    h += '<span class="hint" style="margin-top:12px"><b>Kommt jemand aus der Familie nach dir?</b> Frag im Familienchat. Die ' + chf(P.reinigung) + ' Endreinigung zahlt später der letzte Familiengast an die Eltern, bevor ein Airbnb-Gast kommt. Er verrechnet sie anteilig an alle Parteien der Kette, also auch an dich. Hier im Rechner steht deshalb CHF 0 für die Reinigung.</span><div class="btns">' +
+    h += '<span class="hint" style="margin-top:12px"><b>Kommt jemand aus der Familie nach dir?</b> Frag im Familienchat. Die ' + chf(P.reinigung) + ' Endreinigung zahlt später der letzte Familiengast an die Eltern, bevor ein Airbnb-Gast kommt. Er verrechnet sie anteilig an alle Parteien der Kette, also auch an dich. Hier im Rechner steht deshalb CHF 0 für die Reinigung. Jeder, der die Wohnung verlässt, reinigt selbst: WC putzen, staubsaugen, alles picobello. Die Endreinigung durch uns ist trotzdem Pflicht, weil unser Standard so nie erreicht wird.</span><div class="btns">' +
       '<a class="btn" href="https://wa.me/?text=' + encodeURIComponent(f) + '" target="_blank" rel="noopener">Familie fragen: Kommt jemand nach mir?</a>' +
       '<button type="button" class="btn" id="copyFam">Text kopieren</button></div>';
   }
@@ -786,7 +786,7 @@ function render() {
   res.innerHTML =
     '<h2>Preis</h2>' +
     '<div class="total"><span class="big">' + chf(r.TOT) + '</span><span class="small">für ' + x.nights + ' ' + (x.nights === 1 ? "Nacht" : "Nächte") + ', ' + x.PT + ' ' + (x.PT === 1 ? "Person" : "Personen") + ' mit Bett' + (x.KK > 0 ? ', ' + x.KK + (x.KK === 1 ? ' Kind' : ' Kinder') + ' ohne eigenes Bett' : '') + '</span></div>' +
-    (x.SB ? '<p class="note"><b>Selbstreinigung:</b> Ihr zahlt uns keine Reinigung, aber später einen Anteil: Die ' + chf(P.reinigung) + ' Endreinigung zahlt der letzte Familiengast der Kette an uns, bevor ein Airbnb-Gast kommt, und verrechnet sie anteilig an alle Parteien der Kette, auch an euch. Die Eltern zählen nicht als Familie: Wenn wir selbst hinaufgehen, putzen wir und verrechnen separat. Es darf nur frische Wäsche in die Wohnung.</p>' : '') +
+    (x.SB ? '<p class="note"><b>Selbstreinigung:</b> Ihr zahlt uns keine Reinigung, aber später einen Anteil: Die ' + chf(P.reinigung) + ' Endreinigung zahlt der letzte Familiengast der Kette an uns, bevor ein Airbnb-Gast kommt, und verrechnet sie anteilig an alle Parteien der Kette, auch an euch. Die Eltern zählen nicht als Familie: Wenn wir selbst hinaufgehen, putzen wir und verrechnen separat. Es darf nur frische Wäsche in die Wohnung. Jeder, der die Wohnung verlässt, reinigt selbst: WC putzen, staubsaugen, alles picobello. Die Endreinigung durch uns ist trotzdem Pflicht, weil unser Standard so nie erreicht wird.</p>' : '') +
     (x.LR > 0 ? '<p class="note"><b>Lückenpreis:</b> Euer Aufenthalt füllt eine Lücke zwischen zwei Airbnb-Gästen. Die Übernachtungen sind ' + x.LR + ' Prozent günstiger. Die Reinigung bleibt gleich.</p>' : '') +
     (ARR && DEP ? '<p class="hint">' + esc(fmtTag(ARR)) + ' bis ' + esc(fmtTag(DEP)) + '</p>' : '') +
     '<div class="pay"><strong>Die Familie überweist den ganzen Betrag: ' + chf(r.TOT) + '</strong>' +
