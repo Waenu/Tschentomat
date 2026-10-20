@@ -306,7 +306,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "1.34";
+let VERSION = "1.35";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -722,10 +722,8 @@ function familienText() {
   return [
     "Hallo zusammen",
     "",
-    "Ich bin vom " + fmtTag(ARR) + " bis " + fmtTag(DEP) + " im Chalet Tschenten und reinige selbst (frische Bettwäsche, Handtücher und Küchentücher, alles wieder mitnehmen).",
-    "Kommt jemand von euch nach mir, noch bevor die Eltern kommen (nicht zwingend direkt danach)? Wer nach mir kommt, bringt wieder frische Wäsche mit.",
-    "Die " + chf(P.reinigung) + " Endreinigung fallen an, sobald die Kette abreisst, also sobald nach einem Haushalt die Eltern oder ein Airbnb-Gast kommen. Sie zahlt der letzte Haushalt vor den Eltern (z. B. Jerome, Rahel, Malik und Jon oder Manuel und Sarah) an die Eltern, im schlechtesten Fall die vollen " + chf(P.reinigung) + ". Er verrechnet sie anteilig an alle Haushalte seit der letzten Reinigung durch die Eltern. Weil noch nicht klar ist, wer danach kommt, wird die Zahlung ausnahmsweise erst fällig, wenn die Kette abreisst. Wer geht, putzt selbst (WC, staubsaugen, Küche sauber, Abfall entsorgen, alles picobello). Bitte meldet euch, wenn ihr im Anschluss kommen wollt.",
-    "Dann gehen die Eltern die Wohnung reinigen.",
+    "Ich bin vom " + fmtTag(ARR) + " bis " + fmtTag(DEP) + " im Chalet Tschenten und reinige selbst. Kommt jemand von euch nach mir, noch bevor die Eltern kommen?",
+    "Alles Weitere steht im Tschent-O-Mat: https://waenu.github.io/Tschentomat/",
     "",
     "Gruss"
   ].join("\n");
