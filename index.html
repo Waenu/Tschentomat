@@ -155,6 +155,11 @@
   .empty { color: var(--muted); margin: 0; }
   details summary { cursor: pointer; font-weight: 700; min-height: 44px; display: flex; align-items: center; }
   details .rows { display: flex; flex-direction: column; gap: 8px; }
+  .pay { border: 2px solid var(--accent); border-radius: 6px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+  .pay strong { font-size: 1.1rem; }
+  .pay .iban { font-weight: 700; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .pay button { margin-top: 4px; font: inherit; font-weight: 700; color: var(--accent); background: transparent; border: 2px solid var(--accent); border-radius: 6px; min-height: 48px; padding: 8px 14px; cursor: pointer; }
+  .split-h { margin: 6px 0 0; font-size: 1rem; }
   .note { background: var(--note-bg); border-radius: 6px; padding: 10px 12px; font-size: 0.92rem; margin: 0; }
 
   button.reset {
@@ -215,8 +220,11 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "2.0";
-let GUELTIG_AB = "20.10.2026";
+let VERSION = "1.01";
+let GUELTIG_AB = "01.01.2027";
+let IBAN = "CH25 0878 4046 4374 6612 8";
+let BANK = "Spar- und Leihkasse Frutigen (SLF)";
+let ZAHL_TAGE = 7;
 // CALC-START
 const P = {
   // Alle Beträge in CHF. Pro Nacht = pro Nacht und Person bzw. Gruppe, wie beschriftet.
@@ -467,6 +475,14 @@ function render() {
   res.innerHTML =
     '<h2>Preis</h2>' +
     '<div class="total"><span class="big">' + chf(r.TOT) + '</span><span class="small">für ' + x.nights + ' ' + (x.nights === 1 ? "Nacht" : "Nächte") + ', ' + x.PT + ' ' + (x.PT === 1 ? "Person" : "Personen") + ' mit Bett' + (x.KK > 0 ? ', ' + x.KK + (x.KK === 1 ? ' Kind' : ' Kinder') + ' ohne eigenes Bett' : '') + '</span></div>' +
+    '<div class="pay"><strong>Die Familie überweist den ganzen Betrag: ' + chf(r.TOT) + '</strong>' +
+      '<span>Spätestens ' + ZAHL_TAGE + ' Tage nach dem letzten Ferientag, ohne Aufforderung.</span>' +
+      '<span>' + esc(BANK) + '</span>' +
+      '<span class="iban">IBAN: ' + esc(IBAN) + '</span>' +
+      '<span class="hint">Bitte mit Name und Datum der Ferien überweisen.</span>' +
+      '<button type="button" id="copyIban">IBAN kopieren</button></div>' +
+    '<h3 class="split-h">Aufteilung unter euch</h3>' +
+    '<p class="hint">Das Einsammeln bei den Gästen ist Sache der Familie. Die Beträge sind eine Hilfe dafür.</p>' +
     '<table><tbody>' + who + '</tbody></table>' +
     '<details><summary>So wird gerechnet</summary><div class="rows"><table><tbody>' + det + '</tbody></table>' + notes + '</div></details>';
 }
@@ -479,7 +495,24 @@ function wendeEinstellungenAn(j) {
   });
   if (typeof j.version === "string" && j.version) VERSION = j.version;
   if (typeof j.gueltigAb === "string" && j.gueltigAb) GUELTIG_AB = j.gueltigAb;
+  if (typeof j.iban === "string" && j.iban.trim()) IBAN = j.iban.trim();
+  if (typeof j.bank === "string" && j.bank.trim()) BANK = j.bank.trim();
+  if (typeof j.zahlTage === "number" && isFinite(j.zahlTage) && j.zahlTage >= 0) ZAHL_TAGE = Math.round(j.zahlTage);
 }
+const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+document.getElementById("result").addEventListener("click", (e) => {
+  const b = e.target.closest("#copyIban");
+  if (!b) return;
+  const plain = IBAN.replace(/\s+/g, "");
+  const done = () => { b.textContent = "IBAN kopiert"; setTimeout(() => { b.textContent = "IBAN kopieren"; }, 2000); };
+  try {
+    navigator.clipboard.writeText(plain).then(done, () => {});
+  } catch (err) {
+    const t = document.createElement("textarea"); t.value = plain; document.body.appendChild(t); t.select();
+    try { document.execCommand("copy"); done(); } catch (e2) {}
+    document.body.removeChild(t);
+  }
+});
 async function ladeEinstellungen() {
   try {
     const ctl = new AbortController();
