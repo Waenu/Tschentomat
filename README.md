@@ -26,9 +26,8 @@ Preisrechner für die Familie, Chalet Tschenten, Adelboden.
 | `iban` / `bank` | Konto für die Überweisung, wird im Ergebnis angezeigt |
 | `zahlTage` | Frist in Tagen nach dem letzten Ferientag |
 | `lueckeMax` | Freie Nächte zwischen zwei Belegungen bis zu dieser Zahl gelten als Lücke (Airbnb-Mindestaufenthalt minus 1) |
-| `lueckeSperrMonate` | Monate (Liste), in denen Lücken für die Familie gesperrt sind (violett). Massgebend ist der Monat der ersten Nacht der Lücke |
-| `lueckeFreigabeTage` | Gesperrte Lücken werden so viele Tage vor der ersten Nacht automatisch freigegeben |
-| `lueckeMaxPersonen` | Ganze Lücke: höchstens so viele Personen mit Bett (Kleinkinder im Kinderbettchen zusätzlich). Dazu: keine Gäste, nur Zimmer 2, eigene Wäsche, Reinigung 240 |
+| `lueckeSperrMonate` | Monate (Liste), in denen Lücken für die Familie immer gesperrt sind (violett, nie freigegeben). Massgebend ist der Monat der ersten Nacht der Lücke |
+| `lueckeMaxPersonen` | Ganze Lücke: höchstens so viele Personen mit Bett, zusätzlich `lueckeMaxKleinkinder` Kleinkind(er) im Kinderbettchen. Dazu: keine Gäste, nur Zimmer 2, eigene Wäsche, Reinigung 240 |
 | `lueckeRabatt` | Prozent Rabatt auf die Übernachtungen, wenn die ganze Lücke gebucht wird (Reinigung bleibt gleich) |
 | `hochsaisonMonate` | Ganze Monate, die jedes Jahr gelb markiert werden. Februar ist `[2]`, mehrere zum Beispiel `[2, 7]` |
 | `spitzenzeiten` | Zeiten, in denen nur zu hohen Preisen vermietet wird (zum Beispiel Skirennen). Rot markiert, ohne Familienpreis: nur «Preis auf Anfrage». Format: `[["2027-01-15","2027-01-17","Skirennen"]]` (von, bis, Name) |

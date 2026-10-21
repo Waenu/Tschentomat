@@ -1,6 +1,6 @@
 {
   "_hinweis": "Nur die Zahlen und die Version ändern, sonst nichts. Beträge in CHF. Nach dem Speichern dauert es etwa eine Minute, bis alle die neuen Werte sehen.",
-  "version": "1.92",
+  "version": "1.93",
   "gueltigAb": "01.01.2027",
   "famPausch": 70,
   "gast": 70,
@@ -37,9 +37,9 @@
     ]
   ],
   "lueckeMaxPersonen": 2,
-  "lueckeFreigabeTage": 3,
   "lueckeSperrMonate": [
     1,
     2
-  ]
+  ],
+  "lueckeMaxKleinkinder": 1
 }
