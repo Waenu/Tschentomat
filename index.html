@@ -307,7 +307,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "1.50";
+let VERSION = "1.51";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -368,9 +368,10 @@ function derive(s) {
   const frei = Math.max(0, P.maxPersonen - FP);
   const GE = Math.min(nz(s.gaeste), frei);
   const PT = FP + GE;
-  const ZE = lock ? "Nein" : (s.zimmer === "Ja" ? "Ja" : "Nein");
-  const SO = wer === "Nur ich" && GE >= 1 && ZE === "Ja" && base + GE <= P.sparMaxPers;
-  const sparGrund = SO ? "so" : (base + GE > P.sparMaxPers ? "pers" : "");
+  const voll = base + GE > P.sparMaxPers;
+  const ZE = (lock || voll) ? "Nein" : (s.zimmer === "Ja" ? "Ja" : "Nein");
+  const SO = wer === "Nur ich" && GE >= 1 && ZE === "Ja";
+  const sparGrund = SO ? "so" : (voll ? "pers" : "");
   const sparLock = sparGrund !== "";
   const sp = s.spar === "Ja" && !sparLock;
   const LR = (s.luecke === true) ? P.lueckeRabatt : 0;
@@ -400,7 +401,7 @@ function derive(s) {
     else FA = RE / (1 + GE);
   }
   const GS = GE > 0 ? (RE - FA) / GE : 0;
-  return { lock, base, kkMax, KK, sp, sparLock, sparGrund, FP, frei, GE, PT, ZE, SO, SM, SB, LR, FN0, FN, GN, HN, WN, PN, nights, UE, AF, AG, RE, FA, GS };
+  return { lock, voll, base, kkMax, KK, sp, sparLock, sparGrund, FP, frei, GE, PT, ZE, SO, SM, SB, LR, FN0, FN, GN, HN, WN, PN, nights, UE, AF, AG, RE, FA, GS };
 }
 
 function check(s, d) {
@@ -412,7 +413,7 @@ function check(s, d) {
   if (typeof s.gaeste !== "number") return "Bitte wählen: Gäste";
   if (s.gaeste > d.frei && d.frei === 0) return "Kein Platz mehr für Gäste. Bitte Gäste neu wählen.";
   if (s.gaeste > d.frei) return "Nur noch " + d.frei + " Gast frei. Bitte Gäste neu wählen.";
-  if (d.GE > 0 && !d.lock && !isYN(s.zimmer)) return "Bitte wählen: Gast im selben Zimmer";
+  if (d.GE > 0 && !d.lock && !d.voll && !isYN(s.zimmer)) return "Bitte wählen: Gast im selben Zimmer";
   if (!d.sparLock && !isYN(s.spar)) return "Bitte wählen: Bleibt Zimmer 1 abgeschlossen";
   if (d.SM && !isYN(s.selbst)) return "Bitte wählen: Selbstreinigung";
   if (d.GE > 0 && REINIG.indexOf(s.reinig) < 0) return "Bitte wählen: Aufteilung der Reinigung";
@@ -464,7 +465,7 @@ const FIELDS = [
     hint: (d) => (S.wer === "Nur ich" && d.base + d.GE <= P.sparMaxPers)
       ? "Ein Gast im selben Zimmer zahlt " + P.gastZimmer + " statt " + P.gast + " pro Nacht, die Familie dann nur " + P.famAnteil + " statt " + P.famPausch + ". Grund: ein Zimmer und ein Doppelbett weniger zu beziehen und zu reinigen."
       : "Ein Gast im selben Zimmer zahlt " + P.gastZimmer + " statt " + P.gast + " pro Nacht. Grund: ein Zimmer und ein Doppelbett weniger zu beziehen und zu reinigen.",
-    visible: (d) => d.GE > 0 && !d.lock, opts: () => ["Ja", "Nein"] },
+    visible: (d) => d.GE > 0 && !d.lock && !d.voll, opts: () => ["Ja", "Nein"] },
   { id: "spar", label: "Bleibt Zimmer 1 (Schlafzimmer mit rotem Bad) abgeschlossen?", type: "str",
     hint: (d) => d.sparGrund === "so" ? "Ihr teilt Zimmer 2 und das blaue Bad, Zimmer 1 bleibt zu. Der Sonderpreis von " + P.famAnteil + " pro Nacht gilt dafür." : d.sparGrund === "pers" ? "Nicht möglich: Bei mehr als " + P.sparMaxPers + " Personen insgesamt (auch Kleinkinder) wird Zimmer 1 gebraucht." : "Ja: nur Zimmer 2, Zimmer 3 und das blaue Bad werden benutzt. Die Familie zahlt " + P.sparEin + " weniger pro Nacht (" + (P.famPausch - P.sparEin) + " statt " + P.famPausch + "). Nein: das ganze Chalet steht zur Verfügung.",
     opts: () => ["Ja", "Nein"] },
@@ -486,6 +487,7 @@ function normalize() {
     d = derive(S);
   }
   if (d.GE === 0) { S.zimmer = ""; S.reinig = ""; }
+  if (d.voll) S.zimmer = "";
   if (!d.SM) S.selbst = "";
   if (d.kkMax === 0) S.kk = null;
   else if (typeof S.kk === "number" && S.kk > d.kkMax) { S.kk = null; notice = "Die Auswahl hat weniger Kinder, bitte die Kinder ohne eigenes Bett neu wählen."; }
