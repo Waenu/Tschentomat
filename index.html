@@ -156,8 +156,8 @@
   .field select option { background-color: var(--surface); color: var(--fg); }
   .field select:focus-visible, button:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
   .hint { margin: 0; font-size: 0.88rem; color: var(--muted); }
-  .hint .rot { color: var(--spitz-line); font-weight: 700; }
-  .note.rot { color: var(--spitz-line); font-weight: 700; }
+  .hint .rot { color: var(--spitz-line); font-weight: 400; }
+  .note.rot { color: var(--spitz-line); font-weight: 400; }
 
   .card { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
   .card h2 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 1.5rem; letter-spacing: 0.03em; text-transform: uppercase; }
@@ -261,7 +261,7 @@
     <div class="rows">
       <p class="note"><b>Zimmer 1:</b> Schlafzimmer mit eigenem Bad (das rote Badezimmer, nur von Zimmer 1 aus zugänglich). Normalerweise von Papi und Mami belegt.</p>
       <p class="note"><b>Zimmer 2:</b> Schlafzimmer mit Doppelbett.</p>
-      <p class="note"><b>Zimmer 3:</b> Schlafzimmer mit Etagenbett, für Kinder.</p>
+      <p class="note"><b>Zimmer 3:</b> Schlafzimmer mit Etagenbett, für Kinder oder Erwachsene.</p>
       <p class="note"><b>Blaues Badezimmer:</b> von der ganzen Wohnung aus zugänglich.</p>
     </div>
   </details>
@@ -307,7 +307,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "1.57";
+let VERSION = "1.58";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
