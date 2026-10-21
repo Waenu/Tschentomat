@@ -307,7 +307,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "1.52";
+let VERSION = "1.53";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -460,7 +460,7 @@ const FIELDS = [
     visible: (d) => d.kkMax > 0, opts: (d) => range(0, d.kkMax) },
   { id: "gaeste", label: "Gäste (ausserhalb der Familie)", type: "num",
     hint: (d) => d.frei === 0 ? "Es ist kein Platz mehr frei." : (d.frei === 1 ? "Es ist noch 1 Platz frei." : "Es sind noch " + d.frei + " Plätze frei.") + " Maximal " + P.maxPersonen + " Personen mit Bett.",
-    opts: (d) => range(0, d.frei) },
+    visible: (d) => d.frei > 0, opts: (d) => range(0, d.frei) },
   { id: "zimmer", label: "Schläft ein Gast im selben Zimmer wie ich?", type: "str",
     hint: (d) => (S.wer === "Nur ich" && d.base + d.GE <= P.sparMaxPers)
       ? "Ein Gast im selben Zimmer zahlt " + P.gastZimmer + " statt " + P.gast + " pro Nacht, die Familie dann nur " + P.famAnteil + " statt " + P.famPausch + ". Grund: ein Zimmer und ein Doppelbett weniger zu beziehen und zu reinigen."
@@ -486,6 +486,7 @@ function normalize() {
     else { S.gaeste = null; notice = "Es ist nur noch Platz für " + d.frei + " " + gastWort(d.frei) + ". Bitte die Gäste neu wählen."; }
     d = derive(S);
   }
+  if (d.frei === 0 && d.FP <= P.maxPersonen && typeof S.wer === "string" && S.wer && (S.wer !== MFG || typeof S.fam === "number")) { S.gaeste = 0; d = derive(S); }
   if (d.GE === 0) { S.zimmer = ""; S.reinig = ""; }
   if (d.voll) S.zimmer = "";
   if (!d.SM) S.selbst = "";
