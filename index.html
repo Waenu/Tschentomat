@@ -312,7 +312,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "1.84";
+let VERSION = "1.85";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -669,7 +669,7 @@ function renderKalender() {
         "<li>Frische Bettwäsche, Handtücher und Küchentücher mitbringen und selbst beziehen. Bettdecken und Kissen nie ohne frischen Duvet- und Kissenbezug benutzen. Alles nehmt ihr wieder mit.</li>" +
         "<li>Wer geht, reinigt: WC putzen, staubsaugen, Küche sauber, Abfall entsorgen, alles picobello.</li>" +
         "<li>Ihr zahlt den Eltern keine Reinigung (" + chf(P.reinigungSelbst) + "). Die Endreinigung durch die Eltern ist trotzdem Pflicht, weil sie ihren Standard wahren wollen.</li></ul></details>";
-      h += '<details class="cal-info"><summary>💳 Endreinigung ' + chf(P.reinigung) + ' und Familienstaffel</summary><ul>' +
+      h += '<details class="cal-info"><summary>🪣 Endreinigung ' + chf(P.reinigung) + ' und Familienstaffel</summary><ul>' +
         "<li>Sie fällt an, sobald die Familienstaffel endet, also sobald nach einem Haushalt die Eltern oder ein Airbnb-Gast kommen. Der Aufenthalt wird wie üblich bezahlt, die Rechnung der Eltern kommt separat, sobald die Staffel zu Ende ist.</li>" +
         "<li>Bezahlen muss sie der letzte Haushalt der Familienstaffel. War er allein, sind es die vollen " + chf(P.reinigung) + ". Waren mehrere Haushalte in der Staffel, holt er sich den Anteil der anderen bei ihnen zurück, anteilig nach Haushalt. Das Einsammeln ist seine Sache.</li>" +
         "<li>Nutzt die Familienstaffel, um die Reinigungskosten möglichst zu drücken: Je mehr Haushalte nacheinander kommen, desto weniger zahlt jeder Haushalt.</li>" +
@@ -811,7 +811,7 @@ function anfrageKasten(r) {
   if (r.d.SB) {
     const f = familienText();
     LETZTE_FAMILIE = f;
-    h += '<span class="hint" style="margin-top:12px"><b>Kommt jemand von den Kindern nach dir?</b> Frag im «Adelboden Airbnb Chat». Hier im Rechner steht ' + chf(0) + ' für die Reinigung. Dann teilt ihr die Reinigungskosten. Regeln siehe «💳 Endreinigung» oben im Kalender.</span><div class="btns">' +
+    h += '<span class="hint" style="margin-top:12px"><b>Kommt jemand von den Kindern nach dir?</b> Frag im «Adelboden Airbnb Chat». Hier im Rechner steht ' + chf(0) + ' für die Reinigung. Dann teilt ihr die Reinigungskosten. Regeln siehe «🪣 Endreinigung» oben im Kalender.</span><div class="btns">' +
       (ok ? '<a class="btn" href="https://wa.me/?text=' + encodeURIComponent(f) + '" target="_blank" rel="noopener">Im «Adelboden Airbnb Chat» fragen: Kommt jemand nach mir?</a>' : '<span class="btn off" aria-disabled="true">Im «Adelboden Airbnb Chat» fragen: Kommt jemand nach mir?</span>') +
       '<button type="button" class="btn" id="copyFam"' + (ok ? "" : " disabled") + '>Text kopieren</button></div>';
   }
@@ -892,7 +892,7 @@ function render() {
   res.innerHTML =
     '<h2>💰 Preis</h2>' +
     '<div class="total"><span class="big">' + chf(r.TOT) + '</span><span class="small">für ' + x.nights + ' ' + (x.nights === 1 ? "Nacht" : "Nächte") + ', ' + x.PT + ' ' + (x.PT === 1 ? "Person" : "Personen") + ' mit Bett' + (x.KK > 0 ? ', ' + x.KK + (x.KK === 1 ? ' Kind' : ' Kinder') + ' im Kinderbettchen oder bei den eigenen Eltern' : '') + '</span></div>' +
-    (x.SB ? '<p class="note"><b>🧹 Selbstreinigung:</b> Ihr zahlt den Eltern jetzt keine Reinigung. Regeln siehe «🧹 Selbstreinigung» und «💳 Endreinigung» oben im Kalender.</p>' : '') +
+    (x.SB ? '<p class="note"><b>🧹 Selbstreinigung:</b> Ihr zahlt den Eltern jetzt keine Reinigung. Regeln siehe «🧹 Selbstreinigung» und «🪣 Endreinigung» oben im Kalender.</p>' : '') +
     (x.LR > 0 ? '<p class="note"><b>Lückenpreis:</b> Euer Aufenthalt füllt eine Lücke zwischen zwei Airbnb-Gästen. Die Übernachtungen sind ' + x.LR + ' Prozent günstiger. Die Reinigung bleibt gleich.</p>' : '') +
     (ARR && DEP ? '<p class="hint">' + esc(fmtTag(ARR)) + ' bis ' + esc(fmtTag(DEP)) + '</p>' : '') +
     '<div class="pay"><strong>🏦 Die Familie überweist den ganzen Betrag: ' + chf(r.TOT) + '</strong>' +
