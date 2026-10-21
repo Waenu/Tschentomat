@@ -307,7 +307,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "1.47";
+let VERSION = "1.48";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -469,7 +469,7 @@ const FIELDS = [
     hint: (d) => d.sparGrund === "so" ? "Ihr teilt Zimmer 2 und das blaue Bad, Zimmer 1 bleibt zu. Der Sonderpreis von " + P.famAnteil + " pro Nacht gilt dafür." : d.sparGrund === "pers" ? "Nicht möglich: Bei mehr als " + P.sparMaxPers + " Personen insgesamt (auch Kleinkinder) wird Zimmer 1 gebraucht." : "Ja: nur Zimmer 2, Zimmer 3 und das blaue Bad werden benutzt. Die Familie zahlt " + P.sparEin + " weniger pro Nacht (" + (P.famPausch - P.sparEin) + " statt " + P.famPausch + "). Nein: das ganze Chalet steht zur Verfügung.",
     opts: () => ["Ja", "Nein"] },
   { id: "selbst", label: "Bringt ihr frische Bettwäsche, Handtücher und Küchentücher mit und reinigt selbst?", type: "str",
-    hint: () => "Ja: Ihr bringt nur frische Bettwäsche, frische Handtücher und frische Küchentücher mit, bezieht die Betten selbst, reinigt die Wohnung selbst und nehmt alle Wäsche wieder mit. Die Reinigung kostet dann CHF " + P.reinigungSelbst + ". Jeder, der die Wohnung verlässt, reinigt selbst: WC putzen, staubsaugen, Küche sauber, Abfall entsorgen, alles picobello. Die Endreinigung durch die Eltern ist trotzdem Pflicht, weil sie ihren Standard wahren wollen. Sie fällt an, sobald die Familienstaffel endet, also sobald nach einem Haushalt die Eltern oder ein Airbnb-Gast kommen. Nein: Es gilt die normale Reinigung (CHF " + P.reinigung + ").",
+    hint: () => "Ja: Ihr bringt nur frische Bettwäsche, frische Handtücher und frische Küchentücher mit, bezieht die Betten selbst, reinigt die Wohnung selbst und nehmt alle Wäsche wieder mit. Duvets und Kissen nie ohne frische Bettwäsche benutzen. Die Reinigung kostet dann CHF " + P.reinigungSelbst + ". Jeder, der die Wohnung verlässt, reinigt selbst: WC putzen, staubsaugen, Küche sauber, Abfall entsorgen, alles picobello. Die Endreinigung durch die Eltern ist trotzdem Pflicht, weil sie ihren Standard wahren wollen. Sie fällt an, sobald die Familienstaffel endet, also sobald nach einem Haushalt die Eltern oder ein Airbnb-Gast kommen. Nein: Es gilt die normale Reinigung (CHF " + P.reinigung + ").",
     visible: (d) => d.SM, opts: () => ["Ja", "Nein"] },
   { id: "reinig", label: "Wie wird die Reinigung (CHF " + P.reinigung + ") aufgeteilt?", type: "str",
     hint: () => "Das entscheidet ihr selbst. Das Total ändert sich nicht, nur wer wie viel zahlt. Die Familie gilt immer als ein Block. Bei «Nach Personen» zählen Kinder ab 2 Jahren wie Erwachsene, Kinder unter 2 Jahren zählen nicht.",
@@ -693,7 +693,7 @@ function ketteText() {
   return "Die " + chf(P.reinigung) + " Endreinigung fallen an, sobald die Familienstaffel endet, also sobald nach einem Haushalt die Eltern oder ein Airbnb-Gast kommen. Der Aufenthalt wird wie üblich bezahlt. Die Eltern schicken die Reinigungskosten separat, sobald klar ist, wie hoch sie ausfallen. Zahlen muss sie der letzte Haushalt der Familienstaffel. War er allein, sind es die vollen " + chf(P.reinigung) + ", sonst verrechnet er sie anteilig nach Haushalt an die anderen Haushalte der Familienstaffel. Meist kommt ein Haushalt allein. Sind Geschwister gleichzeitig dort, regeln sie die Kosten untereinander.";
 }
 function putzText() {
-  return "Danach gehen die Eltern die Wohnung reinigen. Die Wäsche darf nur von den Kindern selbst kommen und muss frisch sein. Wer geht, reinigt selbst: WC putzen, staubsaugen, Küche sauber, Abfall entsorgen, alles picobello. Die Endreinigung durch die Eltern ist trotzdem Pflicht, weil sie ihren Standard wahren wollen.";
+  return "Danach gehen die Eltern die Wohnung reinigen. Die Wäsche darf nur von den Kindern selbst kommen und muss frisch sein. Duvets und Kissen nie ohne frische Bettwäsche benutzen. Wer geht, reinigt selbst: WC putzen, staubsaugen, Küche sauber, Abfall entsorgen, alles picobello. Die Endreinigung durch die Eltern ist trotzdem Pflicht, weil sie ihren Standard wahren wollen.";
 }
 
 function anfrageText(r) {
@@ -735,14 +735,14 @@ function anfrageKasten(r) {
   const t = anfrageText(r);
   LETZTE_ANFRAGE = t;
   let h = '<div class="pay"><strong>Anfrage an die Eltern senden</strong>' +
-    '<span class="hint">Das ist nur eine Anfrage und noch keine Buchung. Die Eltern bestätigen den Termin. WhatsApp öffnet sich mit dem fertigen Text, dort wählst du den Chat «Adelboden Airbnb».</span><div class="btns">';
+    '<span class="hint">Das ist nur eine Anfrage und noch keine Buchung. Die Eltern bestätigen den Termin. WhatsApp öffnet sich mit dem fertigen Text, dort wählst du den «Adelboden Airbnb Chat».</span><div class="btns">';
   h += '<a class="btn" href="https://wa.me/?text=' + encodeURIComponent(t) + '" target="_blank" rel="noopener">Per WhatsApp senden</a>';
   h += '<button type="button" class="btn" id="copyReq">Anfrage kopieren</button></div>';
   if (r.d.SB) {
     const f = familienText();
     LETZTE_FAMILIE = f;
-    h += '<span class="hint" style="margin-top:12px"><b>Kommt jemand von den Kindern nach dir?</b> Frag im Chat «Adelboden Airbnb». Hier im Rechner steht CHF 0 für die Reinigung. ' + ketteText() + ' ' + putzText() + '</span><div class="btns">' +
-      '<a class="btn" href="https://wa.me/?text=' + encodeURIComponent(f) + '" target="_blank" rel="noopener">Im Chat «Adelboden Airbnb» fragen: Kommt jemand nach mir?</a>' +
+    h += '<span class="hint" style="margin-top:12px"><b>Kommt jemand von den Kindern nach dir?</b> Frag im «Adelboden Airbnb Chat». Hier im Rechner steht CHF 0 für die Reinigung. ' + ketteText() + ' ' + putzText() + '</span><div class="btns">' +
+      '<a class="btn" href="https://wa.me/?text=' + encodeURIComponent(f) + '" target="_blank" rel="noopener">Im «Adelboden Airbnb Chat» fragen: Kommt jemand nach mir?</a>' +
       '<button type="button" class="btn" id="copyFam">Text kopieren</button></div>';
   }
   h += '</div>';
