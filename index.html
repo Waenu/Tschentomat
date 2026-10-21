@@ -307,7 +307,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "1.53";
+let VERSION = "1.54";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -722,15 +722,30 @@ function anfrageText(r) {
   return z.join("\n");
 }
 
+function naechsterTermin() {
+  if (!BELEGT_OK || !DEP) return "";
+  let k = DEP;
+  for (let i = 0; i < 400; i++, k = addDays(k, 1)) {
+    if (BELEGT.has(k)) {
+      const n = diffDays(DEP, k);
+      if (n === 0) return "Direkt nach mir (ab " + fmtTag(DEP) + ") ist das Chalet schon wieder belegt.";
+      return "Nach mir ist das Chalet noch frei bis zum nächsten bekannten Termin am " + fmtTag(k) + " (" + n + " " + (n === 1 ? "Nacht" : "Nächte") + ").";
+    }
+  }
+  return "Nach mir ist bisher kein weiterer Termin bekannt.";
+}
+
 function familienText() {
+  const nt = naechsterTermin();
   return [
     "Hallo zusammen",
     "",
     "Ich bin vom " + fmtTag(ARR) + " bis " + fmtTag(DEP) + " im Chalet Tschenten und reinige selbst. Kommt jemand von euch nach mir, noch bevor die Eltern kommen? So können wir uns die Endreinigungskosten teilen 😉",
+  ].concat(nt ? [nt] : []).concat([
     "Alles Weitere steht im Tschent-O-Mat: https://waenu.github.io/Tschentomat/",
     "",
     "Gruss"
-  ].join("\n");
+  ]).join("\n");
 }
 
 function anfrageKasten(r) {
