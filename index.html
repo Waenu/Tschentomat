@@ -308,7 +308,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "1.67";
+let VERSION = "1.68";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -659,7 +659,7 @@ function renderKalender() {
   spEl.textContent = sp ? "Spitzenzeit" + (sp[2] ? " (" + sp[2] + ")" : "") + ": In dieser Zeit vermieten wir nur zu hohen Preisen. Es gibt dafür keinen Familienpreis, der Preis wird von den Eltern festgelegt. Eine Anfrage ist trotzdem möglich." : "";
   const ruheEl = document.getElementById("calRuhe");
   ruheEl.hidden = !S.selbstOK;
-  ruheEl.textContent = S.selbstOK ? "In dieser Zeit könnt ihr die Reinigung selbst übernehmen. Das geht nur für euch Kinder und nur ohne externe Gäste: Frage weiter unten." : "";
+  ruheEl.textContent = S.selbstOK ? "In dieser Zeit könnt ihr die Reinigung selbst übernehmen. Das geht nur für euch Kinder und nur ohne externe Gäste." : "";
   const warn = document.getElementById("calWarn");
   const msgs = [];
   if (ARR && DEP) {
