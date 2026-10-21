@@ -314,7 +314,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "1.70";
+let VERSION = "1.71";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -370,7 +370,9 @@ function derive(s) {
   if (wer === "Ich und 1 Kind" || wer === "Ich, Partner und 1 Kind") kkMax = 1;
   else if (wer === "Ich und 2 Kinder" || wer === "Ich, Partner und 2 Kinder") kkMax = 2;
   else if (wer === MFG) kkMax = (typeof s.fam === "number") ? Math.min(2, s.fam - 1) : 0;
-  const KK = Math.min(nz(s.kk), kkMax);
+  const kkMin = (wer === MFG && typeof s.fam === "number") ? Math.min(kkMax, Math.max(0, s.fam - P.maxPersonen)) : 0;
+  const kkFix = kkMax > 0 && kkMin === kkMax;
+  const KK = (typeof s.kk === "number" || kkFix) ? Math.max(kkMin, Math.min(nz(s.kk), kkMax)) : 0;
   const FP = Math.max(1, base - KK);
   const frei = Math.max(0, P.maxPersonen - FP);
   const GE = Math.min(nz(s.gaeste), frei);
@@ -408,14 +410,14 @@ function derive(s) {
     else FA = RE / (1 + GE);
   }
   const GS = GE > 0 ? (RE - FA) / GE : 0;
-  return { lock, voll, base, kkMax, KK, sp, sparLock, sparGrund, FP, frei, GE, PT, ZE, SO, SM, SB, LR, FN0, FN, GN, HN, WN, PN, nights, UE, AF, AG, RE, FA, GS };
+  return { lock, voll, base, kkMax, kkMin, kkFix, KK, sp, sparLock, sparGrund, FP, frei, GE, PT, ZE, SO, SM, SB, LR, FN0, FN, GN, HN, WN, PN, nights, UE, AF, AG, RE, FA, GS };
 }
 
 function check(s, d) {
   if (typeof s.nights !== "number") return "Bitte wählen: Anreise und Abreise im Kalender";
   if (WERL.indexOf(s.wer) < 0) return "Bitte wählen: Wer von der Familie kommt";
   if (s.wer === MFG && typeof s.fam !== "number") return "Bitte wählen: Anzahl Personen der Familie";
-  if (d.kkMax > 0 && typeof s.kk !== "number") return "Bitte wählen: Kinder ohne normales Bett";
+  if (d.kkMax > 0 && !d.kkFix && typeof s.kk !== "number") return "Bitte wählen: Kinder ohne normales Bett";
   if (d.FP > P.maxPersonen) return "Maximal " + P.maxPersonen + " Personen mit Bett. Bitte Personenzahl oder Kinder im Bettchen prüfen.";
   if (typeof s.gaeste !== "number") return "Bitte wählen: Gäste";
   if (s.gaeste > d.frei && d.frei === 0) return "Kein Platz mehr für Gäste. Bitte Gäste neu wählen.";
@@ -460,11 +462,11 @@ const FIELDS = [
     hint: () => "«Ich» ist Sohn oder Tochter, «Kind» ist ein Enkelkind. Hier zählen alle, die mitkommen, auch Kleinkinder. Kleinkinder ohne eigenes Bett gibst du danach an.",
     opts: () => WERL },
   { id: "fam", label: "Wie viele Personen aus der Familie kommen?", type: "num",
-    hint: () => "Alle zählen, auch Kleinkinder: du selbst, Geschwister, Partner, Enkelkinder. Beispiel: Tochter, Sohn und 2 Enkel sind 4. Kleinkinder ohne eigenes Bett gibst du danach an.",
+    hint: (d) => "Alle zählen, auch Kleinkinder: du selbst, Geschwister, Partner, Enkelkinder. Beispiel: Tochter, Sohn und 2 Enkel sind 4. Kleinkinder ohne eigenes Bett gibst du danach an." + (d.kkFix ? " Bei " + S.fam + " Personen sind " + d.kkMin + " davon Kleinkinder ohne eigenes Bett, das setzt der Rechner automatisch." : ""),
     visible: (d) => S.wer === MFG, opts: () => range(2, P.maxPersonen + 2) },
   { id: "kk", label: "Wie viele davon brauchen kein normales Bett und schlafen in einem Kinderbettchen oder bei den eigenen Eltern?", type: "num",
     hint: () => "Kinder bis etwa 2½ Jahren. Sie belegen kein Bett und zählen bei der Reinigung nicht mit.",
-    visible: (d) => d.kkMax > 0, opts: (d) => range(0, d.kkMax) },
+    visible: (d) => d.kkMax > 0 && !d.kkFix, opts: (d) => range(d.kkMin, d.kkMax) },
   { id: "gaeste", label: "Gäste (ausserhalb der Familie)", type: "num",
     hint: (d) => d.frei === 0 ? "Es ist kein Platz mehr frei." : (d.frei === 1 ? "Es ist noch 1 Platz frei." : "Es sind noch " + d.frei + " Plätze frei.") + " Maximal " + P.maxPersonen + " Personen mit Bett.",
     visible: (d) => d.frei > 0, opts: (d) => range(0, d.frei) },
@@ -498,6 +500,8 @@ function normalize() {
   if (d.voll) S.zimmer = "";
   if (!d.SM) S.selbst = "";
   if (d.kkMax === 0) S.kk = null;
+  else if (d.kkFix) S.kk = d.kkMin;
+  else if (typeof S.kk === "number" && S.kk < d.kkMin) S.kk = null;
   else if (typeof S.kk === "number" && S.kk > d.kkMax) { S.kk = null; notice = "Die Auswahl hat weniger Kinder, bitte die Kinder ohne eigenes Bett neu wählen."; }
   if (d.sparLock) {
     const ziel = d.sparGrund === "so" ? "Ja" : "Nein";
