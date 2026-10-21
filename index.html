@@ -307,7 +307,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "1.55";
+let VERSION = "1.56";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -450,29 +450,29 @@ const gastWort = (n) => n === 1 ? "Gast" : "Gäste";
 
 const FIELDS = [
   { id: "wer", label: "Wer von der Familie kommt?", type: "str",
-    hint: () => "«Ich» ist Sohn oder Tochter, «Kind» ist ein Enkelkind. Hier zählen alle, die mitkommen, auch Kleinkinder. Kleinkinder ohne eigenes Bett gibst du in der übernächsten Frage an.",
+    hint: () => "«Ich» ist Sohn oder Tochter, «Kind» ist ein Enkelkind. Hier zählen alle, die mitkommen, auch Kleinkinder. Kleinkinder ohne eigenes Bett gibst du danach an.",
     opts: () => WERL },
   { id: "fam", label: "Wie viele Personen aus der Familie kommen?", type: "num",
-    hint: () => "Alle zählen, auch Kleinkinder: du selbst, Geschwister, Partner, Enkelkinder. Beispiel: Tochter, Sohn und 2 Enkel sind 4. Kleinkinder ohne eigenes Bett gibst du in der nächsten Frage an.",
+    hint: () => "Alle zählen, auch Kleinkinder: du selbst, Geschwister, Partner, Enkelkinder. Beispiel: Tochter, Sohn und 2 Enkel sind 4. Kleinkinder ohne eigenes Bett gibst du danach an.",
     visible: (d) => S.wer === MFG, opts: () => range(2, P.maxPersonen + 2) },
-  { id: "kk", label: "Wie viele davon brauchen kein normales Bett (Kinderbettchen oder bei den Eltern im Bett)?", type: "num",
-    hint: () => "Kinder unter etwa 2 Jahren, die im Kinderbettchen oder bei den Eltern im Bett schlafen. Sie belegen keinen Platz und zählen bei der Reinigung nicht, aber bei der Frage zu Zimmer 1. Höchstens 2.",
+  { id: "kk", label: "Wie viele davon brauchen kein normales Bett und schlafen in einem Kinderbettchen oder bei den eigenen Eltern?", type: "num",
+    hint: () => "Kinder unter etwa 2 Jahren. Sie belegen kein Bett und zählen bei der Reinigung nicht mit. Höchstens 2, denn wir haben zwei Kinderbettchen (je 60 x 120 cm): eines fix in Zimmer 3, ein mobiles Reisebettchen im Reduit, das in jedem Zimmer stehen kann.",
     visible: (d) => d.kkMax > 0, opts: (d) => range(0, d.kkMax) },
   { id: "gaeste", label: "Gäste (ausserhalb der Familie)", type: "num",
     hint: (d) => d.frei === 0 ? "Es ist kein Platz mehr frei." : (d.frei === 1 ? "Es ist noch 1 Platz frei." : "Es sind noch " + d.frei + " Plätze frei.") + " Maximal " + P.maxPersonen + " Personen mit Bett.",
     visible: (d) => d.frei > 0, opts: (d) => range(0, d.frei) },
   { id: "zimmer", label: "Schläft ein Gast im selben Zimmer wie ich?", type: "str",
     hint: (d) => (S.wer === "Nur ich" && d.base + d.GE <= P.sparMaxPers)
-      ? "Ein Gast im selben Zimmer zahlt " + P.gastZimmer + " statt " + P.gast + " pro Nacht, die Familie dann nur " + P.famAnteil + " statt " + P.famPausch + ". Grund: ein Zimmer und ein Doppelbett weniger zu beziehen und zu reinigen."
-      : "Ein Gast im selben Zimmer zahlt " + P.gastZimmer + " statt " + P.gast + " pro Nacht. Grund: ein Zimmer und ein Doppelbett weniger zu beziehen und zu reinigen.",
+      ? "Ein Gast im selben Zimmer zahlt " + chf(P.gastZimmer) + " statt " + chf(P.gast) + " pro Nacht, die Familie dann nur " + chf(P.famAnteil) + " statt " + chf(P.famPausch) + ". Es sind ein Zimmer und ein Doppelbett weniger zu beziehen und zu reinigen."
+      : "Ein Gast im selben Zimmer zahlt " + chf(P.gastZimmer) + " statt " + chf(P.gast) + " pro Nacht. Es sind ein Zimmer und ein Doppelbett weniger zu beziehen und zu reinigen.",
     visible: (d) => d.GE > 0 && !d.lock && !d.voll, opts: () => ["Ja", "Nein"] },
   { id: "spar", label: "Bleibt Zimmer 1 (Schlafzimmer mit rotem Bad) abgeschlossen?", type: "str",
-    hint: (d) => d.sparGrund === "so" ? "Ihr teilt Zimmer 2 und das blaue Bad, Zimmer 1 bleibt zu. Der Sonderpreis von " + P.famAnteil + " pro Nacht gilt dafür." : d.sparGrund === "pers" ? "Nicht möglich: Bei mehr als " + P.sparMaxPers + " Personen insgesamt (auch Kleinkinder) wird Zimmer 1 gebraucht." : "Ja: nur Zimmer 2, Zimmer 3 und das blaue Bad werden benutzt. Die Familie zahlt " + P.sparEin + " weniger pro Nacht (" + (P.famPausch - P.sparEin) + " statt " + P.famPausch + "). Nein: das ganze Chalet steht zur Verfügung.",
+    hint: (d) => d.sparGrund === "so" ? "Ihr teilt Zimmer 2 und das blaue Bad, Zimmer 1 bleibt zu. Der Sonderpreis von " + chf(P.famAnteil) + " pro Nacht gilt dafür." : d.sparGrund === "pers" ? "Nicht möglich: Bei mehr als " + P.sparMaxPers + " Personen insgesamt (auch Kleinkinder) wird Zimmer 1 gebraucht." : "Ja: nur Zimmer 2, Zimmer 3 und das blaue Bad werden benutzt. Die Familie zahlt " + chf(P.sparEin) + " weniger pro Nacht (" + chf(P.famPausch - P.sparEin) + " statt " + chf(P.famPausch) + "). Nein: das ganze Chalet steht zur Verfügung.",
     visible: (d) => d.sparGrund !== "pers", opts: () => ["Ja", "Nein"] },
   { id: "selbst", label: "Bringt ihr frische Bettwäsche, Handtücher und Küchentücher mit und reinigt selbst?", type: "str",
-    hint: () => "Ja: Ihr bringt nur frische Bettwäsche, frische Handtücher und frische Küchentücher mit, bezieht die Betten selbst, reinigt die Wohnung selbst und nehmt alle Wäsche wieder mit. Bettdecken und Kissen nie ohne frischen Duvet- und Kissenbezug benutzen. Die Reinigung kostet dann CHF " + P.reinigungSelbst + ". Jeder, der die Wohnung verlässt, reinigt selbst: WC putzen, staubsaugen, Küche sauber, Abfall entsorgen, alles picobello. Die Endreinigung durch die Eltern ist trotzdem Pflicht, weil sie ihren Standard wahren wollen. Sie fällt an, sobald die Familienstaffel endet, also sobald nach einem Haushalt die Eltern oder ein Airbnb-Gast kommen. Nein: Es gilt die normale Reinigung (CHF " + P.reinigung + ").",
+    hint: () => "Ja: Ihr bringt nur frische Bettwäsche, frische Handtücher und frische Küchentücher mit, bezieht die Betten selbst, reinigt die Wohnung selbst und nehmt alle Wäsche wieder mit. Bettdecken und Kissen nie ohne frischen Duvet- und Kissenbezug benutzen. Die Reinigung kostet dann " + chf(P.reinigungSelbst) + ". Jeder, der die Wohnung verlässt, reinigt selbst: WC putzen, staubsaugen, Küche sauber, Abfall entsorgen, alles picobello. Die Endreinigung durch die Eltern ist trotzdem Pflicht, weil sie ihren Standard wahren wollen. Sie fällt an, sobald die Familienstaffel endet, also sobald nach einem Haushalt die Eltern oder ein Airbnb-Gast kommen. Nein: Es gilt die normale Reinigung (" + chf(P.reinigung) + ").",
     visible: (d) => d.SM, opts: () => ["Ja", "Nein"] },
-  { id: "reinig", label: "Wie wird die Reinigung (CHF " + P.reinigung + ") aufgeteilt?", type: "str",
+  { id: "reinig", label: "Wie wird die Reinigung (" + chf(P.reinigung) + ") aufgeteilt?", type: "str",
     hint: () => "Das entscheidet ihr selbst. Das Total ändert sich nicht, nur wer wie viel zahlt. Die Familie gilt immer als ein Block. Bei «Nach Personen» zählen Kinder ab 2 Jahren wie Erwachsene, Kinder unter 2 Jahren zählen nicht.",
     visible: (d) => d.GE > 0, opts: () => REINIG }
 ];
@@ -759,7 +759,7 @@ function anfrageKasten(r) {
   if (r.d.SB) {
     const f = familienText();
     LETZTE_FAMILIE = f;
-    h += '<span class="hint" style="margin-top:12px"><b>Kommt jemand von den Kindern nach dir?</b> Frag im «Adelboden Airbnb Chat». Hier im Rechner steht CHF 0 für die Reinigung. ' + ketteText() + ' ' + putzText() + '</span><div class="btns">' +
+    h += '<span class="hint" style="margin-top:12px"><b>Kommt jemand von den Kindern nach dir?</b> Frag im «Adelboden Airbnb Chat». Hier im Rechner steht ' + chf(0) + ' für die Reinigung. ' + ketteText() + ' ' + putzText() + '</span><div class="btns">' +
       '<a class="btn" href="https://wa.me/?text=' + encodeURIComponent(f) + '" target="_blank" rel="noopener">Im «Adelboden Airbnb Chat» fragen: Kommt jemand nach mir?</a>' +
       '<button type="button" class="btn" id="copyFam">Text kopieren</button></div>';
   }
@@ -836,7 +836,7 @@ function render() {
   let notes = "";
   if (x.sp) notes += '<p class="note">Zimmer 1 bleibt abgeschlossen: ' + chf(P.sparEin) + ' weniger pro Nacht, die Familie zahlt ' + chf(x.FN0) + ' statt ' + chf(P.famPausch) + '.</p>';
   if (x.SO) notes += '<p class="note">Du teilst das Zimmer mit einem Gast: Die Familie zahlt nur ' + chf(P.famAnteil) + ' pro Nacht statt ' + chf(P.famPausch) + '. Weitere Gäste ändern daran nichts.</p>';
-  if (x.ZE === "Ja" && x.GE >= 1) notes += '<p class="note">Ein Gast im selben Zimmer zahlt ' + chf(P.gastZimmer) + ' statt ' + chf(P.gast) + ' pro Nacht: ein Zimmer und ein Doppelbett weniger zu beziehen und zu reinigen.</p>';
+  if (x.ZE === "Ja" && x.GE >= 1) notes += '<p class="note">Ein Gast im selben Zimmer zahlt ' + chf(P.gastZimmer) + ' statt ' + chf(P.gast) + ' pro Nacht. Es sind ein Zimmer und ein Doppelbett weniger zu beziehen und zu reinigen.</p>';
   if (x.SB) notes += '<p class="note">Selbstreinigung: Ihr bringt nur frische Bettwäsche, Handtücher und Küchentücher mit, reinigt selbst und nehmt alles wieder mit. Reinigung: ' + chf(P.reinigungSelbst) + '.</p>';
   if (x.LR > 0) notes += '<p class="note">Lückenpreis: Alle Nachtpreise sind ' + x.LR + ' Prozent günstiger, auf ganze Franken gerundet.</p>';
   if (x.GE >= 1) notes += '<p class="note">Reinigung aufgeteilt: ' + S.reinig + '.</p>';
@@ -853,7 +853,7 @@ function render() {
       '<span class="hint">Bitte mit Name und Datum der Ferien überweisen.</span>' +
       '<button type="button" id="copyIban">IBAN kopieren</button></div>' +
     '<h3 class="split-h">Aufteilung unter euch</h3>' +
-    '<p class="hint">Das Einsammeln bei den Gästen ist Sache der Familie. Die Beträge sind eine Hilfe dafür.</p>' +
+    '<p class="hint">Das Geld bei den Gästen einsammeln ist eure Sache. Die Tabelle zeigt, wie viel jeder schuldet.</p>' +
     '<table><tbody>' + who + '</tbody></table>' +
     anfrageKasten(r) +
     '<details><summary>So wird gerechnet</summary><div class="rows"><table><tbody>' + det + '</tbody></table>' + notes + '</div></details>';
