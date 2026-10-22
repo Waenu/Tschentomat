@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 jobs:
   update:
@@ -33,3 +34,8 @@ jobs:
               git push
             fi
           fi
+      - name: Neue Luecken melden (GitHub-Issue)
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 .github/scripts/luecken_melden.py
