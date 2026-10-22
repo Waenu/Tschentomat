@@ -189,7 +189,7 @@
   details summary { cursor: pointer; font-weight: 700; min-height: 44px; display: flex; align-items: center; }
   details > summary::after { content: "💡"; margin-left: 10px; font-weight: 400; }
   details .rows { display: flex; flex-direction: column; gap: 8px; }
-  .eltern-zone { min-height: 52px; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; }
+  .eltern-zone { min-height: 52px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; cursor: default; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; }
   .pay { border: 2px solid var(--accent); border-radius: 6px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
   .pay strong { font-size: 1.1rem; }
   .pay .iban { font-weight: 700; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
@@ -998,7 +998,7 @@ function render() {
     '<details><summary>💰 Wofür benötigen wir dieses Geld?</summary><div class="rows">' +
       '<p>Damit decken wir die laufenden Kosten des Chalets: Gästekarten, Strom, Wasser, Abwasser und Öl, dazu Miete, Unterhalt (zum Beispiel der Maler), Reparaturen (zum Beispiel eine defekte Heizung), Anschaffungen und Abschreibung.</p>' +
     '</div></details>' +
-    '<div id="elternZone" class="eltern-zone" aria-hidden="true"></div>' + (ELTERN ? elternKasten() : '');
+    '<div id="elternZone" class="eltern-zone" aria-hidden="true">😎</div>' + (ELTERN ? elternKasten() : '');
 }
 
 document.getElementById("reset").addEventListener("click", () => { ELTERN = false; EMPF = ""; S = Object.assign({}, EMPTY); ARR = ""; DEP = ""; initKalenderMonat(); notice = ""; render(); renderKalender(); window.scrollTo({ top: 0 }); });
