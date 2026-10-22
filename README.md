@@ -26,6 +26,7 @@ Preisrechner für die Familie, Chalet Tschenten, Adelboden.
 | `iban` / `bank` | Konto für die Überweisung, wird im Ergebnis angezeigt |
 | `zahlTage` | Frist in Tagen nach dem letzten Ferientag |
 | `lueckeMax` | Freie Nächte zwischen zwei Belegungen bis zu dieser Zahl gelten als Lücke (Airbnb-Mindestaufenthalt minus 1) |
+| `keinCheckinSonntag` | `true`: Sonntag ist bei Airbnb nie Check-in-Tag. Eine freie Strecke zwischen zwei Buchungen, die an einem Sonntag beginnt, zählt für Lücken erst ab Montag. Die Sonntagsnacht bleibt für die Familie gesperrt |
 | `lueckeVorlaufTage` | Lücken ausserhalb der Selbstreinigungs-Zeiten (dort ist die Familienstaffel nicht möglich) sind für die Familie erst so viele Tage vor Beginn der Lücke buchbar, vorher gesperrt |
 | `lueckeSperrMonate` | Monate (Liste), in denen Lücken für die Familie immer gesperrt sind (violett, nie freigegeben). Massgebend ist der Monat der ersten Nacht der Lücke |
 | `lueckeMaxPersonen` | Ganze Lücke: höchstens so viele Personen mit Bett, zusätzlich `lueckeMaxKleinkinder` Kleinkind(er) im Kinderbettchen. Dazu: keine Gäste, nur Zimmer 2, eigene Wäsche, Reinigung 240 |

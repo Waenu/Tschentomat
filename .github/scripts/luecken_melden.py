@@ -25,6 +25,9 @@ luecken = []
 for a, b in zip(belegt, belegt[1:]):
     n = (b - a).days - 1
     start = a + timedelta(days=1)
+    if cfg.get("keinCheckinSonntag", True) and start.weekday() == 6:   # Sonntag: kein Check-in bei Airbnb
+        start += timedelta(days=1)
+        n -= 1
     ende = b - timedelta(days=1)
     staffel_zeit = in_ruhe(start) and in_ruhe(ende)
     if n_min <= n <= n_max and start >= heute and (start.month in monate or not staffel_zeit):
