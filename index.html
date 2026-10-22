@@ -824,6 +824,15 @@ function familienText() {
   return z.join("\n");
 }
 
+function einladenBox(r) {
+  const ich = S.wer === "Nur ich";
+  const nb = (t) => '<span style="white-space:nowrap">' + t + '</span>';
+  const sum = r.FZ + r.HZ;
+  return '<details><summary>🤝 Gast einladen und selbst bezahlen?</summary><div class="rows"><p>' +
+    (ich ? "Du lädst" : "Ihr ladet") + ' Gast 1 (den Hauptgast) ein und ' + (ich ? "übernimmst" : "übernehmt") + ' seinen Anteil? Dann ' + (ich ? "zahlst du" : "zahlt die Familie") + ' ' +
+    nb(chf(r.FZ)) + ' + ' + nb(chf(r.HZ)) + ' = <b>' + nb(chf(sum)) + '</b>.</p></div></details>';
+}
+
 function anfrageKasten(r) {
   if (!(ARR && DEP)) return "";
   const t = anfrageText(r);
@@ -932,6 +941,7 @@ function render() {
     '<h3 class="split-h">💸 Aufteilung unter euch</h3>' +
     '<p class="hint">Das Geld bei den Gästen einsammeln ist eure Sache. Die Tabelle zeigt, wie viel jeder schuldet.</p>' +
     '<table><tbody>' + who + '</tbody></table>' +
+    (x.GE >= 1 ? einladenBox(r) : '') +
     anfrageKasten(r) +
     '<details><summary>🧮 So wird gerechnet</summary><div class="rows"><table><tbody>' + det + '</tbody></table>' + notes + '</div></details>' +
     '<details><summary>💰 Wofür benötigen wir dieses Geld?</summary><div class="rows">' +
