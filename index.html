@@ -261,6 +261,7 @@
   }
   .bar .in { max-width: 560px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 40px; }
   .bar .lab { font-size: 0.95rem; min-width: 0; }
+  .bar .lab small { font-size: 0.78rem; opacity: 0.9; }
   .bar .val { font-family: var(--display); font-weight: 700; font-size: 1.9rem; line-height: 1; white-space: nowrap; font-variant-numeric: tabular-nums; }
   .bar.err { background: var(--error-bg); color: var(--error-fg); }
 </style>
@@ -964,7 +965,9 @@ function render() {
     return;
   }
   bar.classList.remove("err");
-  lab.textContent = "Total für " + r.d.nights + " " + (r.d.nights === 1 ? "Nacht" : "Nächte"); val.textContent = chf(r.TOT);
+  const nTxt = r.d.nights + " " + (r.d.nights === 1 ? "Nacht" : "Nächte");
+  lab.textContent = "Total für " + nTxt; val.textContent = chf(r.TOT);
+  if (r.d.SB) lab.innerHTML = "Total für " + nTxt + "<br><small>maximal " + chf(r.TOT + P.reinigung) + " mit Endreinigung</small>";
   const x = r.d;
   const spR = spitzTermin();
   if (spR) {
