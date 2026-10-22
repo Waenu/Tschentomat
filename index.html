@@ -852,11 +852,15 @@ function einladungText() {
   const wer = S.wer === MFG ? S.fam + " Personen aus der Familie" : (WIE[S.wer] || S.wer);
   const z = ["Hallo " + EMPF, "", allein ? "Wir laden dich ein:" : "Wir laden euch ein:", "", "Anreise: " + fmtTagV(ARR), "Abreise: " + fmtTagV(DEP) + " (" + S.nights + " Nächte)", ""];
   z.push("Eingeladen: " + wer + (x.KK > 0 ? ", davon " + x.KK + " im Kinderbettchen oder bei den eigenen Eltern" : ""));
-  z.push("Keine weiteren Gäste");
+  if (x.GE > 0) {
+    z.push("Gäste: " + x.GE);
+    if (!x.lock) z.push("Gast im selben Zimmer: " + x.ZE);
+  } else z.push("Keine weiteren Gäste");
   z.push("Zimmer 1 abgeschlossen: " + (S.spar === "Ja" ? "Ja" : "Nein"));
   if (x.SM) z.push("Eigene Wäsche und Selbstreinigung: " + (S.selbst === "Ja" ? "Ja" : "Nein"));
   z.push("");
-  z.push(allein ? "Du bist unser Gast, wir tragen alle Kosten." : "Ihr seid unsere Gäste, wir tragen alle Kosten.");
+  if (x.GE > 0) z.push((allein ? "Du und " + (x.GE === 1 ? "dein Gast" : "deine Gäste") : "Ihr und " + (x.GE === 1 ? "euer Gast" : "eure Gäste")) + " seid eingeladen. Wir tragen alle Kosten: Übernachtungen und Reinigung.");
+  else z.push((allein ? "Du bist unser Gast." : "Ihr seid unsere Gäste.") + " Wir tragen alle Kosten: Übernachtungen und Reinigung.");
   z.push("");
   z.push("Gruss");
   z.push("Eltern");
