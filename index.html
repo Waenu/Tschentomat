@@ -122,7 +122,9 @@
     padding: 18px 18px 16px;
     display: flex; flex-direction: column; gap: 4px;
   }
-  .sign h1 .slot { font-size: 0.85em; line-height: 1; }
+  .sign .sub { position: relative; text-align: center; padding: 6px 0; }
+  .sign .sub .bg { position: absolute; left: 50%; top: 50%; font-size: 3.6rem; line-height: 1; transform: translate(-50%, -50%) rotate(-14deg); opacity: 0.45; pointer-events: none; }
+  .sign .sub p { position: relative; font-weight: 600; }
   .sign h1 {
     margin: 0;
     font-family: var(--display);
@@ -131,8 +133,9 @@
     letter-spacing: 0.04em;
     line-height: 1;
     white-space: nowrap;
+    text-align: center;
   }
-  .sign .ver { display: inline-block; align-self: flex-start; margin-top: 8px; padding: 3px 10px; border: 2px solid currentColor; border-radius: 4px; font-weight: 700; letter-spacing: 0.04em; opacity: 1; }
+  .sign .ver { position: relative; z-index: 1; display: inline-block; align-self: center; margin-top: 8px; padding: 3px 10px; border: 2px solid currentColor; border-radius: 4px; font-weight: 700; letter-spacing: 0.04em; opacity: 1; }
   .sign p { margin: 0; font-size: 0.95rem; letter-spacing: 0.02em; opacity: 0.92; }
 
   .intro { margin: 0; color: var(--muted); font-size: 0.95rem; }
@@ -264,8 +267,8 @@
 <body>
 <div class="wrap">
   <header class="sign">
-    <h1 aria-label="TSCHENT-O-MAT">TSCHENT-<span class="slot" aria-hidden="true">🎰</span>-MAT</h1>
-    <p style="text-align:center">Preisrechner Chalet Tschenten</p>
+    <h1>TSCHENT-O-MAT</h1>
+    <div class="sub"><span class="bg" aria-hidden="true">🎰</span><p>Preisrechner Chalet Tschenten</p></div>
     <p class="ver" id="ver"></p>
   </header>
 
