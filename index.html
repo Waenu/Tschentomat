@@ -931,16 +931,10 @@ function render() {
     '<table><tbody>' + who + '</tbody></table>' +
     anfrageKasten(r) +
     '<details><summary>🧮 So wird gerechnet</summary><div class="rows"><table><tbody>' + det + '</tbody></table>' + notes + '</div></details>' +
-    '<details><summary>💰 Warum diese Preise?</summary><div class="rows">' +
-      '<p style="margin:10px 0 2px"><b>Tiefste Preise</b></p><ul style="margin:2px 0">' +
-      '<li>Billigste Nacht: ' + chf(Math.round(rdLR(P.famPausch - P.sparEin))) + ' für die ganze Lücke, sonst ' + chf(P.famPausch - P.sparEin) + ' mit abgeschlossenem Zimmer 1.</li>' +
-      '<li>Billigste Nacht pro Person: ' + chf(P.famAnteil) + ' im geteilten Zimmer. In der Lücke zahlen zwei Personen zusammen ' + chf(Math.round(rdLR(P.famPausch - P.sparEin))) + '.</li></ul>' +
-      '<p style="margin:10px 0 2px"><b>Wofür das Geld gebraucht wird</b></p>' +
-      '<p style="margin:2px 0 10px">Damit decken wir die laufenden Kosten des Chalets: Gästekarten, Strom, Wasser, Abwasser und Öl, dazu Miete, Unterhalt und Abschreibung.</p>' +
-      '<p style="margin:10px 0 0"><b>Nicht enthalten:</b> Die Endreinigung von ' + chf(P.reinigung) + '. Sie kommt immer dazu, bei Selbstreinigung erst nach der Familienstaffel.</p>' +
+    '<details><summary>💰 Wofür benötigen wir dieses Geld?</summary><div class="rows">' +
+      '<p>Damit decken wir die laufenden Kosten des Chalets: Gästekarten, Strom, Wasser, Abwasser und Öl, dazu Miete, Unterhalt (zum Beispiel der Maler), Reparaturen (zum Beispiel eine defekte Heizung), Anschaffungen und Abschreibung.</p>' +
     '</div></details>';
 }
-const rdLR = (v) => v * (100 - P.lueckeRabatt) / 100;
 
 document.getElementById("reset").addEventListener("click", () => { S = Object.assign({}, EMPTY); ARR = ""; DEP = ""; initKalenderMonat(); notice = ""; render(); renderKalender(); window.scrollTo({ top: 0 }); });
 function wendeEinstellungenAn(j) {
