@@ -1039,21 +1039,19 @@ document.getElementById("result").addEventListener("change", (e) => {
     render();
   }
 });
-let ELTERN_ZEIT = 0;
+let ZONE_ZAHL = 0, ZONE_ZEIT = 0;
 function elternUmschalten() {
-  const t = Date.now();
-  if (t - ELTERN_ZEIT < 600) return;
-  ELTERN_ZEIT = t;
   ELTERN = !ELTERN;
   render();
   if (ELTERN) { const b = document.getElementById("elternBox"); if (b) b.scrollIntoView({ block: "center" }); }
 }
-let ZONE_TAP = 0;
-document.getElementById("result").addEventListener("dblclick", (e) => { if (e.target.closest("#elternZone")) elternUmschalten(); });
+// Versteckte Fläche: 3 schnelle Klicks/Tipps öffnen die Einladung, 2 schliessen sie wieder
 document.getElementById("result").addEventListener("pointerup", (e) => {
-  if (e.pointerType !== "touch" || !e.target.closest("#elternZone")) return;
+  if (!e.target.closest("#elternZone")) return;
   const t = Date.now();
-  if (t - ZONE_TAP < 450) { ZONE_TAP = 0; elternUmschalten(); } else ZONE_TAP = t;
+  ZONE_ZAHL = (t - ZONE_ZEIT < 600) ? ZONE_ZAHL + 1 : 1;
+  ZONE_ZEIT = t;
+  if ((!ELTERN && ZONE_ZAHL >= 3) || (ELTERN && ZONE_ZAHL >= 2)) { ZONE_ZAHL = 0; elternUmschalten(); }
 });
 document.getElementById("result").addEventListener("change", (e) => {
   if (e.target && e.target.id === "empf") { EMPF = KINDER.indexOf(e.target.value) >= 0 ? e.target.value : ""; render(); }
