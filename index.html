@@ -189,6 +189,7 @@
   details summary { cursor: pointer; font-weight: 700; min-height: 44px; display: flex; align-items: center; }
   details > summary::after { content: "💡"; margin-left: 10px; font-weight: 400; }
   details .rows { display: flex; flex-direction: column; gap: 8px; }
+  .eltern-zone { min-height: 52px; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; }
   .pay { border: 2px solid var(--accent); border-radius: 6px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
   .pay strong { font-size: 1.1rem; }
   .pay .iban { font-weight: 700; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
@@ -609,6 +610,7 @@ function kalenderKlick(k) {
   else if (k === ARR) { ARR = ""; }
   else if (kannAbreise(k)) { DEP = k; }
   else if (kannAnreise(k)) { ARR = k; DEP = ""; }
+  ELTERN = false;
   S.nights = (ARR && DEP) ? diffDays(ARR, DEP) : null;
   S.luecke = !!(ARR && DEP && P.lueckeRabatt > 0 && GAPSTART.get(ARR) === DEP);
   S.selbstOK = ruheStay() && !S.luecke;
@@ -833,6 +835,25 @@ function einladenBox(r) {
     nb(chf(r.FZ)) + ' + ' + nb(chf(r.HZ)) + ' = <b>' + nb(chf(sum)) + '</b>.</p></div></details>';
 }
 
+let ELTERN = false;
+let EMPF = "";
+const KINDER = ["Jerome", "Deborah", "Miriam", "Manuel"];
+function einladungText() {
+  return ["Hallo " + EMPF, "", "Wir laden euch ein:", "", "Anreise: " + fmtTagV(ARR), "Abreise: " + fmtTagV(DEP) + " (" + S.nights + " Nächte)", "", "Ihr seid unsere Gäste, wir tragen alle Kosten.", "", "Gruss", "Eltern"].join("\n");
+}
+function elternKasten() {
+  if (!(ARR && DEP)) return "";
+  const ok = EMPF !== "";
+  const t = ok ? einladungText() : "";
+  LETZTE_EINLADUNG = t;
+  return '<div class="pay" id="elternBox"><strong>💌 Einladung senden</strong>' +
+    '<span class="hint">Nur für die Eltern. Ihr ladet ein Kind mit Familie ein und tragt alle Kosten. WhatsApp öffnet sich mit dem fertigen Text, dort wählst du die Person.</span>' +
+    '<div class="field"><label for="empf">Wen ladet ihr ein?</label><select id="empf" class="' + (ok ? "done" : "missing") + '"><option value="">– wählen –</option>' +
+    KINDER.map((n) => '<option value="' + n + '"' + (n === EMPF ? " selected" : "") + '>' + n + '</option>').join("") + '</select></div><div class="btns">' +
+    (ok ? '<a class="btn" href="https://wa.me/?text=' + encodeURIComponent(t) + '" target="_blank" rel="noopener">Per WhatsApp senden</a>' : '<span class="btn off" aria-disabled="true">Per WhatsApp senden</span>') +
+    '<button type="button" class="btn" id="copyEinl"' + (ok ? "" : " disabled") + '>Einladung kopieren</button></div></div>';
+}
+let LETZTE_EINLADUNG = "";
 function anfrageKasten(r) {
   if (!(ARR && DEP)) return "";
   const t = anfrageText(r);
@@ -946,10 +967,11 @@ function render() {
     '<details><summary>🧮 So wird gerechnet</summary><div class="rows"><table><tbody>' + det + '</tbody></table>' + notes + '</div></details>' +
     '<details><summary>💰 Wofür benötigen wir dieses Geld?</summary><div class="rows">' +
       '<p>Damit decken wir die laufenden Kosten des Chalets: Gästekarten, Strom, Wasser, Abwasser und Öl, dazu Miete, Unterhalt (zum Beispiel der Maler), Reparaturen (zum Beispiel eine defekte Heizung), Anschaffungen und Abschreibung.</p>' +
-    '</div></details>';
+    '</div></details>' +
+    '<div id="elternZone" class="eltern-zone" aria-hidden="true"></div>' + (ELTERN ? elternKasten() : '');
 }
 
-document.getElementById("reset").addEventListener("click", () => { S = Object.assign({}, EMPTY); ARR = ""; DEP = ""; initKalenderMonat(); notice = ""; render(); renderKalender(); window.scrollTo({ top: 0 }); });
+document.getElementById("reset").addEventListener("click", () => { ELTERN = false; EMPF = ""; S = Object.assign({}, EMPTY); ARR = ""; DEP = ""; initKalenderMonat(); notice = ""; render(); renderKalender(); window.scrollTo({ top: 0 }); });
 function wendeEinstellungenAn(j) {
   if (!j || typeof j !== "object") return;
   Object.keys(P).forEach((k) => {
@@ -987,9 +1009,30 @@ document.getElementById("result").addEventListener("change", (e) => {
     render();
   }
 });
+let ELTERN_ZEIT = 0;
+function elternUmschalten() {
+  const t = Date.now();
+  if (t - ELTERN_ZEIT < 600) return;
+  ELTERN_ZEIT = t;
+  ELTERN = !ELTERN;
+  render();
+  if (ELTERN) { const b = document.getElementById("elternBox"); if (b) b.scrollIntoView({ block: "center" }); }
+}
+let ZONE_TAP = 0;
+document.getElementById("result").addEventListener("dblclick", (e) => { if (e.target.closest("#elternZone")) elternUmschalten(); });
+document.getElementById("result").addEventListener("pointerup", (e) => {
+  if (e.pointerType !== "touch" || !e.target.closest("#elternZone")) return;
+  const t = Date.now();
+  if (t - ZONE_TAP < 450) { ZONE_TAP = 0; elternUmschalten(); } else ZONE_TAP = t;
+});
+document.getElementById("result").addEventListener("change", (e) => {
+  if (e.target && e.target.id === "empf") { EMPF = KINDER.indexOf(e.target.value) >= 0 ? e.target.value : ""; render(); }
+});
 document.getElementById("result").addEventListener("click", (e) => {
   const b = e.target.closest("#copyIban");
   if (b) { kopiere(IBAN.replace(/\s+/g, ""), b, "IBAN kopiert", "IBAN kopieren"); return; }
+  const ce = e.target.closest("#copyEinl");
+  if (ce) { kopiere(LETZTE_EINLADUNG, ce, "Einladung kopiert", "Einladung kopieren"); return; }
   const q = e.target.closest("#copyReq");
   if (q) kopiere(LETZTE_ANFRAGE, q, "Anfrage kopiert", "Anfrage kopieren");
   const fb = e.target.closest("#copyFam");
