@@ -322,7 +322,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "1.98";
+let VERSION = "1.99";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -644,7 +644,7 @@ function renderKalender() {
       else if (kannAnreise(k)) ok = true;
     }
     if (ARR && DEP && k > ARR && k < DEP) b.classList.add("in");
-    if (!BELEGT.has(k) && k >= heute && GAPSPERR.has(k)) b.classList.add("sperr");
+    if (!BELEGT.has(k) && k >= heute && GAPSPERR.has(k)) b.classList.add("occ");
     else if (!BELEGT.has(k) && k >= heute && GAP.has(k)) b.classList.add("gap");
     if (spitzVon(k)) b.classList.add("spitz");
     else if (istHoch(k)) b.classList.add("hoch");
@@ -657,7 +657,7 @@ function renderKalender() {
     if (!sm && rb && !ARR && GAPSTART.has(k) && !GAPSPERR.has(k)) sm = rb;                       // Beginn einer Luecke
     if (!sm && rb && ARR && !DEP && GAPSTART.get(ARR) === k) sm = rb;        // Abreisetag fuer die ganze Luecke
     b.innerHTML = '<span>' + d + '</span>' + (sm ? '<small>' + sm + '</small>' : '');
-    b.setAttribute("aria-label", fmtTag(k) + (istArr ? ", Anreise" : istDep ? ", Abreise" : BELEGT.has(k) ? ", belegt" : "") + (spitzVon(k) ? ", Spitzenzeit" : "") + (GAPSPERR.has(k) ? ", Lücke gesperrt" : ""));
+    b.setAttribute("aria-label", fmtTag(k) + (istArr ? ", Anreise" : istDep ? ", Abreise" : (BELEGT.has(k) || GAPSPERR.has(k)) ? ", nicht verfügbar" : "") + (spitzVon(k) ? ", Spitzenzeit" : "") + "");
     if (ok) b.addEventListener("click", () => kalenderKlick(k));
     g.appendChild(b);
   }
@@ -674,16 +674,15 @@ function renderKalender() {
     let h = "";
     if (hochOn) h += '<p><i class="sw sw-hoch"></i><b>Hochsaison</b>' + (HOCH_MONATE.length ? " (" + HOCH_MONATE.map((m) => MONATE[m - 1]).join(", ") + ")" : "") + ": Airbnb-Zeit, bitte meiden. Anfrage trotzdem möglich.</p>";
     if (P.lueckeRabatt > 0) h += '<p><i class="sw sw-gap"></i><b>Lücke:</b> nur die ganze Lücke ist buchbar, vom ersten bis zum letzten freien Tag = ' + P.lueckeRabatt + " % Rabatt auf die Übernachtungen. Nur 2 Personen, keine Gäste, nur Zimmer 2, mit Kleinkind zusätzlich Zimmer 3. Eigene Bettwäsche sowie Tücher für Küche und Bad mitbringen.</p>";
-    if (GAPSPERR.size > 0) h += '<p><i class="sw sw-sperr"></i><b>Lücke gesperrt</b> (' + LUECKE_SPERR.map((m) => MONATE[m - 1]).join(", ") + "): nie buchbar.</p>";
     if (RUHE.length) h += '<p><i class="sw sw-ruhe"></i><b>Eigene Wäsche</b> (' + RUHE.map((a) => fmtMD(a[0]) + " bis " + fmtMD(a[1])).join(" und ") + "): Reinigung selbst möglich, ohne externe Gäste.</p>";
     if (SPITZ.length) h += '<p><i class="sw sw-spitz"></i><b>Spitzenzeit:</b> Preis auf Anfrage.</p>';
-    h += '<p><i class="sw sw-occ"></i>belegt</p>';
+    h += '<p><i class="sw sw-occ"></i>nicht verfügbar</p>';
     el.innerHTML = h;
     el.hidden = h === "";
   }
   {
     const ruhe = RUHE.length ? RUHE.map((a) => fmtMD(a[0]) + " bis " + fmtMD(a[1])).join(" und ") : "";
-    let h = '<details class="cal-info"><summary>🧩 Lücken und Rabatt</summary><p>Lücken bis ' + LUECKE_MAX + " Nächte kann Airbnb nicht vermieten (Mindestaufenthalt dort " + (LUECKE_MAX + 1) + " Nächte). Wer die ganze Lücke bucht, vom ersten bis zum letzten freien Tag, zahlt für die Übernachtungen " + P.lueckeRabatt + " Prozent weniger. Die Reinigung bleibt gleich. Lücken müssen immer ganz gefüllt werden: Anreise am ersten und Abreise am letzten Tag der Lücke, einzelne Nächte daraus sind nicht buchbar." + (LUECKE_SPERR.length ? " In den Monaten " + LUECKE_SPERR.map((m) => MONATE[m - 1]).join(" und ") + " sind Lücken für die Familie nie buchbar. Für alle ganzen Lücken gilt: nur 2 Personen, keine Gäste, nur Zimmer 2, mit Kleinkind zusätzlich Zimmer 3. Eigene Bettwäsche sowie Tücher für Küche und Bad mitbringen." : "") + (SPITZ.length ? " Rot markiert sind Spitzenzeiten, in denen wir nur zu hohen Preisen vermieten. Dort gibt es keinen Familienpreis, nur eine Anfrage, und der Preis wird von den Eltern festgelegt." : "") + "</p></details>";
+    let h = '<details class="cal-info"><summary>🧩 Lücken und Rabatt</summary><p>Lücken bis ' + LUECKE_MAX + " Nächte kann Airbnb nicht vermieten (Mindestaufenthalt dort " + (LUECKE_MAX + 1) + " Nächte). Wer die ganze Lücke bucht, vom ersten bis zum letzten freien Tag, zahlt für die Übernachtungen " + P.lueckeRabatt + " Prozent weniger. Die Reinigung bleibt gleich. Lücken müssen immer ganz gefüllt werden: Anreise am ersten und Abreise am letzten Tag der Lücke, einzelne Nächte daraus sind nicht buchbar." + " Für alle ganzen Lücken gilt: nur 2 Personen, keine Gäste, nur Zimmer 2, mit Kleinkind zusätzlich Zimmer 3. Eigene Bettwäsche sowie Tücher für Küche und Bad mitbringen." + (SPITZ.length ? " Rot markiert sind Spitzenzeiten, in denen wir nur zu hohen Preisen vermieten. Dort gibt es keinen Familienpreis, nur eine Anfrage, und der Preis wird von den Eltern festgelegt." : "") + "</p></details>";
     if (RUHE.length) {
       h += '<details class="cal-info"><summary>🧹 Selbstreinigung (blaue Zeiten)</summary><ul>' +
         "<li>Möglich vom " + ruhe.replace(" und ", " und vom ") + ".</li>" +
@@ -719,7 +718,7 @@ function renderKalender() {
   warn.hidden = msgs.length === 0;
   warn.textContent = msgs.join(" ");
   document.getElementById("calHint").textContent = BELEGT_OK
-    ? "👉 Erst Anreise-, dann Abreisetag antippen. " + P.minNaechte + " bis " + P.maxNaechte + " Nächte. Graue, durchgestrichene Tage sind belegt. Die Belegung wird alle paar Stunden aktualisiert."
+    ? "👉 Erst Anreise-, dann Abreisetag antippen. " + P.minNaechte + " bis " + P.maxNaechte + " Nächte. Graue, durchgestrichene Tage sind nicht verfügbar. Die Belegung wird alle paar Stunden aktualisiert."
     : "Die Belegung konnte nicht geladen werden, alle Tage erscheinen frei. Der Termin ist nur eine Anfrage, die Eltern prüfen ihn.";
 }
 document.getElementById("calPrev").addEventListener("click", () => { calM--; if (calM < 0) { calM = 11; calY--; } renderKalender(); });
