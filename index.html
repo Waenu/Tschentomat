@@ -839,7 +839,28 @@ let ELTERN = false;
 let EMPF = "";
 const KINDER = ["Jerome", "Deborah", "Miriam", "Manuel"];
 function einladungText() {
-  return ["Hallo " + EMPF, "", "Wir laden euch ein:", "", "Anreise: " + fmtTagV(ARR), "Abreise: " + fmtTagV(DEP) + " (" + S.nights + " Nächte)", "", "Ihr seid unsere Gäste, wir tragen alle Kosten.", "", "Gruss", "Eltern"].join("\n");
+  const x = derive(S);
+  const allein = S.wer === "Nur ich";
+  const WIE = {
+    "Nur ich": "du alleine",
+    "Ich und Partner": "ihr als Paar",
+    "Ich und 1 Kind": "du mit 1 Kind",
+    "Ich und 2 Kinder": "du mit 2 Kindern",
+    "Ich, Partner und 1 Kind": "ihr als Familie mit 1 Kind",
+    "Ich, Partner und 2 Kinder": "ihr als Familie mit 2 Kindern"
+  };
+  const wer = S.wer === MFG ? S.fam + " Personen aus der Familie" : (WIE[S.wer] || S.wer);
+  const z = ["Hallo " + EMPF, "", allein ? "Wir laden dich ein:" : "Wir laden euch ein:", "", "Anreise: " + fmtTagV(ARR), "Abreise: " + fmtTagV(DEP) + " (" + S.nights + " Nächte)", ""];
+  z.push("Eingeladen: " + wer + (x.KK > 0 ? ", davon " + x.KK + " im Kinderbettchen oder bei den eigenen Eltern" : ""));
+  z.push("Keine weiteren Gäste");
+  z.push("Zimmer 1 abgeschlossen: " + (S.spar === "Ja" ? "Ja" : "Nein"));
+  if (x.SM) z.push("Eigene Wäsche und Selbstreinigung: " + (S.selbst === "Ja" ? "Ja" : "Nein"));
+  z.push("");
+  z.push(allein ? "Du bist unser Gast, wir tragen alle Kosten." : "Ihr seid unsere Gäste, wir tragen alle Kosten.");
+  z.push("");
+  z.push("Gruss");
+  z.push("Eltern");
+  return z.join("\n");
 }
 function elternKasten() {
   if (!(ARR && DEP)) return "";
