@@ -831,14 +831,14 @@ function endreinigungInfo(r) {
   const nb = (t) => '<span style="white-space:nowrap">' + t + '</span>';
   const au = r.TOT;
   const R = P.reinigung;
-  return '<details><summary>🪣 Endreinigung später: was kommt noch dazu?</summary><div class="rows">' +
+  return '<div class="note"><b>🪣 Endreinigung später: was kommt noch dazu?</b>' +
     '<p>Jetzt überweist ihr nur den Aufenthalt: ' + nb('<b>' + chf(au) + '</b>') + '. Die Endreinigung kommt später dazu, sobald die Familienstaffel endet, also sobald nach einer Reisegruppe die Eltern oder ein Airbnb-Gast kommen. Sie beträgt höchstens ' + nb(chf(R)) + '. Kommen nach euch weitere Reisegruppen, wird sie geteilt, und euer Anteil sinkt.</p>' +
     '<p><b>Nur als Info, Total für euch:</b></p><ul style="margin:2px 0">' +
     '<li>Ihr seid allein: ' + nb(chf(au)) + ' + ' + nb(chf(R)) + ' = <b>' + nb(chf(au + R)) + '</b></li>' +
     '<li>1 weitere Reisegruppe: ' + nb(chf(au)) + ' + ' + nb(chf(R / 2)) + ' = <b>' + nb(chf(au + R / 2)) + '</b></li>' +
     '<li>2 weitere Reisegruppen: ' + nb(chf(au)) + ' + ' + nb(chf(R / 3)) + ' = <b>' + nb(chf(au + R / 3)) + '</b></li></ul>' +
     '<p class="hint">Gleichmässig auf die Reisegruppen verteilt gerechnet. Die genaue Aufteilung regeln die Reisegruppen untereinander.</p>' +
-    '</div></details>';
+    '</div>';
 }
 
 function einladenBox(r) {
@@ -995,7 +995,7 @@ function render() {
   res.innerHTML =
     '<h2>💰 Preis</h2>' +
     '<div class="total"><span class="big">' + chf(r.TOT) + '</span><span class="small">für ' + x.nights + ' ' + (x.nights === 1 ? "Nacht" : "Nächte") + ', ' + x.PT + ' ' + (x.PT === 1 ? "Person" : "Personen") + ' mit Bett' + (x.KK > 0 ? ', ' + x.KK + (x.KK === 1 ? ' Kind' : ' Kinder') + ' im Kinderbettchen oder bei den eigenen Eltern' : '') + '</span></div>' +
-    (x.SB ? '<p class="note"><b>🧹 Selbstreinigung:</b> Ihr zahlt den Eltern jetzt keine Reinigung. Regeln siehe «🧹 Selbstreinigung» und «🪣 Endreinigung» oben im Kalender.</p>' + endreinigungInfo(r) : '') +
+    (x.SB ? '<p class="note"><b>🧹 Selbstreinigung:</b> Ihr zahlt den Eltern jetzt keine Reinigung. Regeln siehe «🧹 Selbstreinigung» und «🪣 Endreinigung» oben im Kalender.</p>' : '') +
     (x.LR > 0 ? '<p class="note"><b>Lückenpreis:</b> Euer Aufenthalt füllt eine Lücke zwischen zwei Airbnb-Gästen. Die Übernachtungen sind ' + x.LR + ' Prozent günstiger. Die Reinigung bleibt gleich.</p>' : '') +
     (ARR && DEP ? '<p class="hint">' + esc(fmtTag(ARR)) + ' bis ' + esc(fmtTag(DEP)) + '</p>' : '') +
     '<div class="pay"><strong>🏦 Die Familie überweist den ganzen Betrag: ' + chf(r.TOT) + '</strong>' +
@@ -1009,7 +1009,7 @@ function render() {
     '<table><tbody>' + who + '</tbody></table>' +
     (x.GE >= 1 ? einladenBox(r) : '') +
     anfrageKasten(r) +
-    '<details><summary>🧮 So wird gerechnet</summary><div class="rows"><table><tbody>' + det + '</tbody></table>' + notes + '</div></details>' +
+    '<details><summary>🧮 So wird gerechnet</summary><div class="rows"><table><tbody>' + det + '</tbody></table>' + notes + (x.SB ? endreinigungInfo(r) : '') + '</div></details>' +
     '<details><summary>💰 Wofür benötigen wir dieses Geld?</summary><div class="rows">' +
       '<p>Damit decken wir die laufenden Kosten des Chalets: Gästekarten, Strom, Wasser, Abwasser und Öl, dazu Miete, Unterhalt (zum Beispiel der Maler), Reparaturen (zum Beispiel eine defekte Heizung), Anschaffungen und Abschreibung.</p>' +
     '</div></details>' +
