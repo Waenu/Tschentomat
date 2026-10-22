@@ -1,23 +1,33 @@
 #!/usr/bin/env python3
-"""Meldet neue Luecken (2-3 freie Naechte zwischen zwei Buchungen) in den gesperrten Monaten
-(einstellungen.json: lueckeSperrMonate) als GitHub-Issue, damit in PriceLabs reagiert werden kann.
+"""Meldet neue Luecken (2-3 freie Naechte zwischen zwei Buchungen) als GitHub-Issue, damit in
+PriceLabs reagiert werden kann. Gemeldet werden Luecken ausserhalb der Selbstreinigungs-Zeiten
+(dort ist die Familienstaffel nicht moeglich; einstellungen.json: selbstReinigung) sowie Luecken
+in den Monaten aus lueckeSperrMonate. Die Familie kann diese erst lueckeVorlaufTage vor Beginn buchen.
 Jede Luecke wird nur einmal gemeldet (Dedupe ueber den Issue-Titel, auch geschlossene).
 Ohne GITHUB_TOKEN laeuft das Skript im Probelauf und gibt nur aus."""
 import json, os, sys, urllib.request
 from datetime import date, datetime, timedelta
 
 cfg = json.load(open("einstellungen.json", encoding="utf-8"))
-monate = cfg.get("lueckeSperrMonate", [1, 2])
+monate = cfg.get("lueckeSperrMonate", [])
+ruhe = cfg.get("selbstReinigung", [])
+vorlauf = cfg.get("lueckeVorlaufTage", 4)
 n_min = cfg.get("minNaechte", 2)
 n_max = cfg.get("lueckeMax", 3)
 heute = date.today()
 belegt = sorted(datetime.strptime(k, "%Y-%m-%d").date() for k in json.load(open("belegt.json", encoding="utf-8"))["belegt"])
 
+def in_ruhe(d):
+    md = d.strftime("%m-%d")
+    return any(a <= md <= e for a, e in ruhe)
+
 luecken = []
 for a, b in zip(belegt, belegt[1:]):
     n = (b - a).days - 1
     start = a + timedelta(days=1)
-    if n_min <= n <= n_max and start >= heute and start.month in monate:
+    ende = b - timedelta(days=1)
+    staffel_zeit = in_ruhe(start) and in_ruhe(ende)
+    if n_min <= n <= n_max and start >= heute and (start.month in monate or not staffel_zeit):
         luecken.append((start, b, n))
 
 def titel(start, ende, n):
@@ -34,7 +44,7 @@ def call(url, data=None):
         return json.load(r)
 
 if not luecken:
-    print("Keine Lücken in den Monaten", monate)
+    print("Keine meldepflichtigen Lücken")
     sys.exit(0)
 bekannt = set()
 if token and repo:
@@ -52,7 +62,7 @@ for start, b, n in luecken:
         continue
     text = ("Zwischen zwei Buchungen sind %d Nächte frei: erste freie Nacht %s, Abreise der nächsten Buchung am %s.\n\n"
             "Airbnb-Mindestaufenthalt in PriceLabs für diese Tage bei Bedarf auf %d Nächte senken. "
-            "Im Tschent-O-Mat ist die Lücke für die Familie gesperrt.") % (n, start.strftime("%d.%m.%Y"), b.strftime("%d.%m.%Y"), n)
+            "Im Tschent-O-Mat ist die Lücke für die Familie bis %d Tage vor Beginn gesperrt.") % (n, start.strftime("%d.%m.%Y"), b.strftime("%d.%m.%Y"), n, vorlauf)
     if token and repo:
         call(api, {"title": t, "body": text})
         print("Gemeldet:", t)
