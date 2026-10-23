@@ -31,7 +31,7 @@ Preisrechner für die Familie, Chalet Tschenten, Adelboden.
 | `lueckeSperrMonate` | Monate (Liste), in denen Lücken für die Familie immer gesperrt sind (violett, nie freigegeben). Massgebend ist der Monat der ersten Nacht der Lücke |
 | `lueckeMaxPersonen` | Ganze Lücke: höchstens so viele Personen mit Bett, zusätzlich `lueckeMaxKleinkinder` Kleinkind(er) im Kinderbettchen. Dazu: keine Gäste, nur Zimmer 2, eigene Wäsche, Reinigung 240 |
 | `lueckeRabatt` | Prozent Rabatt auf die Übernachtungen, wenn die ganze Lücke gebucht wird (Reinigung bleibt gleich) |
-| `hochsaisonMonate` | Ganze Monate, die jedes Jahr gelb markiert werden. Februar ist `[2]`, mehrere zum Beispiel `[2, 7]` |
+| `hochsaisonMonate` | Ganze Monate, die jedes Jahr gelb markiert werden. Januar ist `[1]`, Februar `[2]`, mehrere zum Beispiel `[2, 7]` |
 | `spitzenzeiten` | Zeiten, in denen nur zu hohen Preisen vermietet wird (zum Beispiel Skirennen). Rot markiert, ohne Familienpreis: nur «Preis auf Anfrage». Format: `[["2027-01-15","2027-01-17","Skirennen"]]` (von, bis, Name) |
 | `hochsaison` | Zeiträume, die gelb markiert werden. Format: `[["2026-12-19","2027-01-03"], ["2027-02-06","2027-02-20"]]` (von, bis, beide eingeschlossen) |
 
