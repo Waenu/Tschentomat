@@ -266,7 +266,7 @@
   .start { display: flex; flex-direction: column; gap: 10px; }
   .bigbtn { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; min-height: 96px; font: inherit; font-size: 1.2rem; font-weight: 700; color: var(--accent); background: var(--surface); border: 3px solid var(--accent); border-radius: 12px; cursor: pointer; padding: 10px 16px; }
   .bigbtn .bi { font-size: 1.7rem; line-height: 1; }
-  .bigbtn.main, .bigbtn.on { background: var(--accent); color: var(--accent-fg); }
+  .bigbtn.on { background: var(--accent); color: var(--accent-fg); }
   #hilfe { display: flex; flex-direction: column; gap: 12px; }
   #hilfe[hidden], #rechner[hidden] { display: none; }
   #rechner { display: flex; flex-direction: column; gap: 14px; }
@@ -293,10 +293,7 @@
 
   <nav class="start" aria-label="Start">
     <button type="button" class="bigbtn" id="btnHilfe" aria-expanded="false" aria-controls="hilfe"><span class="bi" aria-hidden="true">💡</span>Ich benötige Hilfe</button>
-    <button type="button" class="bigbtn main" id="btnReserv" aria-controls="rechner"><span class="bi" aria-hidden="true">📅</span>Ich reserviere jetzt</button>
-  </nav>
-
-  <div id="hilfe" hidden>
+    <div id="hilfe" hidden>
     <details class="card" id="b-benutzung">
       <summary>📖 Benutzung</summary>
       <div class="rows">
@@ -324,7 +321,9 @@
         <details class="sub" id="b-geld"><summary>💰 Wofür benötigen wir dieses Geld?</summary><div class="bc" id="bc-geld"></div></details>
       </div>
     </details>
-  </div>
+    </div>
+    <button type="button" class="bigbtn main" id="btnReserv" aria-controls="rechner"><span class="bi" aria-hidden="true">📅</span>Ich reserviere jetzt</button>
+  </nav>
 
   <div id="rechner" hidden>
   <div class="legend" aria-hidden="true">
@@ -369,7 +368,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "3.03";
+let VERSION = "3.04";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -711,7 +710,8 @@ function springeZu(id) {
   const t = document.getElementById(id), bg = document.getElementById("b-begriffe"), hp = document.getElementById("hilfe");
   if (!t || !bg || !hp) return;
   if (!ZURUECK) ZURUECK = { y: window.scrollY, hilfeAn: !hp.hidden, rechnerAn: !document.getElementById("rechner").hidden, offen: [] };
-  ZURUECK.offen.push([bg, bg.open], [t, t.open]);
+  const bz = document.getElementById("b-benutzung");
+  ZURUECK.offen.push([bg, bg.open], [t, t.open], [bz, bz.open]); bz.open = false;
   document.querySelectorAll("#b-begriffe details.sub").forEach((o) => { if (o !== t && o.open) { ZURUECK.offen.push([o, true]); o.open = false; } });
   setRechner(false); setHilfe(true); bg.open = true; t.open = true;
   t.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -825,6 +825,11 @@ document.addEventListener("click", (e) => {
   if (b) { e.preventDefault(); springeZu(b.dataset.info); return; }
   if (e.target.closest("#zurueck")) zurueckGehen();
 });
+// «Benutzung» und «Begriffe»: immer nur eines offen
+document.querySelectorAll("#b-benutzung > summary, #b-begriffe > summary").forEach((sm) => sm.addEventListener("click", () => {
+  const d = sm.parentElement;
+  if (!d.open) ["b-benutzung", "b-begriffe"].forEach((id) => { const o = document.getElementById(id); if (o !== d) o.open = false; });
+}));
 // Unter «Begriffe» ist immer nur ein Eintrag offen
 document.querySelectorAll("#b-begriffe details.sub > summary").forEach((sm) => sm.addEventListener("click", () => {
   const d = sm.parentElement;
