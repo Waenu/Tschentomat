@@ -196,6 +196,7 @@
   .eltern-zone span { padding: 8px 14px; }
   .pay { border: 2px solid var(--accent); border-radius: 6px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
   .pay strong { font-size: 1.1rem; }
+  .pay .rot-txt { color: var(--spitz-line); }
   .pay .iban { font-weight: 700; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
   .pay button { margin-top: 4px; font: inherit; font-weight: 700; color: var(--accent); background: transparent; border: 2px solid var(--accent); border-radius: 6px; min-height: 48px; padding: 8px 14px; cursor: pointer; }
   .split-h { margin: 6px 0 0; font-size: 1rem; }
@@ -334,6 +335,7 @@
         <details class="sub" id="b-luecke"><summary>🧩 Lücken</summary><div class="bc" id="bc-luecke"></div></details>
         <details class="sub" id="b-ruhe"><summary>🧹 Selber reinigen</summary><div class="bc" id="bc-ruhe"></div></details>
         <details class="sub" id="b-endrein"><summary>🪣 Endreinigung</summary><div class="bc" id="bc-endrein"></div></details>
+        <details class="sub" id="b-zahlung"><summary>🏦 Zahlung</summary><div class="bc" id="bc-zahlung"></div></details>
         <details class="sub" id="b-rechnen"><summary>🧮 So wird gerechnet</summary><div class="bc" id="bc-rechnen"></div></details>
         <details class="sub" id="b-geld"><summary>💰 Wofür benötigen wir dieses Geld?</summary><div class="bc" id="bc-geld"></div></details>
       </div>
@@ -389,7 +391,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "3.20";
+let VERSION = "3.21";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -696,6 +698,7 @@ function lueckenRegeln() {
 function begriffeFuellen() {
   const ruhe = RUHE.length ? RUHE.map((a) => fmtMD(a[0]) + " bis " + fmtMD(a[1])).join(" und ") : "";
   const set = (id, html) => { const e = document.getElementById(id); if (e) e.innerHTML = html; };
+  set("bc-zahlung", "<p>Die Familie überweist den ganzen Betrag, auch wenn Gäste dabei sind. Spätestens " + ZAHL_TAGE + " Tage nach dem letzten Ferientag, ohne Aufforderung.</p><p>" + esc(BANK) + "</p><p>Bitte mit Name und Datum der Ferien überweisen.</p>");
   set("bc-wunschtermin", "<p>Den Wunschtermin wählt ihr im Kalender. Wie das geht und was die Farben bedeuten, steht unter «Erklärung Kalender». " + symBtn("b-kalender", "🗓️") + "</p>");
   set("bc-luecke", "<p><b>Ein Angebot für gestresste Paare 😉</b> Lücken bis " + LUECKE_MAX + " Nächte kann Airbnb nicht vermieten (Mindestaufenthalt dort " + (LUECKE_MAX + 1) + " Nächte). Wer die ganze Lücke bucht, vom ersten bis zum letzten freien Tag, zahlt für die Übernachtungen " + P.lueckeRabatt + " Prozent weniger. Einzelne Nächte daraus sind nicht buchbar. Es gilt:</p>" + lueckenRegeln());
   set("bc-ruhe", RUHE.length ? "<ul><li>Möglich vom " + ruhe.replace(" und ", " und vom ") + ".</li>" +
@@ -1150,10 +1153,8 @@ function render() {
   if (x.LR > 0) notes += '<p class="note">Lückenpreis: Alle Nachtpreise sind ' + x.LR + ' Prozent günstiger, auf ganze Franken gerundet.</p>';
   if (x.GE >= 1) notes += '<p class="note">Reinigung aufgeteilt: ' + S.reinig + '.</p>';
   const zahlung = '<div class="pay"><strong>Die Familie überweist den ganzen Betrag: ' + chf(r.TOT) + '</strong>' +
-      '<span>Spätestens ' + ZAHL_TAGE + ' Tage nach dem letzten Ferientag, ohne Aufforderung.</span>' +
-      '<span>' + esc(BANK) + '</span>' +
+      '<span class="rot-txt">Spätestens ' + ZAHL_TAGE + ' Tage nach dem letzten Ferientag, ohne Aufforderung.</span>' +
       '<span class="iban">IBAN: ' + esc(IBAN) + '</span>' +
-      '<span class="hint">Bitte mit Name und Datum der Ferien überweisen.</span>' +
       '<button type="button" id="copyIban">IBAN kopieren</button></div>';
   const aufteilung = x.GE >= 1 ? '<h3 class="split-h">💸 Aufteilung unter euch</h3>' +
     '<p class="hint">Das Geld bei den Gästen einsammeln ist eure Sache. Die Tabelle zeigt, wie viel jeder schuldet.</p>' +
@@ -1167,7 +1168,7 @@ function render() {
     '<details><summary>' + symBtn('b-rechnen', '🧮') + ' So wird gerechnet</summary><div class="rows"><table><tbody>' + det + '</tbody></table>' + notes + (x.SB ? endreinigungInfo(r) : '') + '</div></details>' +
     aufteilung +
     anfrageKasten(r) +
-    '<h3 class="split-h">🏦 Zahlung</h3>' +
+    '<h3 class="split-h">' + symBtn('b-zahlung', '🏦') + ' Zahlung</h3>' +
     zahlung +
     '<details><summary>' + symBtn('b-geld', '💰') + ' Wofür benötigen wir dieses Geld?</summary><div class="rows">' + GELD_TEXT +
     '</div></details>' +
