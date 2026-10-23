@@ -460,7 +460,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "3.62";
+let VERSION = "3.63";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -930,7 +930,7 @@ function renderKalender() {
   spEl.textContent = sp ? "Spitzenzeit" + (sp[2] ? " (" + sp[2] + ")" : "") + ": In dieser Zeit vermieten wir nur zu hohen Preisen. Es gibt dafür keinen Familienpreis, der Preis wird von den Eltern festgelegt. Eine Anfrage ist trotzdem möglich." : "";
   const lrEl = document.getElementById("calLRegeln");
   lrEl.hidden = !S.luecke;
-  lrEl.innerHTML = S.luecke ? "<strong>Ganze Lücke: Sonderpreis für die ganze Lücke</strong> " + symBtn("b-luecke", "🧩 Mehr erfahren") : "";
+  lrEl.innerHTML = S.luecke ? symBtn("b-luecke", "🧩") + " Alles über Lücken erfahren" : "";
   const ruheEl = document.getElementById("calRuhe");
   let monatRuhe = false;
   for (let d = 1, nt = new Date(Date.UTC(calY, calM + 1, 0)).getUTCDate(); d <= nt; d++) if (istRuhe(dkey(calY, calM, d))) { monatRuhe = true; break; }
