@@ -240,8 +240,6 @@
   .cal-info p { margin: 8px 0 0; }
   .note.spitz { background: var(--spitz-bg); border: 2px solid var(--spitz-line); font-weight: 600; }
   .cal-d.gap:not(.sel):not(.in) { background: var(--sperr-bg); border-color: var(--sperr-line); border-width: 2px; }
-  #calGrid.luecke .cal-d.in { background: var(--sperr-bg); border-color: var(--sperr-line); }
-  #calGrid.luecke .cal-d.sel { background: var(--sperr-line); border-color: var(--sperr-line); color: var(--bg); }
   .cal-d.today:not(.sel) { border: 2px solid var(--muted); }
   .cal-sel { margin: 0; font-weight: 700; }
   .cal-leg .l-gap { background: var(--sperr-bg); border-color: var(--sperr-line); }
@@ -391,7 +389,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "3.16";
+let VERSION = "3.17";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -761,7 +759,6 @@ function renderKalender() {
   const erster = new Date(Date.UTC(calY, calM, 1));
   const lead = (erster.getUTCDay() + 6) % 7;
   const tage = new Date(Date.UTC(calY, calM + 1, 0)).getUTCDate();
-  g.classList.toggle("luecke", !!S.luecke);
   for (let i = 0; i < lead; i++) g.appendChild(document.createElement("div"));
   for (let d = 1; d <= tage; d++) {
     const k = dkey(calY, calM, d);
