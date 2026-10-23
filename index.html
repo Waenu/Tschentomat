@@ -102,12 +102,14 @@
 
   [hidden] { display: none !important; }
   * { box-sizing: border-box; }
+  :root { --fs: 1; --t-title: 1.05rem; --t-text: 1rem; --t-small: 0.85rem; }
+  html { font-size: calc(16px * var(--fs)); }
   html, body { margin: 0; }
   body {
     background: var(--bg);
     color: var(--fg);
     font-family: var(--body);
-    font-size: 17px;
+    font-size: var(--t-text);
     line-height: 1.4;
     padding-left: max(16px, env(safe-area-inset-left, 0px));
     padding-right: max(16px, env(safe-area-inset-right, 0px));
@@ -123,6 +125,11 @@
     display: flex; flex-direction: column; gap: 4px;
   }
   .themeRow { display: flex; justify-content: flex-end; }
+  .themeRow { gap: 8px; }
+  #fsBtn { height: 44px; min-width: 66px; padding: 0 10px; background: var(--surface); color: var(--fg); border: 2px solid var(--line); border-radius: 22px; cursor: pointer; font: inherit; display: inline-flex; align-items: baseline; justify-content: center; gap: 3px; line-height: 44px; }
+  #fsBtn span { color: var(--muted); font-weight: 400; line-height: 1; align-self: center; }
+  #fsBtn span.on { color: var(--fg); font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+  #fsBtn .s1 { font-size: 0.8rem; } #fsBtn .s2 { font-size: 1rem; } #fsBtn .s3 { font-size: 1.3rem; }
   #themeBtn { width: 44px; height: 44px; font-size: 1.3rem; line-height: 1; background: var(--surface); color: var(--fg); border: 2px solid var(--line); border-radius: 50%; cursor: pointer; padding: 0; }
   #themeBtn[data-mode="light"] { background: #000; border-color: #000; }
   .sign .sub { text-align: center; padding: 2px 0; }
@@ -132,17 +139,17 @@
     margin: 0;
     font-family: var(--display);
     font-weight: 700;
-    font-size: 2.6rem;
+    font-size: calc(2.6rem / var(--fs));
     letter-spacing: 0.04em;
     line-height: 1;
     white-space: nowrap;
     text-align: center;
   }
   .sign .ver { display: inline-block; align-self: center; margin-top: 8px; padding: 3px 10px; border: 2px solid currentColor; border-radius: 4px; font-weight: 700; letter-spacing: 0.04em; opacity: 1; }
-  .sign p { margin: 0; font-size: 0.95rem; letter-spacing: 0.02em; opacity: 0.92; }
+  .sign p { margin: 0; font-size: calc(0.95rem / var(--fs)); letter-spacing: 0.02em; opacity: 0.92; }
 
-  .intro { margin: 0; color: var(--muted); font-size: 0.95rem; }
-  .legend { display: flex; flex-wrap: wrap; gap: 8px 14px; font-size: 0.85rem; color: var(--muted); }
+  .intro { margin: 0; color: var(--muted); font-size: var(--t-text); }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 14px; font-size: var(--t-small); color: var(--muted); }
   .legend span { display: inline-flex; align-items: center; gap: 6px; }
   .legend i { width: 14px; height: 14px; border-radius: 3px; border: 2px solid; display: inline-block; }
   .legend .l-missing { background: var(--missing-bg); border-color: var(--missing-line); }
@@ -155,7 +162,7 @@
 
   form { display: flex; flex-direction: column; gap: 14px; margin: 0; }
   .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-  .field label { font-weight: 700; }
+  .field label { font-weight: 700; font-size: var(--t-title); }
   .field select {
     width: 100%; min-height: 50px;
     font: inherit; color: var(--fg);
@@ -174,29 +181,29 @@
   .field select.locked { background-color: var(--note-bg) !important; border-color: var(--line) !important; color: var(--muted); opacity: 0.85; }
   .field select option { background-color: var(--surface); color: var(--fg); }
   .field select:focus-visible, button:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-  .hint { margin: 0; font-size: 0.88rem; color: var(--muted); }
+  .hint { margin: 0; font-size: var(--t-small); color: var(--muted); }
   .hint .rot { color: var(--spitz-line); font-weight: 400; }
   .note.rot { color: var(--spitz-line); font-weight: 400; }
 
   .card { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
   .card h2 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 1.5rem; letter-spacing: 0.03em; text-transform: uppercase; }
   .total { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
-  .total .big { font-family: var(--display); font-weight: 700; font-size: 3rem; line-height: 1; font-variant-numeric: tabular-nums; }
-  .total .small { color: var(--muted); font-size: 0.9rem; }
+  .total .big { font-family: var(--display); font-weight: 700; font-size: calc(3rem / var(--fs)); line-height: 1; font-variant-numeric: tabular-nums; }
+  .total .small { color: var(--muted); font-size: var(--t-small); }
   table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
   th, td { padding: 8px 0; border-top: 1px solid var(--line); text-align: left; }
   td:last-child, th:last-child { text-align: right; }
-  td.sub { color: var(--muted); font-size: 0.88rem; }
+  td.sub { color: var(--muted); font-size: var(--t-small); }
   tr.strong td { font-weight: 700; }
   .empty { color: var(--muted); margin: 0; }
-  details summary { cursor: pointer; font-weight: 700; min-height: 44px; display: flex; align-items: center; border: 2px solid var(--line); border-radius: 8px; padding: 0 12px; background: var(--surface); }
+  details summary { cursor: pointer; font-weight: 700; font-size: var(--t-title); min-height: 44px; display: flex; align-items: center; border: 2px solid var(--line); border-radius: 8px; padding: 0 12px; background: var(--surface); }
   details > summary::after { content: "▾\00a0\00a0💡"; margin-left: auto; padding-left: 10px; font-weight: 400; white-space: nowrap; }
   details[open] > summary::after { content: "▴\00a0\00a0💡"; }
   details[open] > summary, .acc:has(.acc-t[aria-expanded="true"]) { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
   details[open] > summary { margin-bottom: 8px; }
-  .acc { display: flex; align-items: center; gap: 6px; min-height: 44px; font-weight: 700; }
+  .acc { display: flex; align-items: center; gap: 6px; min-height: 44px; font-weight: 700; font-size: var(--t-title); }
   .acc:has(.acc-t) { border: 2px solid var(--line); border-radius: 8px; padding: 0 12px; background: var(--surface); }
-  .acc-t { background: none; border: 0; font: inherit; font-weight: 700; color: inherit; padding: 0; text-align: left; cursor: pointer; display: flex; flex: 1; align-items: center; min-height: 44px; }
+  .acc-t { background: none; border: 0; font: inherit; font-size: var(--t-title); font-weight: 700; color: inherit; padding: 0; text-align: left; cursor: pointer; display: flex; flex: 1; align-items: center; min-height: 44px; }
   .acc-t::after { content: "▾\00a0\00a0💡"; margin-left: auto; padding-left: 10px; font-weight: 400; white-space: nowrap; }
   .acc-t[aria-expanded="true"]::after { content: "▴\00a0\00a0💡"; }
 
@@ -205,19 +212,19 @@
   .eltern-zone { min-height: 52px; display: flex; align-items: center; justify-content: space-between; padding: 0 22px; font-size: 1.6rem; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; cursor: default; }
   .eltern-zone span { padding: 8px 14px; }
   .pay { border: 2px solid var(--accent); border-radius: 6px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
-  .pay strong { font-size: 1.1rem; }
+  .pay strong { font-size: var(--t-title); }
   .pay .rot-txt { color: var(--spitz-line); }
   .pay .iban { font-weight: 700; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
   .pay button { margin-top: 4px; font: inherit; font-weight: 700; color: var(--accent); background: transparent; border: 2px solid var(--accent); border-radius: 6px; min-height: 48px; padding: 8px 14px; cursor: pointer; }
-  .split-h { margin: 6px 0 0; font-size: 1rem; }
-  #result h2 { font-family: var(--body); text-transform: none; letter-spacing: 0; font-size: 1rem; font-weight: 700; }
-  .cal h2 { text-align: center; margin: 0; font-family: var(--body); text-transform: none; letter-spacing: 0; font-size: 1.15rem; font-weight: 700; }
+  .split-h { margin: 6px 0 0; font-size: var(--t-title); }
+  #result h2 { font-family: var(--body); text-transform: none; letter-spacing: 0; font-size: var(--t-title); font-weight: 700; }
+  .cal h2 { text-align: center; margin: 0; font-family: var(--body); text-transform: none; letter-spacing: 0; font-size: var(--t-title); font-weight: 700; }
   .cal-nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-  .cal-nav strong { font-size: 1.1rem; }
+  .cal-nav strong { font-size: var(--t-title); }
   .cal-nav button { font: inherit; font-size: 1.5rem; font-weight: 700; line-height: 1; color: var(--accent); background: transparent; border: 2px solid var(--accent); border-radius: 6px; width: 52px; min-height: 48px; cursor: pointer; }
   .cal-nav button:disabled { opacity: 0.3; cursor: default; }
   .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
-  .cal-wd { font-size: 0.8rem; color: var(--muted); text-align: center; padding: 2px 0; font-weight: 700; }
+  .cal-wd { font-size: var(--t-small); color: var(--muted); text-align: center; padding: 2px 0; font-weight: 700; }
   .cal-d { font: inherit; color: var(--fg); min-height: 46px; padding: 2px 0; border: 1px solid var(--line); border-radius: 6px; background: transparent; cursor: pointer; font-variant-numeric: tabular-nums; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; }
   .cal-d small { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.03em; }
   .cal-d:disabled { cursor: default; }
@@ -262,7 +269,7 @@
   a.btn, button.btn, span.btn { font: inherit; font-weight: 700; color: var(--accent); background: transparent; border: 2px solid var(--accent); border-radius: 6px; min-height: 48px; padding: 8px 14px; cursor: pointer; display: inline-flex; align-items: center; text-decoration: none; }
   .btn.off, button.btn:disabled { opacity: 0.45; cursor: not-allowed; }
   .pay .btns { display: flex; flex-wrap: wrap; gap: 8px; }
-  .note { background: var(--note-bg); border-radius: 6px; padding: 10px 12px; font-size: 0.92rem; margin: 0; }
+  .note { background: var(--note-bg); border-radius: 6px; padding: 10px 12px; font-size: var(--t-text); margin: 0; }
 
   button.reset {
     font: inherit; font-weight: 700; color: var(--accent); background: transparent;
@@ -276,7 +283,7 @@
   }
   .bar .in { max-width: 560px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 40px; }
   .bar .lab { font-size: 0.95rem; min-width: 0; }
-  .bar .lab small { font-size: 0.78rem; opacity: 0.9; }
+  .bar .lab small { font-size: var(--t-small); opacity: 0.9; }
   #nachOben { position: fixed; left: 16px; bottom: calc(84px + env(safe-area-inset-bottom, 0px)); z-index: 6; background: var(--accent); color: var(--accent-fg); border: 0; border-radius: 22px; padding: 10px 16px; font: inherit; font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,.35); }
   .start { display: flex; flex-direction: column; gap: 10px; }
   .bigbtn { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; min-height: 96px; font: inherit; font-size: 1.2rem; font-weight: 700; color: var(--accent); background: var(--surface); border: 3px solid var(--accent); border-radius: 12px; cursor: pointer; padding: 10px 16px; }
@@ -292,7 +299,7 @@
   #auswahlTxt p { margin: 0; }
   .exfields { display: flex; flex-direction: column; gap: 8px; }
   .exf { display: flex; align-items: center; gap: 12px; }
-  .exsel { flex: 0 0 150px; border: 2px solid; border-radius: 8px; padding: 10px 12px; font-size: 1rem; }
+  .exsel { flex: 0 0 150px; border: 2px solid; border-radius: 8px; padding: 10px 12px; font-size: var(--t-text); }
   .exsel.missing { background: var(--missing-bg); border-color: var(--missing-line); }
   .exsel.done { background: var(--done-bg); border-color: var(--done-line); }
   #b-benutzung .legend { font-size: 1rem; color: var(--fg); }
@@ -304,14 +311,14 @@
   body.rechner-an .bar { display: block; }
   .sym { margin-right: 4px; font: inherit; background: none; color: inherit; border: 1.5px dotted var(--accent); border-radius: 8px; padding: 0 5px; cursor: pointer; }
   #zurueck { position: fixed; right: 16px; bottom: calc(84px + env(safe-area-inset-bottom, 0px)); z-index: 6; background: #9A7400; color: #FFFFFF; border: 0; border-radius: 22px; padding: 10px 16px; font: inherit; font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,.35); }
-  .bar .val { font-family: var(--display); font-weight: 700; font-size: 1.9rem; line-height: 1; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .bar .val { font-family: var(--display); font-weight: 700; font-size: calc(1.9rem / var(--fs)); line-height: 1; white-space: nowrap; font-variant-numeric: tabular-nums; }
   .bar.err { background: var(--error-bg); color: var(--error-fg); }
 </style>
 
 </head>
 <body>
 <div class="wrap">
-  <div class="themeRow"><button type="button" id="themeBtn" aria-label="Hell- oder Dunkelmodus umschalten"></button></div>
+  <div class="themeRow"><button type="button" id="fsBtn" aria-label="Schriftgrösse ändern"><span class="s1">A</span><span class="s2">A</span><span class="s3">A</span></button><button type="button" id="themeBtn" aria-label="Hell- oder Dunkelmodus umschalten"></button></div>
   <header class="sign">
     <h1>TSCHENT-O-MAT</h1>
     <div class="sub"><p>Preisrechner Chalet Tschenten<span class="bg" aria-hidden="true">🎰</span></p></div>
@@ -403,7 +410,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "3.30";
+let VERSION = "3.31";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -1306,6 +1313,23 @@ async function ladeEinstellungen() {
   }
 }
 Promise.all([ladeEinstellungen(), ladeBelegt()]).then(() => {
+  {
+    const STUFEN = [["klein", 0.92], ["mittel", 1], ["gross", 1.18]];
+    const fb = document.getElementById("fsBtn");
+    let stufe = 1;
+    try { const g = localStorage.getItem("tm_schrift"); const i = STUFEN.findIndex((x) => x[0] === g); if (i >= 0) stufe = i; } catch (e) {}
+    const wende = () => {
+      document.documentElement.style.setProperty("--fs", String(STUFEN[stufe][1]));
+      fb.querySelectorAll("span").forEach((sp, i) => sp.classList.toggle("on", i === stufe));
+      fb.title = "Schrift: " + STUFEN[stufe][0];
+    };
+    wende();
+    fb.addEventListener("click", () => {
+      stufe = (stufe + 1) % STUFEN.length;
+      try { localStorage.setItem("tm_schrift", STUFEN[stufe][0]); } catch (e) {}
+      wende();
+    });
+  }
   {
     const btn = document.getElementById("themeBtn");
     const dunkel = () => (document.documentElement.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")) === "dark";
