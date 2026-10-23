@@ -457,7 +457,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "3.54";
+let VERSION = "3.55";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -617,7 +617,7 @@ const gastWort = (n) => n === 1 ? "Gast" : "Gäste";
 const FIELDS = [
   { id: "wer", label: "👨‍👩‍👧‍👦 Wer von der Familie kommt?", type: "str",
     hint: () => S.luecke
-      ? "«Ich» ist Sohn oder Tochter. Familienmitglied ist Partner, Bruder oder Schwester, keine Freunde und keine Gäste. Das Kleinkind ist ein Enkelkind bis etwa 2½ Jahren. Benutzt werden darf nur das Bett in Zimmer 2 (blaues Bad) und das Kinderbettchen in Zimmer 3. Zimmer 1 und das rote Bad bleiben unberührt."
+      ? "«Ich» ist Sohn oder Tochter. Familienmitglied ist Partner, Bruder oder Schwester, keine Freunde und keine Gäste. Das Kleinkind ist ein Enkelkind bis etwa 2½ Jahren. Es schläft im Kinderbettchen in Zimmer 3 oder bei den Erwachsenen in Zimmer 2. In den Betten schlafen höchstens 2 Erwachsene. Zimmer 1 und das rote Bad bleiben unberührt."
       : "«Ich» ist Sohn oder Tochter, «Kind» ist ein Enkelkind. Hier zählen alle, die mitkommen, auch Kleinkinder. Kleinkinder im Kinderbettchen oder bei den eigenen Eltern gibst du danach an.",
     opts: () => S.luecke ? LWERL : WERL },
   { id: "fam", label: "👨‍👩‍👧‍👦 Wie viele Personen aus der Familie kommen?", type: "num",
@@ -767,7 +767,7 @@ function kalenderKlick(k) {
 const GELD_TEXT = "<p>Damit decken wir die laufenden Kosten des Chalets: Kurtaxen, Gästekarten, Strom, Wasser, Öl, WLAN und Betriebsmittel, dazu Unterhalt und Ersatz (zum Beispiel Scharniere ersetzen, ein neuer Boiler, defekte Ventilatoren), Anschaffungen (zum Beispiel Cheminée, Duschkabine, Sofa), Abschreibung, Hypozinsen und Steuern.</p><p>In den <b>Erneuerungsfonds</b> legen wir Geld für grosse Arbeiten zurück, zum Beispiel für den Maler, eine neue Heizung oder ein neues Geländer.</p>";
 function symBtn(id, emoji) { return '<button type="button" class="sym" data-info="' + id + '" aria-label="Zur Erklärung springen">' + emoji + '</button>'; }
 function lueckenRegeln() {
-  return "<ul><li>Höchstens " + P.lueckeMaxPersonen + " Erwachsene in den Betten (Partner, Bruder oder Schwester), zusätzlich höchstens " + P.lueckeMaxKleinkinder + " Kleinkind im Kinderbettchen.</li><li>Keine externen Gäste. Es kommt nur die Familie: Partner, Bruder oder Schwester.</li><li>Nur Zimmer 2 mit dem blauen Bad. Mit Kleinkind zusätzlich Zimmer 3. Zimmer 1 und das rote Bad bleiben unberührt.</li><li>Frische Bettwäsche, Handtücher und Küchentücher mitbringen und selbst beziehen. Bettdecken und Kissen nie ohne frischen Duvet- und Kissenbezug benutzen. Alles nehmt ihr wieder mit. Nur die Moltons bleiben nach dem Benutzen auf der Matratze.</li><li>Die Eltern reinigen für " + chf(P.reinigung) + ".</li></ul>";
+  return "<ul><li>Höchstens " + P.lueckeMaxPersonen + " Erwachsene in den Betten (Partner, Bruder oder Schwester), zusätzlich höchstens " + P.lueckeMaxKleinkinder + " Kleinkind im Kinderbettchen.</li><li>Keine externen Gäste. Es kommt nur die Familie: Partner, Bruder oder Schwester.</li><li>Nur Zimmer 2 mit dem blauen Bad. Das Kleinkind schläft bei den Erwachsenen in Zimmer 2 oder im Kinderbettchen in Zimmer 3. Zimmer 1 und das rote Bad bleiben unberührt.</li><li>Frische Bettwäsche, Handtücher und Küchentücher mitbringen und selbst beziehen. Bettdecken und Kissen nie ohne frischen Duvet- und Kissenbezug benutzen. Alles nehmt ihr wieder mit. Nur die Moltons bleiben nach dem Benutzen auf der Matratze.</li><li>Die Eltern reinigen für " + chf(P.reinigung) + ".</li></ul>";
 }
 function begriffeFuellen() {
   const ruhe = RUHE.length ? RUHE.map((a) => fmtMD(a[0]) + " bis " + fmtMD(a[1])).join(" und ") : "";
@@ -1059,7 +1059,7 @@ function anfrageText(r) {
   z.push("Gäste: " + x.GE);
   if (x.GE > 0 && !x.lock) z.push("Gast im selben Zimmer: " + x.ZE);
   z.push("Zimmer 1 unberührt: " + (S.spar === "Ja" ? "Ja" : "Nein"));
-  if (x.LG) { z.push("Ganze Lücke: nur Zimmer 2 mit blauem Bad" + (x.KK > 0 ? " und Zimmer 3 für das Kleinkind" : "") + ", ohne Gäste, eigene Bettwäsche, Handtücher und Küchentücher, Reinigung durch die Eltern " + chf(P.reinigung)); }
+  if (x.LG) { z.push("Ganze Lücke: nur Zimmer 2 mit blauem Bad" + (x.KK > 0 ? ", das Kleinkind im Kinderbettchen in Zimmer 3 oder bei den Erwachsenen in Zimmer 2" : "") + ", ohne Gäste, eigene Bettwäsche, Handtücher und Küchentücher, Reinigung durch die Eltern " + chf(P.reinigung)); }
   if (x.GE > 0) z.push("Reinigung: " + S.reinig);
   if (x.SB) z.push("Selbstreinigung: Ja");
   z.push("");
