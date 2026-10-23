@@ -272,8 +272,11 @@
   #hilfe { display: flex; flex-direction: column; gap: 12px; }
   #hilfe[hidden], #rechner[hidden] { display: none; }
   #rechner { display: flex; flex-direction: column; gap: 14px; }
-  #b-benutzung[open] > summary, #b-begriffe[open] > summary, #b-kalender[open] > summary { background: var(--accent); color: var(--accent-fg); border-radius: 8px; padding: 0 12px; margin-bottom: 8px; }
+  #b-benutzung[open] > summary, #b-begriffe[open] > summary, #b-kalender[open] > summary, #b-auswahl[open] > summary { background: var(--accent); color: var(--accent-fg); border-radius: 8px; padding: 0 12px; margin-bottom: 8px; }
   #b-benutzung .rows p { margin: 0; }
+  #b-kalender .note + .note { margin-top: 8px; }
+  #auswahlTxt { display: flex; flex-direction: column; gap: 8px; }
+  #auswahlTxt p { margin: 0; }
   .exfields { display: flex; flex-direction: column; gap: 8px; }
   .exf { display: flex; align-items: center; gap: 12px; }
   .exsel { flex: 0 0 150px; border: 2px solid; border-radius: 8px; padding: 10px 12px; font-size: 1rem; }
@@ -310,12 +313,6 @@
       <div class="rows">
         <p><b>Nur für die Familie:</b> Der Link bleibt in der Familie und wird nicht weitergegeben oder geteilt. Zur Familie gehören meine Kinder, ihre Partner und die Enkelkinder.</p>
         <p><b>TSCHENT-O-MAT ist interaktiv.</b> Von oben nach unten ausfüllen. Es erscheint nur, was in eurem Fall möglich ist.</p>
-        <p>Felder und Fragen zeigen, wo ihr steht:</p>
-        <div class="exfields">
-          <div class="exf"><span class="exsel missing">– wählen –</span><span>orange: noch wählen</span></div>
-          <div class="exf"><span class="exsel done">Beispiel ✓</span><span>grün: gewählt</span></div>
-        </div>
-        <p><b>Erst wenn alle Felder grün sind, erscheint das Resultat mit dem Preis.</b></p>
         <p>Mit 💡 lassen sich Menüs auf- und zuklappen.</p>
         <p>Mit gestrichelten Icons wie <button type="button" class="sym" data-info="b-luecke" aria-label="Beispiel: zur Erklärung springen">🧩</button> springt ihr zur Erklärung. Sie erscheint ausgeklappt. Mit dem gelben Knopf «↩ zurück» geht es an die Ausgangsstelle zurück.</p>
         <p>Der Knopf <b>↑ Menü</b> unten links erscheint, sobald ihr nach unten scrollt. Ein Tipp darauf bringt euch nach oben zu den zwei grossen Schaltflächen. Eure Eingaben bleiben dabei erhalten.</p>
@@ -349,8 +346,17 @@
 
   <section id="cal" class="card cal" aria-label="Wunschtermin">
     <h2>Wunschtermin finden</h2>
-    <details class="sub" id="b-kalender"><summary>🗓️ Erklärung Kalender</summary><div class="note" id="calHoch"></div></details>
-    <p class="note" id="calHint"></p>
+    <details class="sub" id="b-kalender"><summary>🗓️ Erklärung Kalender</summary><div class="note" id="calHoch"></div><p class="note" id="calHint"></p></details>
+    <details class="sub" id="b-auswahl"><summary>🔽 Bedienung Auswahlfelder</summary>
+      <div class="note" id="auswahlTxt">
+        <p>Felder und Fragen zeigen, wo ihr steht:</p>
+        <div class="exfields">
+          <div class="exf"><span class="exsel missing">– wählen –</span><span>orange: noch wählen</span></div>
+          <div class="exf"><span class="exsel done">Beispiel ✓</span><span>grün: gewählt</span></div>
+        </div>
+        <p><b>Erst wenn alle Felder grün sind, erscheint das Resultat mit dem Preis.</b></p>
+      </div>
+    </details>
     <div class="cal-nav">
       <button type="button" id="calPrev" aria-label="Vorheriger Monat">‹</button>
       <strong id="calTitle"></strong>
@@ -382,7 +388,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "3.13";
+let VERSION = "3.14";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -843,6 +849,11 @@ document.addEventListener("click", (e) => {
 document.querySelectorAll("#b-benutzung > summary, #b-begriffe > summary").forEach((sm) => sm.addEventListener("click", () => {
   const d = sm.parentElement;
   if (!d.open) ["b-benutzung", "b-begriffe"].forEach((id) => { const o = document.getElementById(id); if (o !== d) o.open = false; });
+}));
+// Im Kalender: «Erklärung Kalender» und «Bedienung Auswahlfelder» immer nur eines offen
+document.querySelectorAll("#b-kalender > summary, #b-auswahl > summary").forEach((sm) => sm.addEventListener("click", () => {
+  const d = sm.parentElement;
+  if (!d.open) ["b-kalender", "b-auswahl"].forEach((id) => { const o = document.getElementById(id); if (o !== d) o.open = false; });
 }));
 // Unter «Begriffe» ist immer nur ein Eintrag offen
 document.querySelectorAll("#b-begriffe details.sub > summary").forEach((sm) => sm.addEventListener("click", () => {
