@@ -188,7 +188,7 @@
   .card { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
   .card h2 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 1.5rem; letter-spacing: 0.03em; text-transform: uppercase; }
   .total { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
-  .total .big { font-family: var(--display); font-weight: 700; font-size: calc(3rem / var(--fs)); line-height: 1; font-variant-numeric: tabular-nums; }
+  .total .big { font-family: var(--display); font-weight: 700; font-size: calc(2.4rem / var(--fs)); line-height: 1; font-variant-numeric: tabular-nums; }
   .total .small { color: var(--muted); font-size: var(--t-small); }
   table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
   th, td { padding: 8px 0; border-top: 1px solid var(--line); text-align: left; }
@@ -269,7 +269,11 @@
   .cal-leg .l-spitz { border-color: var(--spitz-line); background: var(--spitz-bg); }
   a.btn, button.btn, span.btn { font: inherit; font-weight: 700; color: var(--accent); background: transparent; border: 2px solid var(--accent); border-radius: 6px; min-height: 48px; padding: 8px 14px; cursor: pointer; display: inline-flex; align-items: center; text-decoration: none; }
   .btn.off, button.btn:disabled { opacity: 0.45; cursor: not-allowed; }
-  .pay .btns { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pay .btns { display: flex; flex-direction: column; gap: 10px; align-self: stretch; width: 100%; }
+  .pay .btns .btn, .pay > button, .pay > .btns > button { width: 100%; box-sizing: border-box; justify-content: center; text-align: center; gap: 10px; min-height: 52px; border-radius: 8px; }
+  .pay > button { align-self: stretch; display: flex; align-items: center; }
+  .pay .field { align-self: stretch; width: 100%; }
+  .wa { flex: none; }
   .note { background: var(--note-bg); border-radius: 6px; padding: 10px 12px; font-size: var(--t-text); margin: 0; }
 
   button.reset {
@@ -311,6 +315,7 @@
   .bar { display: none; }
   body.rechner-an .bar { display: block; }
   .sym { margin-right: 4px; font: inherit; background: none; color: inherit; border: 1.5px dotted var(--accent); border-radius: 8px; padding: 0 5px; cursor: pointer; }
+  .pay button.sym { margin: 0 4px; min-height: 0; width: auto; padding: 0 5px; font: inherit; border: 1.5px dotted var(--accent); border-radius: 8px; display: inline; }
   #zurueck { position: fixed; right: 16px; bottom: calc(84px + env(safe-area-inset-bottom, 0px)); z-index: 6; background: #9A7400; color: #FFFFFF; border: 0; border-radius: 22px; padding: 10px 16px; font: inherit; font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,.35); }
   .bar .val { font-family: var(--display); font-weight: 700; font-size: calc(1.9rem / var(--fs)); line-height: 1; white-space: nowrap; font-variant-numeric: tabular-nums; }
   .bar.err { background: var(--error-bg); color: var(--error-fg); }
@@ -411,7 +416,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "3.33";
+let VERSION = "3.34";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -1033,7 +1038,7 @@ function endreinigungInfo(r) {
   const au = r.TOT;
   const R = P.reinigung;
   return '<div class="note"><b><button type="button" class="sym" data-info="b-endrein" aria-label="Regeln zur Endreinigung anzeigen">🪣</button> Endreinigung später: was kommt noch dazu?</b>' +
-    '<p>Jetzt überweist ihr nur den Aufenthalt: ' + nb('<b>' + chf(au) + '</b>') + '. Die Endreinigung kommt später dazu, höchstens ' + nb(chf(R)) + '. Wer sie zahlt und wann, steht oben im Kalender unter «Endreinigung».</p>' +
+    '<p>Jetzt überweist ihr nur den Aufenthalt: ' + nb('<b>' + chf(au) + '</b>') + '. Die Endreinigung kommt später dazu, höchstens ' + nb(chf(R)) + '. Wer sie zahlt und wann, steht unter «Endreinigung» in «Begriffe».</p>' +
     '<p><b>Nur als Info, Total für euch:</b></p><ul style="margin:2px 0">' +
     '<li>Ihr seid allein: ' + nb(chf(au)) + ' + ' + nb(chf(R)) + ' = <b>' + nb(chf(au + R)) + '</b></li>' +
     '<li>1 weitere Reisegruppe: ' + nb(chf(au)) + ' + ' + nb(chf(R / 2)) + ' = <b>' + nb(chf(au + R / 2)) + '</b></li>' +
@@ -1102,6 +1107,7 @@ function elternKasten() {
     (ok ? '<a class="btn" href="https://wa.me/?text=' + encodeURIComponent(t) + '" target="_blank" rel="noopener">Per WhatsApp senden</a>' : '<span class="btn off" aria-disabled="true">Per WhatsApp senden</span>') +
     '<button type="button" class="btn" id="copyEinl"' + (ok ? "" : " disabled") + '>Einladung kopieren</button></div></div>';
 }
+const WA_SVG = '<svg class="wa" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true"><path fill="#25D366" d="M16 2.5A13.4 13.4 0 0 0 4.4 22.6L2.5 29.5l7.1-1.9A13.4 13.4 0 1 0 16 2.5z"/><path fill="#fff" d="M22.6 19.4c-.3-.2-2-1-2.3-1.1-.3-.1-.5-.2-.8.2l-1 1.2c-.2.2-.4.3-.7.1a9 9 0 0 1-4.5-3.9c-.3-.6.3-.6.9-1.8.1-.2.1-.4 0-.6l-1-2.4c-.3-.6-.5-.5-.8-.5h-.6a1.2 1.2 0 0 0-.9.4 3.800 3.800 0 0 0-1.2 2.800c0 1.600 1.200 3.200 1.400 3.400.2.200 2.300 3.500 5.600 4.900 2.100.9 2.900 1 4 .8.600-.1 2-.8 2.300-1.600.3-.8.3-1.400.2-1.600l-.6-.3z"/></svg>';
 let LETZTE_EINLADUNG = "";
 function anfrageKasten(r) {
   if (!(ARR && DEP)) return "";
@@ -1113,14 +1119,14 @@ function anfrageKasten(r) {
     '<div class="field"><label for="absender">Wer schickt die Anfrage?</label><select id="absender" class="' + (ok ? "done" : "missing") + '"><option value="">– wählen –</option>' +
     ABS.map((n) => '<option value="' + n + '"' + (n === ABSENDER ? " selected" : "") + '>' + n + '</option>').join("") +
     '</select>' + (ok ? "" : '<p class="hint">Erst den Namen wählen, dann sind die Knöpfe aktiv.</p>') + '</div><div class="btns">';
-  h += ok ? '<a class="btn" href="https://wa.me/?text=' + encodeURIComponent(t) + '" target="_blank" rel="noopener">Per WhatsApp senden</a>' : '<span class="btn off" aria-disabled="true">Per WhatsApp senden</span>';
-  h += '<button type="button" class="btn" id="copyReq"' + (ok ? "" : " disabled") + '>Anfrage kopieren</button></div>';
+  h += ok ? '<a class="btn" href="https://wa.me/?text=' + encodeURIComponent(t) + '" target="_blank" rel="noopener">' + WA_SVG + 'Per WhatsApp senden</a>' : '<span class="btn off" aria-disabled="true">' + WA_SVG + 'Per WhatsApp senden</span>';
+  h += '<button type="button" class="btn" id="copyReq"' + (ok ? "" : " disabled") + '>📋 Anfrage kopieren</button></div>';
   if (r.d.SB) {
     const f = familienText();
     LETZTE_FAMILIE = f;
-    h += '<span class="hint" style="margin-top:12px"><b>Kommt jemand von den Kindern nach dir?</b> Frag im «Adelboden Airbnb Chat». Hier im Rechner steht ' + chf(0) + ' für die Reinigung. Dann teilt ihr die Reinigungskosten. Regeln siehe «🪣 Endreinigung» oben im Kalender.</span><div class="btns">' +
-      (ok ? '<a class="btn" href="https://wa.me/?text=' + encodeURIComponent(f) + '" target="_blank" rel="noopener">Im «Adelboden Airbnb Chat» fragen: Kommt jemand nach mir?</a>' : '<span class="btn off" aria-disabled="true">Im «Adelboden Airbnb Chat» fragen: Kommt jemand nach mir?</span>') +
-      '<button type="button" class="btn" id="copyFam"' + (ok ? "" : " disabled") + '>Text kopieren</button></div>';
+    h += '<span class="hint" style="margin-top:12px"><b>Kommt jemand von den Kindern nach dir?</b> Frag im «Adelboden Airbnb Chat». Hier im Rechner steht ' + chf(0) + ' für die Reinigung. Dann teilt ihr die Reinigungskosten. Regeln siehe «Endreinigung» ' + symBtn('b-endrein', '🪣') + '.</span><div class="btns">' +
+      (ok ? '<a class="btn" href="https://wa.me/?text=' + encodeURIComponent(f) + '" target="_blank" rel="noopener">' + WA_SVG + 'Umfrage starten</a>' : '<span class="btn off" aria-disabled="true">' + WA_SVG + 'Umfrage starten</span>') +
+      '<button type="button" class="btn" id="copyFam"' + (ok ? "" : " disabled") + '>📋 Text kopieren</button></div>';
   }
   h += '</div>';
   return h;
@@ -1205,7 +1211,7 @@ function render() {
       (tip > 0 ? '<span>davon Trinkgeld für Mami: ' + chf(tip) + ' (freiwillig)</span>' : '') +
       '<span class="rot-txt">Spätestens ' + ZAHL_TAGE + ' Tage nach dem letzten Ferientag, ohne Aufforderung.</span>' +
       '<span class="iban">IBAN: ' + esc(IBAN) + '</span>' +
-      '<button type="button" id="copyIban">IBAN kopieren</button></div>';
+      '<button type="button" id="copyIban">📋 IBAN kopieren</button></div>';
   const aufteilung = x.GE >= 1 ? '<h3 class="split-h">💸 Aufteilung unter euch</h3>' +
     '<p class="hint">Das Geld bei den Gästen einsammeln ist eure Sache. Die Tabelle zeigt, wie viel jeder schuldet.</p>' +
     '<table><tbody>' + who + '</tbody></table>' : '';
@@ -1249,7 +1255,8 @@ function wendeEinstellungenAn(j) {
 }
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 function kopiere(text, btn, fertig, vorher) {
-  const done = () => { btn.textContent = fertig; setTimeout(() => { btn.textContent = vorher; }, 2000); };
+  const orig = btn.innerHTML;
+  const done = () => { btn.textContent = "✓ " + fertig; setTimeout(() => { btn.innerHTML = orig; }, 2000); };
   try {
     navigator.clipboard.writeText(text).then(done, () => {});
   } catch (err) {
