@@ -262,8 +262,21 @@
   .bar .in { max-width: 560px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 40px; }
   .bar .lab { font-size: 0.95rem; min-width: 0; }
   .bar .lab small { font-size: 0.78rem; opacity: 0.9; }
-  .sym { font: inherit; background: none; color: inherit; border: 1.5px dotted var(--accent); border-radius: 8px; padding: 0 5px; cursor: pointer; }
-  #zurueck { position: fixed; right: 16px; bottom: calc(84px + env(safe-area-inset-bottom, 0px)); z-index: 6; background: var(--accent); color: var(--accent-fg); border: 0; border-radius: 22px; padding: 10px 16px; font: inherit; font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,.35); }
+  .start { display: flex; flex-direction: column; gap: 10px; }
+  .bigbtn { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; min-height: 68px; font: inherit; font-size: 1.3rem; font-weight: 700; color: var(--accent); background: var(--surface); border: 3px solid var(--accent); border-radius: 12px; cursor: pointer; padding: 10px 16px; }
+  .bigbtn .bi { font-size: 1.8rem; line-height: 1; }
+  .bigbtn.main, .bigbtn.on { background: var(--accent); color: var(--accent-fg); }
+  #hilfe { display: flex; flex-direction: column; gap: 12px; }
+  #hilfe[hidden], #rechner[hidden] { display: none; }
+  #rechner { display: flex; flex-direction: column; gap: 14px; }
+  details.sub { border-top: 1px solid var(--line); padding-top: 2px; }
+  details.sub .bc { padding: 4px 0 8px; display: flex; flex-direction: column; gap: 8px; }
+  details.sub .bc p, details.sub .bc ul { margin: 0; }
+  details.sub .bc ul { padding-left: 20px; }
+  .bar { display: none; }
+  body.rechner-an .bar { display: block; }
+  .sym { margin-right: 4px; font: inherit; background: none; color: inherit; border: 1.5px dotted var(--accent); border-radius: 8px; padding: 0 5px; cursor: pointer; }
+  #zurueck { position: fixed; right: 16px; bottom: calc(84px + env(safe-area-inset-bottom, 0px)); z-index: 6; background: #9A7400; color: #FFFFFF; border: 0; border-radius: 22px; padding: 10px 16px; font: inherit; font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,.35); }
   .bar .val { font-family: var(--display); font-weight: 700; font-size: 1.9rem; line-height: 1; white-space: nowrap; font-variant-numeric: tabular-nums; }
   .bar.err { background: var(--error-bg); color: var(--error-fg); }
 </style>
@@ -277,23 +290,46 @@
     <p class="ver" id="ver"></p>
   </header>
 
-  <p class="intro">👇 Von oben nach unten antworten. Es erscheint nur, was in eurem Fall möglich ist. Mit 💡 gekennzeichnete Texte lassen sich aufklappen.</p>
-  <p class="intro"><b>👨‍👩‍👧‍👦 Reisegruppe</b> = alle aus der Familie, die zusammen kommen, z. B. Jerome, Rahel, Malik und Jon, Manuel und Sarah oder Deborah mit Kindern und Miriam mit Baby.</p>
-  <p class="intro"><b>🔗 Familienstaffel</b> = Reisegruppen, die die Wohnung nacheinander benutzen, ohne dass die Eltern dazwischen reinigen. Sie endet, sobald die Eltern oder ein Airbnb-Gast kommen.</p>
+  <nav class="start" aria-label="Start">
+    <button type="button" class="bigbtn" id="btnHilfe" aria-expanded="false" aria-controls="hilfe"><span class="bi" aria-hidden="true">💡</span>Ich benötige Hilfe</button>
+    <button type="button" class="bigbtn main" id="btnReserv" aria-controls="rechner"><span class="bi" aria-hidden="true">📅</span>Ich reserviere jetzt</button>
+  </nav>
+
+  <div id="hilfe" hidden>
+    <details class="card" id="b-benutzung">
+      <summary>📖 Benutzung</summary>
+      <div class="rows">
+        <p><b>TSCHENT-O-MAT ist interaktiv.</b> Von oben nach unten ausfüllen. Es erscheint nur, was in eurem Fall möglich ist.</p>
+        <p>Mit 💡 lassen sich Menüs auf- und zuklappen.</p>
+        <p>Mit gestrichelten Icons wie <button type="button" class="sym" data-info="b-luecke" aria-label="Beispiel: zur Erklärung springen">🧩</button> springt ihr zur Erklärung. Sie erscheint ausgeklappt. Mit dem gelben Knopf «↩ zurück» geht es an die Ausgangsstelle zurück.</p>
+      </div>
+    </details>
+    <details class="card" id="b-begriffe">
+      <summary>📚 Begriffe</summary>
+      <div class="rows">
+        <details class="sub" id="b-wunschtermin"><summary>📅 Wunschtermin</summary><div class="bc" id="bc-wunschtermin"></div></details>
+        <details class="sub" id="b-zimmer"><summary>🛌 Zimmer</summary><div class="bc">
+          <p class="note"><b>Zimmer 1:</b> Schlafzimmer mit eigenem Bad (das rote Badezimmer, nur von Zimmer 1 aus zugänglich). Normalerweise von Papi und Mami belegt.</p>
+          <p class="note"><b>Zimmer 2:</b> Schlafzimmer mit Doppelbett.</p>
+          <p class="note"><b>Zimmer 3:</b> Schlafzimmer mit Etagenbett, für Kinder oder Erwachsene.</p>
+          <p class="note"><b>Blaues Badezimmer:</b> von der ganzen Wohnung aus zugänglich.</p>
+        </div></details>
+        <details class="sub" id="b-reisegruppe"><summary>👨‍👩‍👧‍👦 Reisegruppe</summary><div class="bc"><p>Alle aus der Familie, die zusammen kommen, z. B. Jerome, Rahel, Malik und Jon, Manuel und Sarah oder Deborah mit Kindern und Miriam mit Baby.</p></div></details>
+        <details class="sub" id="b-staffel"><summary>🔗 Familienstaffel</summary><div class="bc"><p>Reisegruppen, die die Wohnung nacheinander benutzen, ohne dass die Eltern dazwischen reinigen. Sie endet, sobald die Eltern oder ein Airbnb-Gast kommen.</p></div></details>
+        <details class="sub" id="b-luecke"><summary>🧩 Lücken</summary><div class="bc" id="bc-luecke"></div></details>
+        <details class="sub" id="b-ruhe"><summary>🧹 Selber reinigen</summary><div class="bc" id="bc-ruhe"></div></details>
+        <details class="sub" id="b-endrein"><summary>🪣 Endreinigung</summary><div class="bc" id="bc-endrein"></div></details>
+        <details class="sub" id="b-rechnen"><summary>🧮 So wird gerechnet</summary><div class="bc" id="bc-rechnen"></div></details>
+        <details class="sub" id="b-geld"><summary>💰 Wofür benötigen wir dieses Geld?</summary><div class="bc" id="bc-geld"></div></details>
+      </div>
+    </details>
+  </div>
+
+  <div id="rechner" hidden>
   <div class="legend" aria-hidden="true">
     <span><i class="l-missing"></i>noch wählen</span>
     <span><i class="l-done"></i>gewählt</span>
   </div>
-
-  <details class="card rooms">
-    <summary>🛌 Die Zimmer im Überblick</summary>
-    <div class="rows">
-      <p class="note"><b>Zimmer 1:</b> Schlafzimmer mit eigenem Bad (das rote Badezimmer, nur von Zimmer 1 aus zugänglich). Normalerweise von Papi und Mami belegt.</p>
-      <p class="note"><b>Zimmer 2:</b> Schlafzimmer mit Doppelbett.</p>
-      <p class="note"><b>Zimmer 3:</b> Schlafzimmer mit Etagenbett, für Kinder oder Erwachsene.</p>
-      <p class="note"><b>Blaues Badezimmer:</b> von der ganzen Wohnung aus zugänglich.</p>
-    </div>
-  </details>
 
   <div id="notice" class="notice" role="status" hidden></div>
 
@@ -312,7 +348,6 @@
     <p class="note rot" id="calRuhe" hidden></p>
     <div class="note" id="calLRegeln" hidden></div>
     <p class="note" id="calWarn" hidden></p>
-    <div id="calInfos"></div>
   </section>
 
   <form id="form" onsubmit="return false" autocomplete="off"></form>
@@ -320,6 +355,7 @@
   <section id="result" class="card" aria-live="polite"></section>
 
   <button type="button" class="reset" id="reset">Neu starten</button>
+  </div>
 </div>
 
 <button type="button" id="zurueck" hidden>↩ zurück</button>
@@ -331,7 +367,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "2.12";
+let VERSION = "3.00";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -630,6 +666,55 @@ function kalenderKlick(k) {
   normalize(); render(); renderKalender();
 }
 
+const GELD_TEXT = "<p>Damit decken wir die laufenden Kosten des Chalets: Gästekarten, Strom, Wasser, Abwasser und Öl, dazu Miete, Unterhalt (zum Beispiel der Maler), Reparaturen (zum Beispiel eine defekte Heizung), Anschaffungen und Abschreibung.</p>";
+function symBtn(id, emoji) { return '<button type="button" class="sym" data-info="' + id + '" aria-label="Zur Erklärung springen">' + emoji + '</button>'; }
+function lueckenRegeln() {
+  return "<ul><li>Höchstens " + P.lueckeMaxPersonen + " Personen mit Bett, zusätzlich höchstens " + P.lueckeMaxKleinkinder + " Kleinkind im Kinderbettchen.</li><li>Keine externen Gäste.</li><li>Nur Zimmer 2 mit dem blauen Bad. Mit Kleinkind zusätzlich Zimmer 3. Zimmer 1 bleibt abgeschlossen.</li><li>Frische Bettwäsche, Handtücher und Küchentücher mitbringen und selbst beziehen. Bettdecken und Kissen nie ohne frischen Duvet- und Kissenbezug benutzen. Alles nehmt ihr wieder mit.</li><li>Die Eltern reinigen für " + chf(P.reinigung) + ".</li></ul>";
+}
+function begriffeFuellen() {
+  const ruhe = RUHE.length ? RUHE.map((a) => fmtMD(a[0]) + " bis " + fmtMD(a[1])).join(" und ") : "";
+  const set = (id, html) => { const e = document.getElementById(id); if (e) e.innerHTML = html; };
+  set("bc-wunschtermin", "<p>Erst den Anreisetag, dann den Abreisetag antippen. " + P.minNaechte + " bis " + P.maxNaechte + " Nächte. Graue, durchgestrichene Tage sind nicht verfügbar. Die Farben erklärt die Legende über dem Kalender. Die Belegung wird alle paar Stunden aktualisiert.</p>");
+  set("bc-luecke", "<p><b>Ein Angebot für gestresste Paare 😉</b> Lücken bis " + LUECKE_MAX + " Nächte kann Airbnb nicht vermieten (Mindestaufenthalt dort " + (LUECKE_MAX + 1) + " Nächte). Wer die ganze Lücke bucht, vom ersten bis zum letzten freien Tag, zahlt für die Übernachtungen " + P.lueckeRabatt + " Prozent weniger. Einzelne Nächte daraus sind nicht buchbar. Es gilt:</p>" + lueckenRegeln());
+  set("bc-ruhe", RUHE.length ? "<ul><li>Möglich vom " + ruhe.replace(" und ", " und vom ") + ".</li>" +
+    "<li>Nur für euch Kinder mit Partnern und Kindern, ohne externe Gäste.</li>" +
+    "<li>Frische Bettwäsche, Handtücher und Küchentücher mitbringen und selbst beziehen. Bettdecken und Kissen nie ohne frischen Duvet- und Kissenbezug benutzen. Alles nehmt ihr wieder mit.</li>" +
+    "<li>Wer geht, reinigt: WC putzen, staubsaugen, Küche sauber, Abfall entsorgen, alles picobello.</li>" +
+    "<li>Ihr zahlt den Eltern keine Reinigung (" + chf(P.reinigungSelbst) + "). Die Endreinigung durch die Eltern ist trotzdem Pflicht, weil sie ihren Standard wahren wollen.</li></ul>" : "<p>Zurzeit gibt es keine Zeiten, in denen ihr selbst reinigen könnt.</p>");
+  set("bc-endrein", "<ul>" +
+    "<li>Sie kostet " + chf(P.reinigung) + " und fällt an, sobald die Familienstaffel endet, also sobald nach einer Reisegruppe die Eltern oder ein Airbnb-Gast kommen. Der Aufenthalt wird wie üblich bezahlt, die Rechnung der Eltern kommt separat, sobald die Staffel zu Ende ist.</li>" +
+    "<li>Bezahlen muss sie die letzte Reisegruppe der Familienstaffel. War sie allein in der Staffel, sind es die vollen " + chf(P.reinigung) + ". Sonst holt sie sich den Anteil der anderen bei ihnen zurück, anteilig nach Reisegruppe. Das Einsammeln ist ihre Sache.</li>" +
+    "<li>Nutzt die Familienstaffel, um die Reinigungskosten möglichst zu drücken: Je mehr Reisegruppen nacheinander kommen, desto weniger zahlt jede Reisegruppe.</li>" +
+    "<li>Sind Geschwister gleichzeitig dort, regeln sie die Kosten untereinander.</li></ul>");
+  set("bc-rechnen", "<p>Unter dem Preis steht die Rechnung: Preis pro Nacht mal Nächte ergibt die Übernachtung, dazu kommt die Reinigung (" + chf(P.reinigung) + "). Mit Gästen steht dort auch, wer wie viel zahlt.</p><ul>" +
+    "<li>Zimmer 1 abgeschlossen: " + chf(P.sparEin) + " weniger pro Nacht, die Familie zahlt " + chf(P.famPausch - P.sparEin) + " statt " + chf(P.famPausch) + ".</li>" +
+    "<li>Lücke: " + P.lueckeRabatt + " Prozent günstiger, auf ganze Franken gerundet.</li>" +
+    "<li>Selber reinigen: jetzt keine Reinigung, die Endreinigung kommt später.</li></ul>");
+  set("bc-geld", GELD_TEXT);
+}
+// Sprung zu Erklärungen unter «Begriffe», mit Zurück-Knopf
+let ZURUECK = null;
+function setHilfe(an) {
+  const h = document.getElementById("hilfe"), b = document.getElementById("btnHilfe");
+  h.hidden = !an; b.setAttribute("aria-expanded", an ? "true" : "false"); b.classList.toggle("on", an);
+}
+function springeZu(id) {
+  const t = document.getElementById(id), bg = document.getElementById("b-begriffe"), hp = document.getElementById("hilfe");
+  if (!t || !bg || !hp) return;
+  if (!ZURUECK) ZURUECK = { y: window.scrollY, hilfeAn: !hp.hidden, offen: [] };
+  ZURUECK.offen.push([bg, bg.open], [t, t.open]);
+  setHilfe(true); bg.open = true; t.open = true;
+  t.scrollIntoView({ behavior: "smooth", block: "start" });
+  document.getElementById("zurueck").hidden = false;
+}
+function zurueckGehen() {
+  document.getElementById("zurueck").hidden = true;
+  if (!ZURUECK) return;
+  const z = ZURUECK; ZURUECK = null;
+  for (let i = z.offen.length - 1; i >= 0; i--) z.offen[i][0].open = z.offen[i][1];
+  setHilfe(z.hilfeAn);
+  window.scrollTo({ top: z.y, behavior: "auto" });
+}
 function renderKalender() {
   const heute = heuteKey();
   const n0 = new Date();
@@ -691,45 +776,27 @@ function renderKalender() {
     const hochOn = HOCH.length > 0 || HOCH_MONATE.length > 0;
     let h = "";
     if (hochOn) h += '<p><i class="sw sw-hoch"></i><b>Hochsaison</b>' + (HOCH_MONATE.length ? " (" + HOCH_MONATE.map((m) => MONATE[m - 1]).join(", ") + ")" : "") + ": Airbnb-Zeit, bitte meiden. Anfrage trotzdem möglich.</p>";
-    if (P.lueckeRabatt > 0) h += '<p><i class="sw sw-gap"></i><b>Lücke:</b> nur die ganze Lücke ist buchbar, vom ersten bis zum letzten freien Tag = ' + P.lueckeRabatt + " % Rabatt auf die Übernachtungen. Nur 2 Personen, keine Gäste, nur Zimmer 2, mit Kleinkind zusätzlich Zimmer 3. Eigene Bettwäsche sowie Tücher für Küche und Bad mitbringen.</p>";
-    if (RUHE.length) h += '<p><i class="sw sw-ruhe"></i><b>Eigene Wäsche</b> (' + RUHE.map((a) => fmtMD(a[0]) + " bis " + fmtMD(a[1])).join(" und ") + "): Reinigung selbst möglich, ohne externe Gäste.</p>";
+    if (P.lueckeRabatt > 0) h += '<p><i class="sw sw-gap"></i><b>Lücke:</b> nur die ganze Lücke ist buchbar, ' + P.lueckeRabatt + ' % Rabatt auf die Übernachtungen. ' + symBtn('b-luecke', '🧩') + '</p>';
+    if (RUHE.length) h += '<p><i class="sw sw-ruhe"></i><b>Eigene Wäsche</b> (' + RUHE.map((a) => fmtMD(a[0]) + " bis " + fmtMD(a[1])).join(" und ") + "): Reinigung selbst möglich, ohne externe Gäste. " + symBtn("b-ruhe", "🧹") + "</p>";
     if (SPITZ.length) h += '<p><i class="sw sw-spitz"></i><b>Spitzenzeit:</b> Preis auf Anfrage.</p>';
     h += '<p><i class="sw sw-occ"></i>nicht verfügbar</p>';
     el.innerHTML = h;
     el.hidden = h === "";
   }
-  {
-    const ruhe = RUHE.length ? RUHE.map((a) => fmtMD(a[0]) + " bis " + fmtMD(a[1])).join(" und ") : "";
-    const lueckeDa = Array.from(GAPSTART.keys()).some((k) => !GAPSPERR.has(k));
-    let h = !lueckeDa ? "" : '<details class="cal-info" id="info-luecke"><summary>🧩 Lücken und Rabatt</summary><p><b>Ein Angebot für gestresste Paare 😉</b> Lücken bis ' + LUECKE_MAX + " Nächte kann Airbnb nicht vermieten (Mindestaufenthalt dort " + (LUECKE_MAX + 1) + " Nächte). Wer die ganze Lücke bucht, vom ersten bis zum letzten freien Tag, zahlt für die Übernachtungen " + P.lueckeRabatt + " Prozent weniger. Einzelne Nächte daraus sind nicht buchbar. Was sonst gilt, steht im Kasten unter dem Kalender, sobald du eine Lücke wählst." + (SPITZ.length ? " Rot markiert sind Spitzenzeiten, in denen wir nur zu hohen Preisen vermieten. Dort gibt es keinen Familienpreis, nur eine Anfrage, und der Preis wird von den Eltern festgelegt." : "") + "</p></details>";
-    if (RUHE.length) {
-      h += '<details class="cal-info" id="info-ruhe"><summary>🧹 Selbstreinigung (blaue Zeiten)</summary><ul>' +
-        "<li>Möglich vom " + ruhe.replace(" und ", " und vom ") + ".</li>" +
-        "<li>Nur für euch Kinder mit Partnern und Kindern, ohne externe Gäste.</li>" +
-        "<li>Frische Bettwäsche, Handtücher und Küchentücher mitbringen und selbst beziehen. Bettdecken und Kissen nie ohne frischen Duvet- und Kissenbezug benutzen. Alles nehmt ihr wieder mit.</li>" +
-        "<li>Wer geht, reinigt: WC putzen, staubsaugen, Küche sauber, Abfall entsorgen, alles picobello.</li>" +
-        "<li>Ihr zahlt den Eltern keine Reinigung (" + chf(P.reinigungSelbst) + "). Die Endreinigung durch die Eltern ist trotzdem Pflicht, weil sie ihren Standard wahren wollen.</li></ul></details>";
-      h += '<details class="cal-info" id="info-endrein"><summary>🪣 Endreinigung ' + chf(P.reinigung) + ' und Familienstaffel</summary><ul>' +
-        "<li>Sie fällt an, sobald die Familienstaffel endet, also sobald nach einer Reisegruppe die Eltern oder ein Airbnb-Gast kommen. Der Aufenthalt wird wie üblich bezahlt, die Rechnung der Eltern kommt separat, sobald die Staffel zu Ende ist.</li>" +
-        "<li>Bezahlen muss sie die letzte Reisegruppe der Familienstaffel. War sie allein in der Staffel, sind es die vollen " + chf(P.reinigung) + ". Sonst holt sie sich den Anteil der anderen bei ihnen zurück, anteilig nach Reisegruppe. Das Einsammeln ist ihre Sache.</li>" +
-        "<li>Nutzt die Familienstaffel, um die Reinigungskosten möglichst zu drücken: Je mehr Reisegruppen nacheinander kommen, desto weniger zahlt jede Reisegruppe.</li>" +
-        "<li>Sind Geschwister gleichzeitig dort, regeln sie die Kosten untereinander.</li></ul></details>";
-    }
-    document.getElementById("calInfos").innerHTML = h;
-  }
+  begriffeFuellen();
   const sp = spitzTermin();
   const spEl = document.getElementById("calSpitz");
   spEl.hidden = !sp;
   spEl.textContent = sp ? "Spitzenzeit" + (sp[2] ? " (" + sp[2] + ")" : "") + ": In dieser Zeit vermieten wir nur zu hohen Preisen. Es gibt dafür keinen Familienpreis, der Preis wird von den Eltern festgelegt. Eine Anfrage ist trotzdem möglich." : "";
   const lrEl = document.getElementById("calLRegeln");
   lrEl.hidden = !S.luecke;
-  lrEl.innerHTML = S.luecke ? "<strong><button type=\"button\" class=\"sym\" data-info=\"info-luecke\" aria-label=\"Regeln zu Lücken anzeigen\">🧩</button> Ganze Lücke: ein Angebot für gestresste Paare 😉</strong><ul><li>Höchstens " + P.lueckeMaxPersonen + " Personen mit Bett, zusätzlich höchstens " + P.lueckeMaxKleinkinder + " Kleinkind im Kinderbettchen.</li><li>Keine externen Gäste.</li><li>Nur Zimmer 2 mit dem blauen Bad. Mit Kleinkind zusätzlich Zimmer 3. Zimmer 1 bleibt abgeschlossen.</li><li>Frische Bettwäsche, Handtücher und Küchentücher mitbringen und selbst beziehen. Bettdecken und Kissen nie ohne frischen Duvet- und Kissenbezug benutzen. Alles nehmt ihr wieder mit.</li><li>Die Eltern reinigen für " + chf(P.reinigung) + ".</li></ul>" : "";
+  lrEl.innerHTML = S.luecke ? "<strong>" + symBtn("b-luecke", "🧩") + " Ganze Lücke: ein Angebot für gestresste Paare 😉</strong>" + lueckenRegeln() : "";
   const ruheEl = document.getElementById("calRuhe");
   let monatRuhe = false;
   for (let d = 1, nt = new Date(Date.UTC(calY, calM + 1, 0)).getUTCDate(); d <= nt; d++) if (istRuhe(dkey(calY, calM, d))) { monatRuhe = true; break; }
   const ruheZeigen = S.selbstOK && monatRuhe;
   ruheEl.hidden = !ruheZeigen;
-  ruheEl.innerHTML = ruheZeigen ? '<button type="button" class="sym" data-info="info-ruhe" aria-label="Regeln zur Selbstreinigung anzeigen">🧹</button> In dieser Zeit könnt ihr die Reinigung selbst übernehmen: ' + RUHE.map((a) => fmtMD(a[0]) + " bis " + fmtMD(a[1])).join(" und ") + ". Das geht nur für euch Kinder und nur ohne externe Gäste." : "";
+  ruheEl.innerHTML = ruheZeigen ? '<button type="button" class="sym" data-info="b-ruhe" aria-label="Regeln zur Selbstreinigung anzeigen">🧹</button> In dieser Zeit könnt ihr die Reinigung selbst übernehmen: ' + RUHE.map((a) => fmtMD(a[0]) + " bis " + fmtMD(a[1])).join(" und ") + ". Das geht nur für euch Kinder und nur ohne externe Gäste." : "";
   const warn = document.getElementById("calWarn");
   const msgs = [];
   if (ARR && DEP) {
@@ -743,22 +810,17 @@ function renderKalender() {
     ? "👉 Erst Anreise-, dann Abreisetag antippen. " + P.minNaechte + " bis " + P.maxNaechte + " Nächte. Graue, durchgestrichene Tage sind nicht verfügbar. Die Belegung wird alle paar Stunden aktualisiert."
     : "Die Belegung konnte nicht geladen werden, alle Tage erscheinen frei. Der Termin ist nur eine Anfrage, die Eltern prüfen ihn.";
 }
-let ZURUECK_Y = null;
 document.addEventListener("click", (e) => {
   const b = e.target.closest(".sym[data-info]");
-  if (b) {
-    const d = document.getElementById(b.dataset.info);
-    if (!d) return;
-    ZURUECK_Y = window.scrollY; d.open = true;
-    d.scrollIntoView({ behavior: "smooth", block: "start" });
-    document.getElementById("zurueck").hidden = false;
-    return;
-  }
-  if (e.target.closest("#zurueck")) {
-    document.getElementById("zurueck").hidden = true;
-    if (ZURUECK_Y !== null) window.scrollTo({ top: ZURUECK_Y, behavior: "smooth" });
-    ZURUECK_Y = null;
-  }
+  if (b) { e.preventDefault(); springeZu(b.dataset.info); return; }
+  if (e.target.closest("#zurueck")) zurueckGehen();
+});
+document.getElementById("btnHilfe").addEventListener("click", () => setHilfe(document.getElementById("hilfe").hidden));
+document.getElementById("btnReserv").addEventListener("click", () => {
+  document.getElementById("rechner").hidden = false;
+  document.body.classList.add("rechner-an");
+  document.getElementById("btnReserv").classList.add("on");
+  document.getElementById("cal").scrollIntoView({ behavior: "smooth", block: "start" });
 });
 document.getElementById("calPrev").addEventListener("click", () => { calM--; if (calM < 0) { calM = 11; calY--; } renderKalender(); });
 document.getElementById("calNext").addEventListener("click", () => { calM++; if (calM > 11) { calM = 0; calY++; } renderKalender(); });
@@ -864,7 +926,7 @@ function endreinigungInfo(r) {
   const nb = (t) => '<span style="white-space:nowrap">' + t + '</span>';
   const au = r.TOT;
   const R = P.reinigung;
-  return '<div class="note"><b><button type="button" class="sym" data-info="info-endrein" aria-label="Regeln zur Endreinigung anzeigen">🪣</button> Endreinigung später: was kommt noch dazu?</b>' +
+  return '<div class="note"><b><button type="button" class="sym" data-info="b-endrein" aria-label="Regeln zur Endreinigung anzeigen">🪣</button> Endreinigung später: was kommt noch dazu?</b>' +
     '<p>Jetzt überweist ihr nur den Aufenthalt: ' + nb('<b>' + chf(au) + '</b>') + '. Die Endreinigung kommt später dazu, höchstens ' + nb(chf(R)) + '. Wer sie zahlt und wann, steht oben im Kalender unter «Endreinigung».</p>' +
     '<p><b>Nur als Info, Total für euch:</b></p><ul style="margin:2px 0">' +
     '<li>Ihr seid allein: ' + nb(chf(au)) + ' + ' + nb(chf(R)) + ' = <b>' + nb(chf(au + R)) + '</b></li>' +
@@ -1043,9 +1105,8 @@ function render() {
     '<table><tbody>' + who + '</tbody></table>' : '') +
     (x.GE >= 1 ? einladenBox(r) : '') +
     anfrageKasten(r) +
-    '<details><summary>🧮 So wird gerechnet</summary><div class="rows"><table><tbody>' + det + '</tbody></table>' + notes + (x.SB ? endreinigungInfo(r) : '') + '</div></details>' +
-    '<details><summary>💰 Wofür benötigen wir dieses Geld?</summary><div class="rows">' +
-      '<p>Damit decken wir die laufenden Kosten des Chalets: Gästekarten, Strom, Wasser, Abwasser und Öl, dazu Miete, Unterhalt (zum Beispiel der Maler), Reparaturen (zum Beispiel eine defekte Heizung), Anschaffungen und Abschreibung.</p>' +
+    '<details><summary>' + symBtn('b-rechnen', '🧮') + ' So wird gerechnet</summary><div class="rows"><table><tbody>' + det + '</tbody></table>' + notes + (x.SB ? endreinigungInfo(r) : '') + '</div></details>' +
+    '<details><summary>' + symBtn('b-geld', '💰') + ' Wofür benötigen wir dieses Geld?</summary><div class="rows">' + GELD_TEXT +
     '</div></details>' +
     '<div id="elternZone" class="eltern-zone" aria-hidden="true"><span data-z="0">😎</span><span data-z="1">😉</span><span data-z="2">😘</span></div>' + (ELTERN ? elternKasten() : '');
 }
