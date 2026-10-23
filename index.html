@@ -263,8 +263,8 @@
   .bar .lab { font-size: 0.95rem; min-width: 0; }
   .bar .lab small { font-size: 0.78rem; opacity: 0.9; }
   .start { display: flex; flex-direction: column; gap: 10px; }
-  .bigbtn { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; min-height: 68px; font: inherit; font-size: 1.3rem; font-weight: 700; color: var(--accent); background: var(--surface); border: 3px solid var(--accent); border-radius: 12px; cursor: pointer; padding: 10px 16px; }
-  .bigbtn .bi { font-size: 1.8rem; line-height: 1; }
+  .bigbtn { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; min-height: 96px; font: inherit; font-size: 1.55rem; font-weight: 700; color: var(--accent); background: var(--surface); border: 3px solid var(--accent); border-radius: 12px; cursor: pointer; padding: 10px 16px; }
+  .bigbtn .bi { font-size: 2.5rem; line-height: 1; }
   .bigbtn.main, .bigbtn.on { background: var(--accent); color: var(--accent-fg); }
   #hilfe { display: flex; flex-direction: column; gap: 12px; }
   #hilfe[hidden], #rechner[hidden] { display: none; }
@@ -367,7 +367,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "3.00";
+let VERSION = "3.01";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -698,12 +698,19 @@ function setHilfe(an) {
   const h = document.getElementById("hilfe"), b = document.getElementById("btnHilfe");
   h.hidden = !an; b.setAttribute("aria-expanded", an ? "true" : "false"); b.classList.toggle("on", an);
 }
+// Es ist immer nur eines offen: Hilfe oder Rechner (die Eingaben bleiben beim Umschalten erhalten)
+function setRechner(an) {
+  document.getElementById("rechner").hidden = !an;
+  document.body.classList.toggle("rechner-an", an);
+  document.getElementById("btnReserv").classList.toggle("on", an);
+}
+function hilfeZuklappen() { document.querySelectorAll("#hilfe details").forEach((d) => { d.open = false; }); }
 function springeZu(id) {
   const t = document.getElementById(id), bg = document.getElementById("b-begriffe"), hp = document.getElementById("hilfe");
   if (!t || !bg || !hp) return;
-  if (!ZURUECK) ZURUECK = { y: window.scrollY, hilfeAn: !hp.hidden, offen: [] };
+  if (!ZURUECK) ZURUECK = { y: window.scrollY, hilfeAn: !hp.hidden, rechnerAn: !document.getElementById("rechner").hidden, offen: [] };
   ZURUECK.offen.push([bg, bg.open], [t, t.open]);
-  setHilfe(true); bg.open = true; t.open = true;
+  setRechner(false); setHilfe(true); bg.open = true; t.open = true;
   t.scrollIntoView({ behavior: "smooth", block: "start" });
   document.getElementById("zurueck").hidden = false;
 }
@@ -712,7 +719,7 @@ function zurueckGehen() {
   if (!ZURUECK) return;
   const z = ZURUECK; ZURUECK = null;
   for (let i = z.offen.length - 1; i >= 0; i--) z.offen[i][0].open = z.offen[i][1];
-  setHilfe(z.hilfeAn);
+  setHilfe(z.hilfeAn); setRechner(z.rechnerAn);
   window.scrollTo({ top: z.y, behavior: "auto" });
 }
 function renderKalender() {
@@ -815,11 +822,15 @@ document.addEventListener("click", (e) => {
   if (b) { e.preventDefault(); springeZu(b.dataset.info); return; }
   if (e.target.closest("#zurueck")) zurueckGehen();
 });
-document.getElementById("btnHilfe").addEventListener("click", () => setHilfe(document.getElementById("hilfe").hidden));
+document.getElementById("btnHilfe").addEventListener("click", () => {
+  const an = document.getElementById("hilfe").hidden;
+  ZURUECK = null; document.getElementById("zurueck").hidden = true;
+  if (an) setRechner(false); else hilfeZuklappen();
+  setHilfe(an);
+});
 document.getElementById("btnReserv").addEventListener("click", () => {
-  document.getElementById("rechner").hidden = false;
-  document.body.classList.add("rechner-an");
-  document.getElementById("btnReserv").classList.add("on");
+  ZURUECK = null; document.getElementById("zurueck").hidden = true;
+  setHilfe(false); hilfeZuklappen(); setRechner(true);
   document.getElementById("cal").scrollIntoView({ behavior: "smooth", block: "start" });
 });
 document.getElementById("calPrev").addEventListener("click", () => { calM--; if (calM < 0) { calM = 11; calY--; } renderKalender(); });
@@ -1111,7 +1122,7 @@ function render() {
     '<div id="elternZone" class="eltern-zone" aria-hidden="true"><span data-z="0">😎</span><span data-z="1">😉</span><span data-z="2">😘</span></div>' + (ELTERN ? elternKasten() : '');
 }
 
-document.getElementById("reset").addEventListener("click", () => { ELTERN = false; EMPF = ""; S = Object.assign({}, EMPTY); ARR = ""; DEP = ""; initKalenderMonat(); notice = ""; render(); renderKalender(); window.scrollTo({ top: 0 }); });
+document.getElementById("reset").addEventListener("click", () => { ELTERN = false; EMPF = ""; S = Object.assign({}, EMPTY); ARR = ""; DEP = ""; initKalenderMonat(); notice = ""; render(); renderKalender(); ZURUECK = null; document.getElementById("zurueck").hidden = true; setHilfe(false); hilfeZuklappen(); setRechner(false); window.scrollTo({ top: 0 }); });
 function wendeEinstellungenAn(j) {
   if (!j || typeof j !== "object") return;
   Object.keys(P).forEach((k) => {
