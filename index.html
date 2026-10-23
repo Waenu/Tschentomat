@@ -452,7 +452,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "3.47";
+let VERSION = "3.48";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -751,7 +751,7 @@ function kalenderKlick(k) {
   normalize(); render(); renderKalender();
 }
 
-const GELD_TEXT = "<p>Damit decken wir die laufenden Kosten des Chalets: Kurtaxen, Gästekarten, Strom, Wasser, Abwasser, Öl und Betriebsmittel, dazu Miete, Unterhalt (zum Beispiel der Maler), Reparaturen (zum Beispiel eine defekte Heizung), Anschaffungen, Abschreibung, Hypozinsen und Steuern.</p>";
+const GELD_TEXT = "<p>Damit decken wir die laufenden Kosten des Chalets: Kurtaxen, Gästekarten, Strom, Wasser, Abwasser, Öl, WLAN und Betriebsmittel, dazu Miete, Unterhalt (zum Beispiel der Maler), Reparaturen (zum Beispiel eine defekte Heizung), Anschaffungen, Abschreibung, Hypozinsen und Steuern.</p>";
 function symBtn(id, emoji) { return '<button type="button" class="sym" data-info="' + id + '" aria-label="Zur Erklärung springen">' + emoji + '</button>'; }
 function lueckenRegeln() {
   return "<ul><li>Höchstens " + P.lueckeMaxPersonen + " Personen mit Bett, zusätzlich höchstens " + P.lueckeMaxKleinkinder + " Kleinkind im Kinderbettchen.</li><li>Keine externen Gäste.</li><li>Nur Zimmer 2 mit dem blauen Bad. Mit Kleinkind zusätzlich Zimmer 3. Zimmer 1 bleibt abgeschlossen.</li><li>Frische Bettwäsche, Handtücher und Küchentücher mitbringen und selbst beziehen. Bettdecken und Kissen nie ohne frischen Duvet- und Kissenbezug benutzen. Alles nehmt ihr wieder mit. Nur die Moltons bleiben nach dem Benutzen auf der Matratze.</li><li>Die Eltern reinigen für " + chf(P.reinigung) + ".</li></ul>";
