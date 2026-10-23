@@ -179,6 +179,7 @@
   .field select.missing { background-color: var(--missing-bg) !important; border-color: var(--missing-line) !important; }
   .field select.done { background-color: var(--done-bg) !important; border-color: var(--done-line) !important; }
   .field select.locked { background-color: var(--note-bg) !important; border-color: var(--line) !important; color: var(--muted); opacity: 0.85; }
+  html[data-fs="gross"] .field select#s-wer { font-size: 0.9em; padding-left: 10px; padding-right: 34px; }
   .field select option { background-color: var(--surface); color: var(--fg); }
   .field select:focus-visible, button:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
   .hint { margin: 0; font-size: var(--t-small); color: var(--muted); }
@@ -456,7 +457,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "3.53";
+let VERSION = "3.54";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -491,7 +492,7 @@ const MFG = "Meine Familie und Geschwister";
 const WERL = ["Nur ich", "Ich und Partner", "Ich und 1 Kind", "Ich und 2 Kinder",
               "Ich, Partner und 1 Kind", "Ich, Partner und 2 Kinder", MFG];
 // Ganze Lücke: nur 2 Erwachsene in den Betten (Partner, Bruder oder Schwester), dazu höchstens 1 Kleinkind im Kinderbettchen
-const LWERL = ["Nur ich", "Ich und 1 Familienmitglied", "Ich und Kleinkind", "Ich, Familienmitglied, Kleink."];
+const LWERL = ["Nur ich", "Ich und 1 Familienmitglied", "Ich und Kleinkind", "Ich, Familienmitglied, Kleinkind"];
 const REINIG = [
   "Gleichmässig: Familie zählt als 1, jeder Gast als 1",
   "Nach Personen: ab 2½ Jahren zählt jede Person gleich",
@@ -511,7 +512,7 @@ function derive(s) {
   if (wer === "Nur ich") base = 1;
   else if (wer === "Ich und Partner") base = 2;
   else if (wer === "Ich und 1 Familienmitglied" || wer === "Ich und Kleinkind") base = 2;
-  else if (wer === "Ich, Familienmitglied, Kleink.") base = 3;
+  else if (wer === "Ich, Familienmitglied, Kleinkind") base = 3;
   else if (wer === "Ich und 1 Kind") base = 2;
   else if (wer === "Ich und 2 Kinder") base = 3;
   else if (wer === "Ich, Partner und 1 Kind") base = 3;
@@ -519,7 +520,7 @@ function derive(s) {
   else if (wer === MFG) base = nz(s.fam);
   let kkMax = 0;
   let kkMust = 0;
-  if (wer === "Ich und Kleinkind" || wer === "Ich, Familienmitglied, Kleink.") { kkMax = 1; kkMust = 1; }
+  if (wer === "Ich und Kleinkind" || wer === "Ich, Familienmitglied, Kleinkind") { kkMax = 1; kkMust = 1; }
   else if (wer === "Ich und 1 Kind" || wer === "Ich, Partner und 1 Kind") kkMax = 1;
   else if (wer === "Ich und 2 Kinder" || wer === "Ich, Partner und 2 Kinder") kkMax = 2;
   else if (wer === MFG) kkMax = (typeof s.fam === "number") ? Math.min(2, s.fam - 1) : 0;
@@ -1148,7 +1149,7 @@ function einladungText() {
     "Ich und Partner": "ihr als Paar",
     "Ich und 1 Familienmitglied": "ihr zu zweit",
     "Ich und Kleinkind": "du mit 1 Kleinkind",
-    "Ich, Familienmitglied, Kleink.": "ihr zu zweit mit 1 Kleinkind",
+    "Ich, Familienmitglied, Kleinkind": "ihr zu zweit mit 1 Kleinkind",
     "Ich und 1 Kind": "du mit 1 Kind",
     "Ich und 2 Kinder": "du mit 2 Kindern",
     "Ich, Partner und 1 Kind": "ihr als Familie mit 1 Kind",
@@ -1410,6 +1411,7 @@ Promise.all([ladeEinstellungen(), ladeBelegt()]).then(() => {
     try { const g = localStorage.getItem("tm_schrift"); const i = STUFEN.findIndex((x) => x[0] === g); if (i >= 0) stufe = i; } catch (e) {}
     const wende = () => {
       document.documentElement.style.setProperty("--fs", String(STUFEN[stufe][1]));
+      document.documentElement.setAttribute("data-fs", STUFEN[stufe][0]);
       fb.querySelectorAll("span").forEach((sp, i) => sp.classList.toggle("on", i === stufe));
       fb.title = "Schrift: " + STUFEN[stufe][0];
     };
