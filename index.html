@@ -346,7 +346,7 @@
         <p><b>TSCHENT-O-MAT ist interaktiv.</b> Von oben nach unten ausfüllen. Es erscheint nur, was in eurem Fall möglich ist.</p>
         <p>Mit 💡 lassen sich Menüs auf- und zuklappen.</p>
         <p>Mit gestrichelten Icons wie <button type="button" class="sym" data-info="b-luecke" aria-label="Beispiel: zur Erklärung springen">🧩</button> springt ihr zur Erklärung. Sie erscheint ausgeklappt. Mit dem gelben Knopf «↩ zurück» geht es an die Ausgangsstelle zurück.</p>
-        <p>Der Knopf <b>↑ Menü</b> unten links erscheint, sobald ihr nach unten scrollt. Ein Tipp darauf bringt euch nach oben zu den zwei grossen Schaltflächen. Eure Eingaben bleiben dabei erhalten.</p>
+        <p>Der Knopf <b>↑ Menü</b> unten links erscheint, sobald ihr nach unten scrollt. Ein Tipp darauf bringt euch nach oben zu den grossen Schaltflächen. Eure Eingaben bleiben dabei erhalten.</p>
       </div>
     </details>
     <details class="card" id="b-begriffe">
@@ -372,6 +372,37 @@
     </details>
     </div>
     <button type="button" class="bigbtn main" id="btnReserv" aria-controls="rechner"><span class="bi" aria-hidden="true">📅</span>Ich reserviere jetzt</button>
+    <button type="button" class="bigbtn" id="btnChem" aria-expanded="false" aria-controls="cheminee"><span class="bi" aria-hidden="true">🔥</span>Cheminée-Anleitung</button>
+    <div id="cheminee" hidden>
+    <div class="card">
+      <div class="rows">
+        <p>Hoi zäme, so zieht der Rauch nach oben und nicht in die Wohnung. Schlosscode: <b>1397</b> (Tasten in den Ecken, im Uhrzeigersinn).</p>
+        <p><b>Vor dem Anzünden</b></p>
+        <ol>
+          <li><b>Lüftung aus.</b> Dunstabzug und Ventilatoren ausschalten. Läuft ein Bad-Ventilator noch nach, kippt das Fenster neben dem Cheminée.</li>
+          <li><b>Luft.</b> Ascheschublade höchstens 2 cm öffnen, Schieber ganz auf.</li>
+          <li><b>Holz.</b> Maximal 4 Scheiter hinten an der Wand (Holzbalken über dem Cheminée, nicht zu heiss).</li>
+        </ol>
+        <p><b>Beim Feuern</b></p>
+        <ol start="4">
+          <li>Brennt das Feuer richtig gut:
+            <ul>
+              <li>Schublade schliessen, Schieber offen lassen oder höchstens halb schliessen.</li>
+              <li>Fenster wieder schliessen.</li>
+              <li>Dunstabzug und Bad-Ventilatoren dürfen jetzt laufen. Die Ventis stellen selber ab.</li>
+              <li><b>Beim Verlassen des Hauses den Schieber immer ganz öffnen.</b></li>
+            </ul></li>
+        </ol>
+        <p><b>Zieht der Kamin nicht?</b><br>Bei Sonnenschein staut sich Wärme im Kamin (Hitzepfropfen). Legt eine Zeitung bereit. Drückt Rauch in die Stube: Zeitung rollen, anzünden, unter den Kamin halten. Das hilft immer.</p>
+        <p><b>Danach</b></p>
+        <ol start="5">
+          <li><b>Asche</b> nie in den Abfallkübel. Schublade leeren im Aschekübel im Keller (Sunnwendi), Deckel zu, draussen bei der Storenkurbel hinstellen.</li>
+          <li><b>Reinigung:</b> Asche im Brennraum liegen lassen, die sauge ich ab. Die Scheiben reinige ich auch. <b>Kein Putzmittel!</b> Die Scheiben werden sonst trüb, und das lässt sich nicht mehr reparieren.</li>
+        </ol>
+        <p>Viel Freude am Feuer!<br>Gruess, Papi</p>
+      </div>
+    </div>
+    </div>
   </nav>
 
   <div id="rechner" hidden>
@@ -421,7 +452,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "3.45";
+let VERSION = "3.46";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -767,6 +798,11 @@ function setRechner(an) {
   document.body.classList.toggle("rechner-an", an);
   document.getElementById("btnReserv").classList.toggle("on", an);
 }
+function setChem(an) {
+  document.getElementById("cheminee").hidden = !an;
+  const b = document.getElementById("btnChem");
+  b.setAttribute("aria-expanded", an ? "true" : "false"); b.classList.toggle("on", an);
+}
 function hilfeZuklappen() { document.querySelectorAll("#hilfe details").forEach((d) => { d.open = false; }); }
 function springeZu(id) {
   const t = document.getElementById(id), bg = document.getElementById("b-begriffe"), hp = document.getElementById("hilfe");
@@ -937,13 +973,20 @@ window.addEventListener("scroll", () => { document.getElementById("nachOben").hi
 document.getElementById("btnHilfe").addEventListener("click", () => {
   const an = document.getElementById("hilfe").hidden;
   ZURUECK = null; document.getElementById("zurueck").hidden = true;
-  if (an) setRechner(false); else hilfeZuklappen();
+  if (an) { setRechner(false); setChem(false); } else hilfeZuklappen();
   setHilfe(an);
 });
 document.getElementById("btnReserv").addEventListener("click", () => {
   ZURUECK = null; document.getElementById("zurueck").hidden = true;
-  setHilfe(false); hilfeZuklappen(); setRechner(true);
+  setHilfe(false); hilfeZuklappen(); setChem(false); setRechner(true);
   document.getElementById("cal").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+document.getElementById("btnChem").addEventListener("click", () => {
+  const an = document.getElementById("cheminee").hidden;
+  ZURUECK = null; document.getElementById("zurueck").hidden = true;
+  if (an) { setHilfe(false); hilfeZuklappen(); setRechner(false); }
+  setChem(an);
+  if (an) document.getElementById("cheminee").scrollIntoView({ behavior: "smooth", block: "start" });
 });
 document.getElementById("calPrev").addEventListener("click", () => { calM--; if (calM < 0) { calM = 11; calY--; } renderKalender(); });
 document.getElementById("calHeute").addEventListener("click", () => { initKalenderMonat(); renderKalender(); });
