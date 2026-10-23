@@ -185,7 +185,8 @@
   .hint { margin: 0; font-size: var(--t-small); color: var(--muted); }
   .hint .rot { color: var(--spitz-line); font-weight: 400; }
   .note.rot { color: var(--spitz-line); font-weight: 400; }
-  .warn-txt { color: var(--spitz-line); }
+  .note.h { background: var(--note-bg); border: 2px solid var(--ruhe-line); color: var(--fg); font-weight: 400; }
+  .note.h > b:first-child { font-weight: 700; }
 
   .card { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
   .card h2 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 1.5rem; letter-spacing: 0.03em; text-transform: uppercase; }
@@ -352,6 +353,7 @@
         <p><b>TSCHENT-O-MAT ist interaktiv.</b> Von oben nach unten ausfüllen. Die Felder hängen zusammen: Eure Wahl bestimmt, was bei den nächsten Feldern zur Auswahl steht.</p>
         <p>Mit 💡 lassen sich Menüs auf- und zuklappen.</p>
         <p>Mit gestrichelten Icons wie <button type="button" class="sym" data-info="b-luecke" aria-label="Beispiel: zur Erklärung springen">🧩</button> springt ihr zur Erklärung. Sie erscheint ausgeklappt. Mit dem gelben Knopf «↩ zurück» geht es an die Ausgangsstelle zurück.</p>
+        <p>Hinweise erkennt ihr am blauen Rahmen. <b>ℹ️ Hinweis</b> erklärt etwas, <b>⚠️ Warnung</b> macht auf etwas aufmerksam, das den Aufenthalt oder den Preis verändert.</p>
         <p>Der Knopf <b>↑ Menü</b> unten links erscheint, sobald ihr nach unten scrollt. Ein Tipp darauf bringt euch nach oben zu den grossen Schaltflächen. Eure Eingaben bleiben dabei erhalten.</p>
       </div>
     </details>
@@ -435,11 +437,11 @@
     </div>
     <div class="cal-grid" id="calGrid"></div>
     <p class="cal-sel" id="calSel" role="status"></p>
-    <p class="note spitz" id="calSpitz" hidden></p>
-    <p class="note rot" id="calRuhe" hidden></p>
-    <p class="note" id="calNormal" hidden></p>
-    <div class="note" id="calLRegeln" hidden></div>
-    <p class="note" id="calWarn" hidden></p>
+    <p class="note h" id="calSpitz" hidden></p>
+    <p class="note h" id="calRuhe" hidden></p>
+    <p class="note h" id="calNormal" hidden></p>
+    <div class="note h" id="calLRegeln" hidden></div>
+    <div class="note h" id="calWarn" hidden></div>
   </section>
 
   <form id="form" onsubmit="return false" autocomplete="off"></form>
@@ -460,7 +462,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "3.63";
+let VERSION = "3.64";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -774,6 +776,7 @@ function kalenderKlick(k) {
 }
 
 const GELD_TEXT = "<p>Damit decken wir die laufenden Kosten des Chalets: Kurtaxen, Gästekarten, Strom, Wasser, Öl, WLAN und Betriebsmittel, dazu Unterhalt und Ersatz (zum Beispiel Scharniere ersetzen, ein neuer Boiler, defekte Ventilatoren), Anschaffungen (zum Beispiel Cheminée, Duschkabine, Sofa), Abschreibung, Hypozinsen und Steuern.</p><p>In den <b>Erneuerungsfonds</b> legen wir Geld für grosse Arbeiten zurück, zum Beispiel für den Maler, eine neue Heizung oder ein neues Geländer.</p>";
+const HW = "<b>ℹ️ Hinweis:</b> ", WA = "<b>⚠️ Warnung:</b> ";
 function symBtn(id, emoji) { return '<button type="button" class="sym" data-info="' + id + '" aria-label="Zur Erklärung springen">' + emoji + '</button>'; }
 function lueckenRegeln() {
   return "<ul><li>Höchstens " + P.lueckeMaxPersonen + " Erwachsene in den Betten (Partner, Bruder oder Schwester), zusätzlich höchstens " + P.lueckeMaxKleinkinder + " Kleinkind im Kinderbettchen.</li><li>Keine externen Gäste. Es kommt nur die Familie: Partner, Bruder oder Schwester.</li><li>Nur Zimmer 2 mit dem blauen Bad. Das Kleinkind schläft bei den Erwachsenen in Zimmer 2 oder im Kinderbettchen in Zimmer 3. Zimmer 1 und das rote Bad bleiben unberührt.</li><li>Frische Bettwäsche, Handtücher und Küchentücher mitbringen und selbst beziehen. Bettdecken und Kissen nie ohne frischen Duvet- und Kissenbezug benutzen. Alles nehmt ihr wieder mit. Nur die Moltons bleiben nach dem Benutzen auf der Matratze.</li><li>Die Eltern reinigen für " + chf(P.reinigung) + ".</li></ul>";
@@ -927,16 +930,16 @@ function renderKalender() {
   const sp = spitzTermin();
   const spEl = document.getElementById("calSpitz");
   spEl.hidden = !sp;
-  spEl.textContent = sp ? "Spitzenzeit" + (sp[2] ? " (" + sp[2] + ")" : "") + ": In dieser Zeit vermieten wir nur zu hohen Preisen. Es gibt dafür keinen Familienpreis, der Preis wird von den Eltern festgelegt. Eine Anfrage ist trotzdem möglich." : "";
+  spEl.innerHTML = sp ? WA + "Spitzenzeit" + (sp[2] ? " (" + sp[2] + ")" : "") + ": In dieser Zeit vermieten wir nur zu hohen Preisen. Es gibt dafür keinen Familienpreis, der Preis wird von den Eltern festgelegt. Eine Anfrage ist trotzdem möglich." : "";
   const lrEl = document.getElementById("calLRegeln");
   lrEl.hidden = !S.luecke;
-  lrEl.innerHTML = S.luecke ? symBtn("b-luecke", "🧩") + " Alles über Lücken erfahren" : "";
+  lrEl.innerHTML = S.luecke ? HW + symBtn("b-luecke", "🧩") + " Alles über Lücken erfahren" : "";
   const ruheEl = document.getElementById("calRuhe");
   let monatRuhe = false;
   for (let d = 1, nt = new Date(Date.UTC(calY, calM + 1, 0)).getUTCDate(); d <= nt; d++) if (istRuhe(dkey(calY, calM, d))) { monatRuhe = true; break; }
   const ruheZeigen = S.selbstOK && monatRuhe;
   ruheEl.hidden = !ruheZeigen;
-  ruheEl.innerHTML = ruheZeigen ? '<button type="button" class="sym" data-info="b-ruhe" aria-label="Regeln zur Selbstreinigung anzeigen">🧹</button> In dieser Zeit könnt ihr die Reinigung selbst übernehmen: ' + RUHE.map((a) => fmtMD(a[0]) + " bis " + fmtMD(a[1])).join(" und ") + ". Das geht nur für euch Kinder und nur ohne externe Gäste." : "";
+  ruheEl.innerHTML = ruheZeigen ? HW + '<button type="button" class="sym" data-info="b-ruhe" aria-label="Regeln zur Selbstreinigung anzeigen">🧹</button> In dieser Zeit könnt ihr die Reinigung selbst übernehmen: ' + RUHE.map((a) => fmtMD(a[0]) + " bis " + fmtMD(a[1])).join(" und ") + ". Das geht nur für euch Kinder und nur ohne externe Gäste." : "";
   const nEl = document.getElementById("calNormal");
   const nZeigen = normalStay();
   nEl.hidden = !nZeigen;
@@ -945,17 +948,17 @@ function renderKalender() {
     for (let k = ARR; k < DEP; k = addDays(k, 1)) if (istRuhe(k)) { gemischt = true; break; }
   }
   nEl.hidden = !(nZeigen || gemischt);
-  nEl.innerHTML = nZeigen ? "Normale Zeit: normale Familienpreise, Endreinigung nach den Regeln. " + symBtn("b-endrein", "🪣")
-    : (gemischt ? "<span class=\"warn-txt\">⚠️ Dieser Aufenthalt liegt teils in der Zeit «Eigene Wäsche». Selbst reinigen ist nur möglich, wenn der ganze Aufenthalt darin liegt.</span> " + symBtn("b-ruhe", "🧹") : "");
+  nEl.innerHTML = nZeigen ? HW + "Normale Zeit: normale Familienpreise, Endreinigung nach den Regeln. " + symBtn("b-endrein", "🪣")
+    : (gemischt ? WA + "Dieser Aufenthalt liegt teils in der Zeit «Eigene Wäsche». Selbst reinigen ist nur möglich, wenn der ganze Aufenthalt darin liegt. " + symBtn("b-ruhe", "🧹") : "");
   const warn = document.getElementById("calWarn");
   const msgs = [];
   if (ARR && DEP) {
-    for (let k = ARR; k < DEP; k = addDays(k, 1)) if (istHoch(k)) { msgs.push("🧑‍🏫 Dieser Termin liegt in der Hochsaison. Bitte wenn möglich einen anderen wählen. Eine Anfrage ist trotzdem möglich. 🙏"); break; }
+    for (let k = ARR; k < DEP; k = addDays(k, 1)) if (istHoch(k)) { msgs.push(HW + "🧑‍🏫 Dieser Termin liegt in der Hochsaison. Bitte wenn möglich einen anderen wählen. Eine Anfrage ist trotzdem möglich. 🙏"); break; }
     const lg = lueckeVon(ARR);
-    if (lg && !S.luecke && P.lueckeRabatt > 0) msgs.push("Dieser Termin liegt in einer Lücke, aber ohne Rabatt. Mit Anreise am " + fmtTag(lg[0]) + " und Abreise am " + fmtTag(lg[1]) + " (die ganze Lücke) wäre es " + P.lueckeRabatt + " Prozent günstiger auf die Übernachtungen.");
+    if (lg && !S.luecke && P.lueckeRabatt > 0) msgs.push(HW + "Dieser Termin liegt in einer Lücke, aber ohne Rabatt. Mit Anreise am " + fmtTag(lg[0]) + " und Abreise am " + fmtTag(lg[1]) + " (die ganze Lücke) wäre es " + P.lueckeRabatt + " Prozent günstiger auf die Übernachtungen.");
   }
   warn.hidden = msgs.length === 0;
-  warn.textContent = msgs.join(" ");
+  warn.innerHTML = msgs.join("<br>");
   document.getElementById("calHint").textContent = BELEGT_OK
     ? "👉 Erst den Anreisetag, dann den Abreisetag antippen. Die Nächte werden unter dem Kalender angezeigt. Erlaubt sind " + P.minNaechte + " bis " + P.maxNaechte + " Nächte. Mit ‹ und › blättert ihr durch die Monate. Graue, durchgestrichene Tage sind nicht verfügbar. Die Belegung wird alle paar Stunden aktualisiert."
     : "Die Belegung konnte nicht geladen werden, alle Tage erscheinen frei. Der Termin ist nur eine Anfrage, die Eltern prüfen ihn.";
@@ -1286,7 +1289,7 @@ function render() {
   if (spR) {
     lab.textContent = "Spitzenzeit: Preis auf Anfrage"; val.textContent = "";
     res.innerHTML = '<h2>Preis auf Anfrage</h2>' +
-      '<p class="note spitz">Spitzenzeit' + (spR[2] ? ' (' + esc(spR[2]) + ')' : '') + ': In dieser Zeit vermieten wir nur zu hohen Preisen. Es gibt dafür keinen Familienpreis. Der Preis wird von den Eltern festgelegt. Eine Anfrage ist trotzdem möglich.</p>' +
+      '<p class="note h">' + WA + 'Spitzenzeit' + (spR[2] ? ' (' + esc(spR[2]) + ')' : '') + ': In dieser Zeit vermieten wir nur zu hohen Preisen. Es gibt dafür keinen Familienpreis. Der Preis wird von den Eltern festgelegt. Eine Anfrage ist trotzdem möglich.</p>' +
       (ARR && DEP ? '<p class="hint">' + esc(fmtTag(ARR)) + ' bis ' + esc(fmtTag(DEP)) + '</p>' : '') +
       anfrageKasten(r);
     return;
