@@ -223,6 +223,10 @@
   .cal-nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
   .cal-nav strong { font-size: var(--t-title); }
   .cal-nav button { font: inherit; font-size: 1.5rem; font-weight: 700; line-height: 1; color: var(--accent); background: transparent; border: 2px solid var(--accent); border-radius: 6px; width: 52px; min-height: 48px; cursor: pointer; }
+  .cal-links { display: flex; gap: 6px; }
+  .cal-nav .cal-heute { width: auto; padding: 0 9px; font-size: 0.95rem; }
+  .cal-nav #calPrev, .cal-nav #calNext { width: 46px; }
+  .cal-nav strong { flex: 1; text-align: center; min-width: 0; }
   .cal-nav button:disabled { opacity: 0.3; cursor: default; }
   .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
   .cal-wd { font-size: var(--t-small); color: var(--muted); text-align: center; padding: 2px 0; font-weight: 700; }
@@ -387,7 +391,7 @@
       </div>
     </details>
     <div class="cal-nav">
-      <button type="button" id="calPrev" aria-label="Vorheriger Monat">‹</button>
+      <div class="cal-links"><button type="button" id="calPrev" aria-label="Vorheriger Monat">‹</button><button type="button" id="calHeute" class="cal-heute" aria-label="Zum aktuellen Monat">Heute</button></div>
       <strong id="calTitle"></strong>
       <button type="button" id="calNext" aria-label="Nächster Monat">›</button>
     </div>
@@ -417,7 +421,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "3.42";
+let VERSION = "3.43";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -797,6 +801,7 @@ function renderKalender() {
   const abstand = (calY - n0.getFullYear()) * 12 + (calM - n0.getMonth());
   document.getElementById("calPrev").disabled = abstand <= 0;
   document.getElementById("calNext").disabled = abstand >= KAL_MONATE_VORAUS;
+  document.getElementById("calHeute").disabled = abstand === 0;
   document.getElementById("calTitle").textContent = MONATE[calM] + " " + calY;
   const g = document.getElementById("calGrid");
   g.innerHTML = "";
@@ -941,6 +946,7 @@ document.getElementById("btnReserv").addEventListener("click", () => {
   document.getElementById("cal").scrollIntoView({ behavior: "smooth", block: "start" });
 });
 document.getElementById("calPrev").addEventListener("click", () => { calM--; if (calM < 0) { calM = 11; calY--; } renderKalender(); });
+document.getElementById("calHeute").addEventListener("click", () => { initKalenderMonat(); renderKalender(); });
 document.getElementById("calNext").addEventListener("click", () => { calM++; if (calM > 11) { calM = 0; calY++; } renderKalender(); });
 
 async function ladeBelegt() {
