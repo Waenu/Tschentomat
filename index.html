@@ -189,12 +189,17 @@
   td.sub { color: var(--muted); font-size: 0.88rem; }
   tr.strong td { font-weight: 700; }
   .empty { color: var(--muted); margin: 0; }
-  details summary { cursor: pointer; font-weight: 700; min-height: 44px; display: flex; align-items: center; }
-  details > summary::after { content: "💡"; margin-left: auto; padding-left: 10px; font-weight: 400; }
+  details summary { cursor: pointer; font-weight: 700; min-height: 44px; display: flex; align-items: center; border: 2px solid var(--line); border-radius: 8px; padding: 0 12px; background: var(--surface); }
+  details > summary::after { content: "▾\00a0\00a0💡"; margin-left: auto; padding-left: 10px; font-weight: 400; white-space: nowrap; }
+  details[open] > summary::after { content: "▴\00a0\00a0💡"; }
+  details[open] > summary, .acc:has(.acc-t[aria-expanded="true"]) { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+  details[open] > summary { margin-bottom: 8px; }
   .acc { display: flex; align-items: center; gap: 6px; min-height: 44px; font-weight: 700; }
+  .acc:has(.acc-t) { border: 2px solid var(--line); border-radius: 8px; padding: 0 12px; background: var(--surface); }
   .acc-t { background: none; border: 0; font: inherit; font-weight: 700; color: inherit; padding: 0; text-align: left; cursor: pointer; display: flex; flex: 1; align-items: center; min-height: 44px; }
-  .acc-t::after { content: "💡"; margin-left: auto; padding-left: 10px; font-weight: 400; }
-  .acc-t[aria-expanded="true"] { background: var(--accent); color: var(--accent-fg); border-radius: 8px; padding: 0 12px; }
+  .acc-t::after { content: "▾\00a0\00a0💡"; margin-left: auto; padding-left: 10px; font-weight: 400; white-space: nowrap; }
+  .acc-t[aria-expanded="true"]::after { content: "▴\00a0\00a0💡"; }
+
   .field input.betrag { width: 100%; min-height: 50px; font: inherit; color: var(--fg); padding: 10px 12px; border: 2px solid var(--line); border-radius: 6px; background-color: var(--surface); }
   details .rows { display: flex; flex-direction: column; gap: 8px; }
   .eltern-zone { min-height: 52px; display: flex; align-items: center; justify-content: space-between; padding: 0 22px; font-size: 1.6rem; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; cursor: default; }
@@ -280,7 +285,7 @@
   #hilfe { display: flex; flex-direction: column; gap: 12px; }
   #hilfe[hidden], #rechner[hidden] { display: none; }
   #rechner { display: flex; flex-direction: column; gap: 14px; }
-  #b-benutzung[open] > summary, #b-begriffe[open] > summary, #b-kalender[open] > summary, #b-auswahl[open] > summary { background: var(--accent); color: var(--accent-fg); border-radius: 8px; padding: 0 12px; margin-bottom: 8px; }
+
   #b-benutzung .rows p { margin: 0; }
   #b-kalender .note + .note { margin-top: 8px; }
   #auswahlTxt { display: flex; flex-direction: column; gap: 8px; }
@@ -291,7 +296,7 @@
   .exsel.missing { background: var(--missing-bg); border-color: var(--missing-line); }
   .exsel.done { background: var(--done-bg); border-color: var(--done-line); }
   #b-benutzung .legend { font-size: 1rem; color: var(--fg); }
-  details.sub { border-top: 1px solid var(--line); padding-top: 2px; }
+  details.sub { margin-top: 6px; }
   details.sub .bc { padding: 4px 0 8px; display: flex; flex-direction: column; gap: 8px; }
   details.sub .bc p, details.sub .bc ul { margin: 0; }
   details.sub .bc ul { padding-left: 20px; }
@@ -398,7 +403,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "3.28";
+let VERSION = "3.29";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
