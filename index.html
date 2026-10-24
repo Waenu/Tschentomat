@@ -22,6 +22,7 @@
     --muted: #55696A;
     --accent: #1F5D4D;
     --accent-fg: #FFFFFF;
+    --bk-selbst: #1B4F9C; --bk-selbst-fg: #FFFFFF; --bk-eltern: #E0A800; --bk-eltern-fg: #2B2000;
     --head-bg: #1F5D4D;
     --head-fg: #FFFFFF;
     --line: #CBD8D5;
@@ -50,7 +51,7 @@
       --fg: #E5EEEB;
       --muted: #9CB1AC;
       --accent: #7ACBB0;
-      --accent-fg: #08201A;
+      --accent-fg: #08201A; --bk-selbst: #7DB4F0; --bk-selbst-fg: #07203D; --bk-eltern: #F0C84A; --bk-eltern-fg: #2B2000;
     --head-bg: #7ACBB0;
     --head-fg: #08201A;
       --line: #2B4341;
@@ -78,7 +79,7 @@
     --fg: #E5EEEB;
     --muted: #9CB1AC;
     --accent: #7ACBB0;
-    --accent-fg: #08201A;
+    --accent-fg: #08201A; --bk-selbst: #7DB4F0; --bk-selbst-fg: #07203D; --bk-eltern: #F0C84A; --bk-eltern-fg: #2B2000;
     --head-bg: #7ACBB0;
     --head-fg: #08201A;
     --line: #2B4341;
@@ -352,6 +353,15 @@
   .chk-alle .chk-item { opacity: 1; text-decoration: none; background: var(--done-bg); border-color: var(--done-line); }
   .chk-alle .chk-item .box { background: var(--done-line); border-color: var(--done-line); color: #fff; }
   #calGrid { position: relative; }
+  .bk.selbst { background: var(--bk-selbst); color: var(--bk-selbst-fg); }
+  .bk.eltern { background: var(--bk-eltern); color: var(--bk-eltern-fg); }
+  .bk.sw { height: 9px; line-height: 9px; padding: 0; background: transparent; border: 2px dashed var(--bk-selbst); border-radius: 5px; opacity: 1; }
+  .bk-leg { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 8px 0 0; font-size: var(--t-small); }
+  .bk-leg span { display: inline-flex; align-items: center; gap: 6px; }
+  .bk-leg i { width: 26px; height: 11px; border-radius: 6px; display: inline-block; box-sizing: border-box; }
+  .bk-leg .k-selbst { background: var(--bk-selbst); }
+  .bk-leg .k-eltern { background: var(--bk-eltern); }
+  .bk-leg .k-sw { border: 2px dashed var(--bk-selbst); }
   .bk { position: absolute; height: 15px; line-height: 15px; border-radius: 8px; background: var(--accent); color: var(--accent-fg); font-size: 0.68rem; font-weight: 700; padding: 0 6px; box-sizing: border-box; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; pointer-events: none; z-index: 2; opacity: 0.92; }
   #aufStatus { text-align: center; }
   .chk-teil { margin: 10px 0 0; font-size: 1.1rem; color: var(--accent); }
@@ -454,7 +464,7 @@
 
   <section id="cal" class="card cal" aria-label="Wunschtermin">
     <h2>Wunschtermin finden</h2>
-    <details class="sub" id="b-kalender"><summary>🗓️ Erklärung Kalender</summary><div class="note" id="calHoch"></div><p class="note" id="calHint"></p></details>
+    <details class="sub" id="b-kalender"><summary>🗓️ Erklärung Kalender</summary><div class="note" id="calHoch"></div><p class="note" id="calHint"></p><div class="bk-leg"><span><i class="k-selbst"></i>reinigt selbst</span><span><i class="k-eltern"></i>Reinigung durch Eltern</span><span><i class="k-sw"></i>Familienstaffel noch offen</span></div></details>
     <details class="sub" id="b-auswahl"><summary>🔽 Auswahlfelder</summary>
       <div class="note" id="auswahlTxt">
         <p>Felder und Fragen zeigen, wo ihr steht:</p>
@@ -500,7 +510,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "3.82";
+let VERSION = "3.83";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -895,6 +905,25 @@ function zurueckGehen() {
   window.scrollTo({ top: z.y, behavior: "auto" });
 }
 // Bestätigte Aufenthalte als Balken im Kalender: von der Mitte des Anreisetags bis zur Mitte des Abreisetags (wie bei Airbnb)
+// Schweif: nach einem Aufenthalt mit Selbstreinigung bleibt die Familienstaffel in den erlaubten Zeiten offen,
+// bis ein Aufenthalt ohne Selbstreinigung, ein externer Gast (Airbnb) oder das Ende der erlaubten Zeit kommt.
+function schweifListe() {
+  const out = [], heute = heuteKey();
+  BUCH.filter((b) => b.sb).forEach((b) => {
+    let k = b.dep, art = "kante";
+    for (let i = 0; i < 400; i++) {
+      if (!istRuhe(k)) { art = "kante"; break; }
+      if (BUCH.some((x) => x !== b && x.arr <= k && k < x.dep)) { art = "mitte"; break; }
+      if (BELEGT.has(k) && !BUCH.some((x) => x.arr <= k && k < x.dep)) { art = "mitte"; break; }
+      k = addDays(k, 1);
+    }
+    if (k === b.dep) return;
+    const letzteNacht = addDays(k, -1);
+    if (letzteNacht < heute) return;
+    out.push({ von: b.dep, vonMitte: true, bis: art === "mitte" ? k : letzteNacht, bisMitte: art === "mitte" });
+  });
+  return out;
+}
 function zeichneBalken() {
   const g = document.getElementById("calGrid");
   g.querySelectorAll(".bk").forEach((e) => e.remove());
@@ -903,24 +932,26 @@ function zeichneBalken() {
   g.querySelectorAll("button.cal-d").forEach((c) => zell.set(c.dataset.k, c));
   const ks = Array.from(zell.keys()).sort();
   if (!ks.length) return;
-  BUCH.forEach((b) => {
-    const tage = ks.filter((k) => k >= b.arr && k <= b.dep);
+  const zeichne = (von, bis, vonMitte, bisMitte, klasse, text) => {
+    const tage = ks.filter((k) => k >= von && k <= bis);
     if (!tage.length) return;
     const zeilen = new Map();
     tage.forEach((k) => { const c = zell.get(k); const y = c.offsetTop; if (!zeilen.has(y)) zeilen.set(y, []); zeilen.get(y).push(k); });
     zeilen.forEach((arr) => {
       const c0 = zell.get(arr[0]), c1 = zell.get(arr[arr.length - 1]);
-      const links = c0.offsetLeft + (arr[0] === b.arr ? c0.offsetWidth / 2 : 0);
-      const rechts = c1.offsetLeft + (arr[arr.length - 1] === b.dep ? c1.offsetWidth / 2 : c1.offsetWidth);
+      const links = c0.offsetLeft + (arr[0] === von && vonMitte ? c0.offsetWidth / 2 : 0);
+      const rechts = c1.offsetLeft + (arr[arr.length - 1] === bis && bisMitte ? c1.offsetWidth / 2 : c1.offsetWidth);
       if (rechts - links < 8) return;
       const d = document.createElement("div");
-      d.className = "bk";
-      d.textContent = b.name;
+      d.className = "bk " + klasse;
+      d.textContent = klasse === "sw" ? "" : text;
       d.style.left = links + "px"; d.style.width = (rechts - links) + "px";
-      d.style.top = (c0.offsetTop + c0.offsetHeight - 17) + "px";
+      d.style.top = (c0.offsetTop + c0.offsetHeight - (klasse === "sw" ? 14 : 17)) + "px";
       g.appendChild(d);
     });
-  });
+  };
+  schweifListe().forEach((s) => zeichne(s.von < heuteKey() ? heuteKey() : s.von, s.bis, s.von >= heuteKey(), s.bisMitte, "sw", "Staffel offen"));
+  BUCH.forEach((b) => zeichne(b.arr, b.dep, true, true, b.sb ? "selbst" : "eltern", b.name));
 }
 function renderKalender() {
   const heute = heuteKey();
@@ -1600,7 +1631,7 @@ function aufentZeigen() {
     const h = heuteKey();
     const l = BUCH.filter((b) => b.dep >= h);
     f.hidden = l.length === 0;
-    f.innerHTML = l.length ? HW + "Bestätigte Aufenthalte der Familie:<ul>" + l.map((b) => "<li><b>" + esc(b.name) + "</b>: " + fmtTag(b.arr) + " bis " + fmtTag(b.dep) + (b.sb ? " (reinigt selbst)" : "") + "</li>").join("") + "</ul>" : "";
+    f.innerHTML = l.length ? HW + "Bestätigte Aufenthalte der Familie:<ul>" + l.map((b) => "<li><b>" + esc(b.name) + "</b>: " + fmtTag(b.arr) + " bis " + fmtTag(b.dep) + (b.sb ? " (reinigt selbst)" : "") + "</li>").join("") + "</ul>" + '<div class="bk-leg"><span><i class="k-selbst"></i>reinigt selbst</span><span><i class="k-eltern"></i>Reinigung durch Eltern</span><span><i class="k-sw"></i>Familienstaffel noch offen</span></div>' : "";
   }
 }
 function ovOeffnen(id, an) {
