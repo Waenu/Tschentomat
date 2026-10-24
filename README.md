@@ -55,6 +55,7 @@ Preisrechner für die Familie, Chalet Tschenten, Adelboden.
 - Idee: Lücken füllen, die sonst leer blieben, ohne den Termin in Airbnb zu sperren. Ein Airbnb-Gast hat immer Vorrang, die Familie muss dann räumen oder gar nicht erst gehen. Normale Kosten.
 - Gilt automatisch für alle Aufenthalte, die mindestens eine Nacht ausserhalb der Selbstreinigungs-Zeiten (`selbstReinigung`) haben. Reine Staffel-Aufenthalte (März/April, Oktober bis 18. Dezember) sind fest und werden in Airbnb gesperrt.
 - Kalender: gestreifter Balken mit Umriss. Rote Umrandung = Konflikt, ein Airbnb-Gast hat inzwischen eine dieser Nächte gebucht. Grüner Haken im weissen Kreis = «praktisch sicher» (Abreise innert `airbnbVorlaufTage`, es kann kaum noch jemand buchen).
+- Der Balken ist im sicheren Teil voll, im unsicheren schraffiert. Sicher sind alle Nächte vor «heute plus `airbnbVorlaufTage`», denn ein neuer Airbnb-Gast kann frühestens dann einchecken. Der volle Teil wächst jeden Tag. Liegt die Abreise innerhalb dieser Frist, ist der ganze Balken voll und das Häkchen erscheint. Anfrage, Hilfe und Warnung nennen das Datum («praktisch sicher am …»).
 - «Fest machen» in der Bestätigungsliste entfernt die Markierung. Danach den Termin in Airbnb sperren.
 - Provisorische Nächte sind für andere Familienmitglieder im Kalender belegt, zählen aber nicht für die Lückenberechnung.
 
@@ -66,3 +67,7 @@ Der schwebende «?»-Knopf (nur sichtbar, solange der Kalender im Bild ist) scha
 
 - Bis 3.99 wurde in 0.01-Schritten gezählt, danach 1.0.0: letzte Stelle = kleine Änderung, mittlere = grössere Funktion, erste = grundlegender Umbau.
 - Ältere Stände liegen als Branches auf GitHub: `stand-3.93` (vor der Kalender-Hilfe) und `stand-1.3.1` (vor den provisorischen Terminen). Zurück: `index.html` aus dem Branch übernehmen.
+
+## Testmodus
+
+Die App mit `?heute=2027-01-18` öffnen (zum Beispiel `https://waenu.github.io/Tschentomat/?heute=2027-01-18`): Sie rechnet dann so, als wäre dieser Tag heute. Oben erscheint eine rote Leiste mit ◀ und ▶ (ein Tag zurück oder vor) und «Echt». Es wird nichts gespeichert, ausser du bestätigst etwas auf dem Elterntelefon (das schreibt echt in `buchungen.json`). Für die Kinder ist der Modus nirgends sichtbar.
