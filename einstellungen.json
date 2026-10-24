@@ -1,6 +1,6 @@
 {
   "_hinweis": "Nur die Zahlen und die Version ändern, sonst nichts. Beträge in CHF. Nach dem Speichern dauert es etwa eine Minute, bis alle die neuen Werte sehen.",
-  "version": "1.6.6",
+  "version": "1.6.7",
   "gueltigAb": "01.01.2027",
   "famPausch": 70,
   "gast": 70,
@@ -17,6 +17,7 @@
   "bank": "Spar- und Leihkasse Frutigen (SLF)",
   "zahlTage": 7,
   "lueckeMax": 3,
+  "festMinGaeste": 4,
   "mindestpreisAbNaechte": 4,
   "mindestpreisWoche": 2500,
   "lueckeRabatt": 50,
