@@ -2,13 +2,6 @@
   "_hinweis": "Bestätigte Aufenthalte der Familie. Pro Eintrag: name (Jerome, Deborah, Miriam oder Manuel), arr = Anreise, dep = Abreise (JJJJ-MM-TT), selbst = true wenn die Kinder selbst reinigen, pers = Personen mit Bett. Eintrag löschen = Storno. status = \"abgelehnt\" markiert eine von den Eltern abgelehnte Anfrage (nur für die Rückmeldung an das Kind, wird nach der Abreise automatisch entfernt).",
   "buchungen": [
     {
-      "name": "Deborah",
-      "arr": "2026-11-21",
-      "dep": "2026-11-23",
-      "selbst": true,
-      "pers": 2
-    },
-    {
       "name": "Miriam",
       "arr": "2026-11-26",
       "dep": "2026-11-28",
