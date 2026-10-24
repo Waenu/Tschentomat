@@ -1,6 +1,6 @@
 {
   "_hinweis": "Nur die Zahlen und die Version ändern, sonst nichts. Beträge in CHF. Nach dem Speichern dauert es etwa eine Minute, bis alle die neuen Werte sehen.",
-  "version": "3.69",
+  "version": "3.70",
   "gueltigAb": "01.01.2027",
   "famPausch": 70,
   "gast": 70,
@@ -41,5 +41,18 @@
   "keinCheckinSonntag": true,
   "lueckeVorlaufTage": 4,
   "lueckeSperrMonate": [],
-  "lueckeMaxKleinkinder": 1
+  "lueckeMaxKleinkinder": 1,
+  "checkliste": [
+    "Fenster schliessen",
+    "Lichter löschen"
+  ],
+  "waescheProPerson": [
+    ["Duvetbezug", 1],
+    ["Kissenbezug", 1],
+    ["Spannleintuch", 1],
+    ["Frottiertuch gross", 2],
+    ["Frottiertuch klein", 2],
+    ["Küchentuch", 1],
+    ["Waschlappen", 1]
+  ]
 }

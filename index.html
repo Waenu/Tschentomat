@@ -333,6 +333,28 @@
   #zurueck { position: fixed; right: 16px; bottom: calc(84px + env(safe-area-inset-bottom, 0px)); z-index: 6; background: #9A7400; color: #FFFFFF; border: 0; border-radius: 22px; padding: 10px 16px; font: inherit; font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,.35); }
   .bar .val { font-family: var(--display); font-weight: 700; font-size: calc(1.9rem / var(--fs)); line-height: 1; white-space: nowrap; font-variant-numeric: tabular-nums; }
   .bar.err { background: var(--error-bg); color: var(--error-fg); }
+
+  /* Mein Aufenthalt: Anreise (Waesche) und Reinigungs-Checkliste */
+  .ov { position: fixed; inset: 0; z-index: 100; background: var(--bg); color: var(--fg); overflow-y: auto; padding: 16px; box-sizing: border-box; }
+  .ov[hidden] { display: none; }
+  #btnAnreise[hidden], #btnCheck[hidden] { display: none; }
+  .ov-in { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; padding-bottom: 40px; }
+  .ov h2 { margin: 0; font-size: 1.35rem; }
+  .ov-back { align-self: flex-start; font: inherit; font-weight: 700; color: var(--accent); background: var(--surface); border: 2px solid var(--accent); border-radius: 8px; padding: 8px 14px; min-height: 44px; cursor: pointer; }
+  .waesche-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .waesche-liste li { display: flex; gap: 12px; align-items: baseline; background: var(--surface); border: 2px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 1.1rem; }
+  .waesche-liste b { min-width: 2.2em; font-size: 1.3rem; color: var(--accent); }
+  .chk-liste { display: flex; flex-direction: column; gap: 10px; }
+  .chk-item { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; font: inherit; font-size: 1.2rem; font-weight: 600; text-align: left; color: var(--fg); background: var(--surface); border: 2px solid var(--line); border-radius: 10px; padding: 10px 14px; cursor: pointer; }
+  .chk-item .box { flex: none; width: 34px; height: 34px; border: 3px solid var(--accent); border-radius: 8px; display: grid; place-items: center; font-size: 1.3rem; line-height: 1; }
+  .chk-item.erledigt { opacity: .6; text-decoration: line-through; }
+  .chk-item.erledigt .box { background: var(--accent); color: var(--accent-fg); }
+  .chk-alle .chk-item { opacity: 1; text-decoration: none; background: var(--done-bg); border-color: var(--done-line); }
+  .chk-alle .chk-item .box { background: var(--done-line); border-color: var(--done-line); color: #fff; }
+  .chk-danke { background: var(--done-bg); border: 2px solid var(--done-line); border-radius: 10px; padding: 14px; font-size: 1.2rem; font-weight: 700; text-align: center; }
+  .chk-stand { color: var(--muted); }
+  .ov-weg { font: inherit; color: var(--muted); background: none; border: 0; text-decoration: underline; padding: 10px 0; text-align: left; cursor: pointer; }
+  .sign .sub .bg { pointer-events: auto; cursor: pointer; }
 </style>
 
 </head>
@@ -382,6 +404,8 @@
     </details>
     </div>
     <button type="button" class="bigbtn main" id="btnReserv" aria-controls="rechner"><span class="bi" aria-hidden="true">📅</span>Ich reserviere jetzt</button>
+    <button type="button" class="bigbtn" id="btnAnreise" hidden><span class="bi" aria-hidden="true">🧳</span>Anreise-Wäsche</button>
+    <button type="button" class="bigbtn" id="btnCheck" hidden><span class="bi" aria-hidden="true">✅</span>Reinigungs-Checkliste</button>
     <button type="button" class="bigbtn" id="btnChem" aria-expanded="false" aria-controls="cheminee"><span class="bi" aria-hidden="true">🔥</span>Cheminée-Anleitung</button>
     <div id="cheminee" hidden>
     <div class="card">
@@ -458,13 +482,15 @@
 <button type="button" id="nachOben" hidden aria-label="Nach oben zum Menü">↑ Menü</button>
 <div class="bar" id="bar" role="status"><div class="in"><span class="lab" id="barLab"></span><span class="val" id="barVal"></span></div></div>
 
+<div class="ov" id="ovAnreise" hidden role="dialog" aria-label="Anreise: Wäsche mitnehmen"><div class="ov-in" id="ovAnreiseIn"></div></div>
+<div class="ov" id="ovCheck" hidden role="dialog" aria-label="Reinigungs-Checkliste"><div class="ov-in" id="ovCheckIn"></div></div>
 <script>
 /* ============================================================
    VERSION UND PREISE  (nur die Zahlen und Texte zwischen den Anführungszeichen ändern)
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "3.69";
+let VERSION = "3.70";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -1226,7 +1252,7 @@ function anfrageKasten(r) {
     '<div class="field"><label for="absender">Wer schickt die Anfrage?</label><select id="absender" class="' + (ok ? "done" : "missing") + '"><option value="">– wählen –</option>' +
     ABS.map((n) => '<option value="' + n + '"' + (n === ABSENDER ? " selected" : "") + '>' + n + '</option>').join("") +
     '</select>' + (ok ? "" : '<p class="hint">Erst den Namen wählen, dann sind die Knöpfe aktiv.</p>') + '</div><div class="btns">';
-  h += ok ? '<a class="btn" href="https://wa.me/?text=' + encodeURIComponent(t) + '" target="_blank" rel="noopener">' + WA_SVG + 'Per WhatsApp senden</a>' : '<span class="btn off" aria-disabled="true">' + WA_SVG + 'Per WhatsApp senden</span>';
+  h += ok ? '<a class="btn" id="waReq" href="https://wa.me/?text=' + encodeURIComponent(t) + '" target="_blank" rel="noopener">' + WA_SVG + 'Per WhatsApp senden</a>' : '<span class="btn off" aria-disabled="true">' + WA_SVG + 'Per WhatsApp senden</span>';
   h += '<button type="button" class="btn" id="copyReq"' + (ok ? "" : " disabled") + '>📋 Anfrage kopieren</button></div>';
   if (r.d.SB) {
     const f = familienText();
@@ -1355,6 +1381,9 @@ function wendeEinstellungenAn(j) {
   if (typeof j.lueckeMax === "number" && isFinite(j.lueckeMax) && j.lueckeMax >= 0) LUECKE_MAX = Math.round(j.lueckeMax);
   if (typeof j.keinCheckinSonntag === "boolean") KEIN_CHECKIN_SO = j.keinCheckinSonntag;
   if (Number.isInteger(j.lueckeVorlaufTage) && j.lueckeVorlaufTage >= 0) LUECKE_VORLAUF = j.lueckeVorlaufTage;
+  if (Array.isArray(j.checkliste)) CHECKLISTE = j.checkliste.filter((s) => typeof s === "string" && s.trim()).map((s) => s.trim());
+  if (Array.isArray(j.waescheProPerson)) { const w = j.waescheProPerson.filter((a) => Array.isArray(a) && typeof a[0] === "string" && Number.isInteger(a[1]) && a[1] > 0); if (w.length) WAESCHE = w; }
+  if (typeof aufentZeigen === "function") { aufentZeigen(); if (!document.getElementById("ovCheck").hidden) checkZeichnen(); }
   if (Array.isArray(j.lueckeSperrMonate)) LUECKE_SPERR = j.lueckeSperrMonate.filter((m) => Number.isInteger(m) && m >= 1 && m <= 12);
   if (Array.isArray(j.spitzenzeiten)) SPITZ = j.spitzenzeiten.filter((a) => Array.isArray(a) && a.length >= 2 && /^\d{4}-\d{2}-\d{2}$/.test(a[0]) && /^\d{4}-\d{2}-\d{2}$/.test(a[1])).map((a) => [a[0], a[1], typeof a[2] === "string" ? a[2] : ""]);
   if (Array.isArray(j.selbstReinigung)) RUHE = j.selbstReinigung.filter((a) => Array.isArray(a) && a.length === 2 && /^\d{2}-\d{2}$/.test(a[0]) && /^\d{2}-\d{2}$/.test(a[1]));
@@ -1411,6 +1440,7 @@ document.getElementById("result").addEventListener("click", (e) => {
   if (ce) { kopiere(LETZTE_EINLADUNG, ce, "Einladung kopiert", "Einladung kopieren"); return; }
   const q = e.target.closest("#copyReq");
   if (q) kopiere(LETZTE_ANFRAGE, q, "Anfrage kopiert", "Anfrage kopieren");
+  if (q || e.target.closest("#waReq")) aufentSpeichern();
   const fb = e.target.closest("#copyFam");
   if (fb) kopiere(LETZTE_FAMILIE, fb, "Text kopiert", "Text kopieren");
 });
@@ -1428,6 +1458,85 @@ async function ladeEinstellungen() {
     try { const c = localStorage.getItem("tm_einstellungen"); if (c) wendeEinstellungenAn(JSON.parse(c)); } catch (e2) {}
   }
 }
+// ===== Mein Aufenthalt: Anreise (Wäsche) und Reinigungs-Checkliste =====
+// Alles bleibt nur auf diesem Handy (localStorage). Entsteht, sobald die Anfrage gesendet oder kopiert wird.
+let CHECKLISTE = ["Fenster schliessen", "Lichter löschen"];
+let WAESCHE = [["Duvetbezug", 1], ["Kissenbezug", 1], ["Spannleintuch", 1], ["Frottiertuch gross", 2], ["Frottiertuch klein", 2], ["Küchentuch", 1], ["Waschlappen", 1]];
+let AUFENT = null;
+function aufentLaden() {
+  try {
+    const j = JSON.parse(localStorage.getItem("tm_aufenthalt"));
+    if (j && /^\d{4}-\d{2}-\d{2}$/.test(j.arr) && /^\d{4}-\d{2}-\d{2}$/.test(j.dep)) {
+      AUFENT = { arr: j.arr, dep: j.dep, sb: j.sb === true, pers: Math.max(1, Number(j.pers) || 1), haken: (j.haken && typeof j.haken === "object") ? j.haken : {} };
+    }
+  } catch (e) {}
+}
+function aufentSichern() {
+  try { if (AUFENT) localStorage.setItem("tm_aufenthalt", JSON.stringify(AUFENT)); else localStorage.removeItem("tm_aufenthalt"); } catch (e) {}
+}
+function aufentSpeichern() {
+  if (!(ARR && DEP)) return;
+  const x = derive(S);
+  const gleich = AUFENT && AUFENT.arr === ARR && AUFENT.dep === DEP;
+  AUFENT = { arr: ARR, dep: DEP, sb: x.SB === true, pers: x.FP, haken: gleich ? AUFENT.haken : {} };
+  aufentSichern(); aufentZeigen();
+}
+function aufentZeigen() {
+  if (AUFENT && heuteKey() > AUFENT.dep) { AUFENT = null; aufentSichern(); }   // am Tag nach der Abreise weg
+  document.getElementById("btnAnreise").hidden = !(AUFENT && AUFENT.sb);
+  document.getElementById("btnCheck").hidden = !AUFENT;
+}
+function ovOeffnen(id, an) {
+  document.getElementById(id).hidden = !an;
+  document.body.style.overflow = an ? "hidden" : "";
+  if (an) document.getElementById(id).scrollTop = 0;
+}
+const OV_WEG = '<button type="button" class="ov-weg" data-weg="1">Aufenthalt entfernen</button>';
+function anreiseZeichnen() {
+  const a = AUFENT; if (!a) return;
+  const n = a.pers;
+  document.getElementById("ovAnreiseIn").innerHTML =
+    '<button type="button" class="ov-back" data-ov="ovAnreise">← Zurück</button>' +
+    '<h2>🧳 Nimm am Anreisetag, ' + fmtTagV(a.arr) + ', folgende Wäsche mit:</h2>' +
+    '<p class="chk-stand">Für ' + n + (n === 1 ? ' Person' : ' Personen') + '</p>' +
+    '<ul class="waesche-liste">' + WAESCHE.map((w) => '<li><b>' + (w[1] * n) + '×</b><span>' + esc(w[0]) + '</span></li>').join("") + '</ul>' +
+    '<p class="hint">Bettdecken und Kissen nie ohne frischen Bezug benutzen. Alles nehmt ihr wieder mit. Nur die Moltons bleiben nach dem Benutzen auf der Matratze.</p>' + OV_WEG;
+}
+function checkZeichnen() {
+  const a = AUFENT; if (!a) return;
+  const done = CHECKLISTE.filter((i) => a.haken[i]).length;
+  const alle = CHECKLISTE.length > 0 && done === CHECKLISTE.length;
+  document.getElementById("ovCheckIn").innerHTML =
+    '<button type="button" class="ov-back" data-ov="ovCheck">← Zurück</button>' +
+    '<h2>✅ Reinigungs-Checkliste</h2>' +
+    (alle ? '<div class="chk-danke">🎉 Danke, du hast all diese Sachen erledigt.</div>' : '<p class="chk-stand">' + done + ' von ' + CHECKLISTE.length + ' erledigt. Tippe jeden Punkt an, wenn er erledigt ist.</p>') +
+    '<div class="chk-liste' + (alle ? ' chk-alle' : '') + '">' + CHECKLISTE.map((i, k) =>
+      '<button type="button" class="chk-item' + (a.haken[i] ? ' erledigt' : '') + '" data-chk="' + k + '" aria-pressed="' + (a.haken[i] ? 'true' : 'false') + '"><span class="box">' + (a.haken[i] ? '✓' : '') + '</span><span>' + esc(i) + '</span></button>').join("") + '</div>' + OV_WEG;
+}
+document.getElementById("btnAnreise").addEventListener("click", () => { anreiseZeichnen(); ovOeffnen("ovAnreise", true); });
+document.getElementById("btnCheck").addEventListener("click", () => { checkZeichnen(); ovOeffnen("ovCheck", true); });
+["ovAnreise", "ovCheck"].forEach((id) => document.getElementById(id).addEventListener("click", (e) => {
+  const c = e.target.closest("[data-ov]");
+  if (c) { ovOeffnen(c.dataset.ov, false); return; }
+  const k = e.target.closest("[data-chk]");
+  if (k && AUFENT) { const i = CHECKLISTE[Number(k.dataset.chk)]; if (i !== undefined) { AUFENT.haken[i] = !AUFENT.haken[i]; aufentSichern(); checkZeichnen(); } return; }
+  if (e.target.closest("[data-weg]") && confirm("Willst du den Aufenthalt wirklich entfernen?")) {
+    AUFENT = null; aufentSichern(); aufentZeigen(); ovOeffnen("ovAnreise", false); ovOeffnen("ovCheck", false);
+  }
+}));
+// TESTKNOPF (temporär): 3 Tipps auf den Spielautomaten im Titel legen einen Test-Aufenthalt an
+(function () {
+  let n = 0, letzter = 0;
+  const bg = document.querySelector(".sign .sub .bg");
+  if (!bg) return;
+  bg.addEventListener("click", () => {
+    const t = Date.now();
+    n = (t - letzter < 1500) ? n + 1 : 1;
+    letzter = t;
+    if (n >= 3) { n = 0; const h = heuteKey(); AUFENT = { arr: addDays(h, 1), dep: addDays(h, 4), sb: true, pers: 2, haken: {} }; aufentSichern(); aufentZeigen(); }
+  });
+})();
+aufentLaden(); aufentZeigen();
 Promise.all([ladeEinstellungen(), ladeBelegt()]).then(() => {
   {
     const STUFEN = [["klein", 0.92], ["mittel", 1], ["gross", 1.18]];
