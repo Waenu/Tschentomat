@@ -399,7 +399,7 @@
           <li><b>Blaues Badezimmer:</b> von der ganzen Wohnung aus zugänglich.</li>
         </ul></div></details>
         <details class="sub" id="b-reisegruppe"><summary>👨‍👩‍👧‍👦 Reisegruppe</summary><div class="bc"><p>Jede und jeder aus der Familie, in welcher Konstellation auch immer. Wer zusammen kommt, ist eine Reisegruppe, z. B. Jerome, Rahel, Malik und Jon, Manuel und Sarah, Deborah mit Kindern, Miriam mit Baby oder jemand allein.</p></div></details>
-        <details class="sub" id="b-staffel"><summary>🔗 Familienstaffel</summary><div class="bc"><p>Reisegruppen, die die Wohnung nacheinander benutzen, ohne dass die Eltern dazwischen reinigen. Sie endet, sobald die Eltern oder ein Airbnb-Gast kommen, oder wenn 2 Wochen nach dem letzten Check-out niemand kommt.</p></div></details>
+        <details class="sub" id="b-staffel"><summary>🔗 Familienstaffel</summary><div class="bc"><p>Reisegruppen, die die Wohnung nacheinander benutzen, ohne dass die Eltern dazwischen reinigen. Sie endet, sobald die Eltern oder ein Airbnb-Gast kommen.</p></div></details>
         <details class="sub" id="b-luecke"><summary>🧩 Lücken</summary><div class="bc" id="bc-luecke"></div></details>
         <details class="sub" id="b-ruhe"><summary>🧹 Selber reinigen</summary><div class="bc" id="bc-ruhe"></div></details>
         <details class="sub" id="b-endrein"><summary>🪣 Endreinigung</summary><div class="bc" id="bc-endrein"></div></details>
@@ -500,7 +500,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "3.81";
+let VERSION = "3.82";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -839,7 +839,7 @@ function begriffeFuellen() {
     "<li>Alles zusammen (Anfahrt, Reinigung und Wäsche) sind es bis zu 15 Stunden.</li>" +
     "<li>Zum Vergleich: Unsere externe Putzfrau springt ein, wenn die Eltern krank sind. Sie fährt von Frutigen nach Adelboden und macht auch die Wäsche. Das kostet pro Einsatz CHF 440.–.</li></ul>" +
     "<p><b>Weiteres zur Endreinigung</b></p><ul>" +
-    "<li>Sie fällt an, sobald die Familienstaffel endet, also sobald nach einer Reisegruppe die Eltern oder ein Airbnb-Gast kommen. Kommt nach dem letzten Check-out 2 Wochen lang niemand (weder über Airbnb noch privat), gehen die Eltern nach oben und reinigen. Auch dann ist die Staffel zu Ende. Der Aufenthalt wird wie üblich bezahlt.</li>" +
+    "<li>Sie fällt an, sobald die Familienstaffel endet, also sobald nach einer Reisegruppe die Eltern oder ein Airbnb-Gast kommen. Der Aufenthalt wird wie üblich bezahlt.</li>" +
     "<li>Die Eltern stellen nur eine Rechnung: für die Endreinigung, getrennt vom Aufenthalt, an die letzte Reisegruppe der Familienstaffel. War sie allein in der Staffel, sind es die vollen " + chf(P.reinigung) + ". Waren mehrere Reisegruppen in der Staffel, bezahlt die letzte zuerst alles und holt sich die Anteile der anderen zurück, anteilig nach Reisegruppe. Das Eintreiben des Geldes regeln die Reisegruppen untereinander.</li>" +
     "<li>Nutzt die Familienstaffel, um die Reinigungskosten möglichst zu drücken: Je mehr Reisegruppen nacheinander kommen, desto weniger zahlt jede Reisegruppe.</li>" +
     "<li>Sind Geschwister gleichzeitig dort, regeln sie die Kosten untereinander.</li></ul>");
@@ -1126,7 +1126,7 @@ async function ladeBelegt() {
 }
 
 function ketteText() {
-  return "Die " + chf(P.reinigung) + " Endreinigung fallen an, sobald die Familienstaffel endet, also sobald nach einer Reisegruppe die Eltern oder ein Airbnb-Gast kommen. Kommt nach dem letzten Check-out 2 Wochen lang niemand, reinigen die Eltern trotzdem. Der Aufenthalt wird wie üblich bezahlt. Die Eltern stellen nur eine Rechnung für die Endreinigung, getrennt vom Aufenthalt, an die letzte Reisegruppe der Familienstaffel. War sie allein in der Staffel, sind es die vollen " + chf(P.reinigung) + ". Waren mehrere Reisegruppen in der Staffel, bezahlt die letzte zuerst alles und holt sich die Anteile der anderen zurück, anteilig nach Reisegruppe. Das Eintreiben des Geldes regeln die Reisegruppen untereinander. Nutzt die Familienstaffel, um die Reinigungskosten möglichst zu drücken: Je mehr Reisegruppen nacheinander kommen, desto weniger zahlt jede Reisegruppe. Sind Geschwister gleichzeitig dort, regeln sie die Kosten untereinander.";
+  return "Die " + chf(P.reinigung) + " Endreinigung fallen an, sobald die Familienstaffel endet, also sobald nach einer Reisegruppe die Eltern oder ein Airbnb-Gast kommen. Der Aufenthalt wird wie üblich bezahlt. Die Eltern stellen nur eine Rechnung für die Endreinigung, getrennt vom Aufenthalt, an die letzte Reisegruppe der Familienstaffel. War sie allein in der Staffel, sind es die vollen " + chf(P.reinigung) + ". Waren mehrere Reisegruppen in der Staffel, bezahlt die letzte zuerst alles und holt sich die Anteile der anderen zurück, anteilig nach Reisegruppe. Das Eintreiben des Geldes regeln die Reisegruppen untereinander. Nutzt die Familienstaffel, um die Reinigungskosten möglichst zu drücken: Je mehr Reisegruppen nacheinander kommen, desto weniger zahlt jede Reisegruppe. Sind Geschwister gleichzeitig dort, regeln sie die Kosten untereinander.";
 }
 function putzText() {
   return "Danach gehen die Eltern die Wohnung reinigen. Die Wäsche darf nur von den Kindern selbst kommen und muss frisch sein. Bettdecken und Kissen nie ohne frischen Duvet- und Kissenbezug benutzen. Nach dem Benutzen bleiben die Moltons auf der Matratze. Wer geht, reinigt selbst: WC putzen, staubsaugen, Küche sauber, Abfall entsorgen, alles picobello. Die Endreinigung durch die Eltern ist trotzdem Pflicht, weil sie ihren Standard wahren wollen.";
