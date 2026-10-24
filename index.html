@@ -517,10 +517,10 @@
       <button type="button" id="calNext" aria-label="Nächster Monat">›</button>
     </div>
     <div class="cal-grid" id="calGrid"></div>
+    <div class="note h" id="calBlase" role="status" aria-live="polite" hidden></div>
     <div class="cal-leg" id="calHoch"></div>
     <div class="bk-leg"><span><i class="k-selbst"></i>reinigt selbst</span><span><i class="k-eltern"></i>Reinigung durch Eltern</span><span><i class="k-sw"></i>Familienstaffel noch offen</span></div>
     <p class="cal-sel" id="calSel" role="status"></p>
-    <div class="note h" id="calBlase" role="status" aria-live="polite" hidden></div>
     <p class="note h" id="calSpitz" hidden></p>
     <p class="note h" id="calRuhe" hidden></p>
     <p class="note h" id="calNormal" hidden></p>
@@ -553,7 +553,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "1.3.0";
+let VERSION = "1.3.1";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -2015,7 +2015,18 @@ document.getElementById("tokPanel").addEventListener("click", (e) => {
   try { const v = localStorage.getItem("tm_hilfe"); if (v === "0") an = false; if (v === null) erst = true; } catch (e) {}
   const speichern = () => { try { localStorage.setItem("tm_hilfe", an ? "1" : "0"); } catch (e) {} };
   const START = "<b>💡 Hilfe ist an.</b> Tippe einen Tag an, dann erklärt er sich. Mit gestrichelten Symbolen wie " + symBtn("b-luecke", "🧩") + " springst du zur ausführlichen Erklärung. Mehr dazu unter «Benutzung» " + symBtn("b-benutzung", "📖") + ". Mit dem «?»-Knopf unten rechts schaltest du die Hilfe aus.";
-  const zeigen = (html) => { blase.innerHTML = '<div class="txt">' + html + '</div><button type="button" id="calBlaseZu" aria-label="Hilfe schliessen">✕</button>'; blase.hidden = false; };
+  const zeigen = (html, zelle) => {
+    blase.innerHTML = '<div class="txt">' + html + '</div><button type="button" id="calBlaseZu" aria-label="Hilfe schliessen">✕</button>';
+    blase.hidden = false;
+    // Box ins Bild holen, falls sie unter dem Bildschirmrand liegt (der angetippte Tag bleibt sichtbar)
+    const r = blase.getBoundingClientRect(), unten = window.innerHeight - 90;
+    const ruhig = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (r.bottom > unten) {
+      let d = r.bottom - unten + 10;
+      if (zelle) d = Math.min(d, Math.max(0, zelle.getBoundingClientRect().top - 70));
+      if (d > 0) window.scrollBy({ top: d, behavior: ruhig ? "auto" : "smooth" });
+    } else if (r.top < 60) window.scrollBy({ top: r.top - 70, behavior: ruhig ? "auto" : "smooth" });
+  };
   function text(k) {
     const heute = heuteKey(), kopf = "<b>" + esc(fmtTag(k)) + "</b>";
     if (k < heute) return kopf + "<p>Dieser Tag liegt in der Vergangenheit.</p>";
@@ -2051,7 +2062,7 @@ document.getElementById("tokPanel").addEventListener("click", (e) => {
     if (an) zeigen(START); else blase.hidden = true;
     speichern();
   }
-  grid.addEventListener("click", (e) => { if (!an) return; const c = zelle(e); if (c && c.dataset.k) zeigen(text(c.dataset.k)); });
+  grid.addEventListener("click", (e) => { if (!an) return; const c = zelle(e); if (c && c.dataset.k) zeigen(text(c.dataset.k), grid.querySelector('[data-k="' + c.dataset.k + '"]')); });
   blase.addEventListener("click", (e) => { if (e.target.closest("#calBlaseZu")) blase.hidden = true; });
   document.querySelector("#cal .cal-nav").addEventListener("click", () => { if (an) zeigen(START); });
   knopf.addEventListener("click", () => { knopf.classList.remove("neu"); setze(!an); });
