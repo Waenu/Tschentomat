@@ -353,6 +353,7 @@
   .chk-alle .chk-item { opacity: 1; text-decoration: none; background: var(--done-bg); border-color: var(--done-line); }
   .chk-alle .chk-item .box { background: var(--done-line); border-color: var(--done-line); color: #fff; }
   #calGrid { position: relative; }
+  .note.h.rot-warn { background: var(--error-bg); border: 3px solid var(--error-line); }
   .bk.selbst { background: var(--bk-selbst); color: var(--bk-selbst-fg); }
   .bk.eltern { background: var(--bk-eltern); color: var(--bk-eltern-fg); }
   .bk.sw { height: 9px; line-height: 9px; padding: 0; background: transparent; border: 2px dashed var(--bk-selbst); border-radius: 5px; opacity: 1; }
@@ -510,7 +511,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "3.86";
+let VERSION = "3.87";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -1398,7 +1399,7 @@ function render() {
     const hEl = document.getElementById("h-" + f.id);
     if (f.id === "selbst") { hEl.textContent = ""; const r = document.createElement("span"); r.className = "rot"; r.textContent = "Das geht nur für euch Kinder (mit Partnern und Kindern) und nur ohne externe Gäste. Sonst gilt immer die normale Reinigung."; hEl.appendChild(r); hEl.appendChild(document.createTextNode(" " + f.hint(d))); }
     else hEl.textContent = f.hint(d);
-    if (f.id === "selbst") { const w = staffelWarnung(); if (w) { const sp = document.createElement("span"); sp.className = "note h"; sp.style.display = "block"; sp.style.marginTop = "8px"; sp.innerHTML = WA + esc(w); hEl.appendChild(sp); } }
+    if (f.id === "selbst") { const w = staffelWarnung(); if (w) { const sp = document.createElement("span"); sp.className = "note h rot-warn"; sp.style.display = "block"; sp.style.marginTop = "8px"; sp.innerHTML = WA + esc(w); hEl.appendChild(sp); } }
   });
   const nb = document.getElementById("notice");
   nb.hidden = !notice; nb.textContent = notice;
