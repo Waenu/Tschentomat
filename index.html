@@ -283,7 +283,8 @@
   .sw-ruhe { border-color: var(--ruhe-line); background: var(--ruhe-bg); }
   .sw-normal { border-color: var(--line); background: transparent; }
   .sw-sperr { border-color: var(--sperr-line); background: var(--sperr-bg); }
-  #famDet > summary { cursor: pointer; }
+  #famDet > summary { display: block; min-height: 0; border: 0; padding: 0; background: none; font-weight: 400; font-size: var(--t-text); white-space: normal; cursor: pointer; }
+  #famDet > summary::after { content: " ▾"; margin: 0; padding: 0; }
   #famDet ul { margin: 8px 0 0; }
   .cal-leg { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 8px 0 0; font-size: var(--t-small); }
   .cal-leg p { margin: 0; }
@@ -1695,7 +1696,7 @@ function aufentZeigen() {
     const l = BUCH.filter((b) => b.dep >= h);
     f.hidden = l.length === 0;
     const lz = l.slice().sort((a, b) => (a.arr < b.arr ? -1 : 1)), kurz = (k) => Number(k.slice(8)) + "." + Number(k.slice(5, 7)) + ".";
-    f.innerHTML = l.length ? '<details id="famDet"' + (FAM_OFFEN ? " open" : "") + '><summary>' + HW + "Bestätigte Aufenthalte der Familie (" + lz.length + "), nächster: <b>" + esc(lz[0].name) + "</b> " + kurz(lz[0].arr) + "–" + kurz(lz[0].dep) + "</summary><ul>" + lz.map((b) => "<li><b>" + esc(b.name) + "</b>: " + fmtTag(b.arr) + " bis " + fmtTag(b.dep) + (b.sb ? " (reinigt selbst)" : "") + "</li>").join("") + "</ul></details>" : "";
+    f.innerHTML = l.length ? '<details id="famDet"' + (FAM_OFFEN ? " open" : "") + '><summary>' + HW + "Bestätigte Aufenthalte (" + lz.length + ")</summary><ul>" + lz.map((b) => "<li><b>" + esc(b.name) + "</b>: " + fmtTag(b.arr) + " bis " + fmtTag(b.dep) + (b.sb ? " (reinigt selbst)" : "") + "</li>").join("") + "</ul></details>" : "";
   }
 }
 function ovOeffnen(id, an) {
@@ -2056,13 +2057,17 @@ document.getElementById("tokPanel").addEventListener("click", (e) => {
   knopf.setAttribute("aria-pressed", an ? "true" : "false");
   if (an) zeigen(START);
   let gesehen = false;
-  try {
-    new IntersectionObserver((es) => {
-      const sicht = es.some((x) => x.isIntersecting);
-      knopf.hidden = !sicht;
-      if (sicht && erst && !gesehen) { gesehen = true; knopf.classList.add("neu"); speichern(); }
-    }, { threshold: 0.15 }).observe(cal);
-  } catch (e) { knopf.hidden = false; }
+  // Knopf zeigen, solange der Kalender im Bild ist (Geometrie statt IntersectionObserver: der Kalender kann sehr hoch werden, z. B. bei grosser Schrift)
+  const pruefen = () => {
+    const r = cal.getBoundingClientRect(), sicht = cal.offsetParent !== null && r.bottom > 80 && r.top < window.innerHeight - 80;
+    knopf.hidden = !sicht;
+    if (sicht && erst && !gesehen) { gesehen = true; knopf.classList.add("neu"); speichern(); }
+  };
+  window.addEventListener("scroll", pruefen, { passive: true });
+  window.addEventListener("resize", pruefen);
+  document.addEventListener("click", () => setTimeout(pruefen, 50));
+  try { new ResizeObserver(pruefen).observe(cal); } catch (e) {}
+  pruefen();
 })();
 aufentLaden();
 try { new ResizeObserver(() => zeichneBalken()).observe(document.getElementById("calGrid")); } catch (e) {}
