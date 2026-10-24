@@ -1,4 +1,12 @@
 {
   "_hinweis": "Bestätigte Aufenthalte der Familie. Pro Eintrag: name (Jerome, Deborah, Miriam oder Manuel), arr = Anreise, dep = Abreise (JJJJ-MM-TT), selbst = true wenn die Kinder selbst reinigen, pers = Personen mit Bett. Eintrag löschen = Storno.",
-  "buchungen": []
+  "buchungen": [
+    {
+      "name": "Miriam",
+      "arr": "2026-11-26",
+      "dep": "2026-11-30",
+      "selbst": true,
+      "pers": 2
+    }
+  ]
 }
