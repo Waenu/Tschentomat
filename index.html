@@ -497,7 +497,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "3.73";
+let VERSION = "3.74";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -1516,16 +1516,15 @@ async function ladeBuchungen() {
     try { const c = localStorage.getItem("tm_buchungen"); if (c) buchungenAn(JSON.parse(c)); } catch (e2) {}
   }
 }
-// Der Aufenthalt, der gerade gilt: erst der bestätigte, sonst die lokale Anfrage
+// Der Aufenthalt, der gerade gilt: der nächste (nach Anreise) aus den bestätigten und der lokal gemerkten Anfrage
 function aufent() {
   const h = heuteKey();
-  const b = ABSENDER ? BUCH.find((x) => x.name === ABSENDER && x.dep >= h) : null;
-  if (b) {
-    if (AUFENT && AUFENT.arr === b.arr && AUFENT.dep === b.dep) { AUFENT = null; aufentSichern(); }
-    return { arr: b.arr, dep: b.dep, sb: b.sb, pers: b.pers, ok: true };
-  }
   if (AUFENT && AUFENT.dep < h) { AUFENT = null; aufentSichern(); }   // am Tag nach der Abreise weg
-  return AUFENT ? { arr: AUFENT.arr, dep: AUFENT.dep, sb: AUFENT.sb, pers: AUFENT.pers, ok: false } : null;
+  const l = ABSENDER ? BUCH.filter((x) => x.name === ABSENDER && x.dep >= h).map((b) => ({ arr: b.arr, dep: b.dep, sb: b.sb, pers: b.pers, ok: true })) : [];
+  if (AUFENT && !l.some((x) => x.arr === AUFENT.arr && x.dep === AUFENT.dep)) l.push({ arr: AUFENT.arr, dep: AUFENT.dep, sb: AUFENT.sb, pers: AUFENT.pers, ok: false });
+  else if (AUFENT) { AUFENT = null; aufentSichern(); }   // inzwischen bestätigt
+  l.sort((p, q) => (p.arr < q.arr ? -1 : 1));
+  return l[0] || null;
 }
 const hk = (a) => HAKEN[a.arr + "|" + a.dep] || (HAKEN[a.arr + "|" + a.dep] = {});
 function aufentSpeichern() {
@@ -1540,13 +1539,13 @@ function aufentZeigen() {
   const a = aufent();
   document.getElementById("btnAnreise").hidden = !(a && a.sb);
   document.getElementById("btnCheck").hidden = !a;
-  document.getElementById("aufStatus").hidden = !a || a.ok;
+  document.getElementById("aufStatus").hidden = !AUFENT;
   if (a) {
     const von = fmtTag(a.arr) + " bis " + fmtTag(a.dep);
     document.getElementById("btnAnreiseSub").textContent = (a.ok ? "Bestätigt: " : "Noch nicht bestätigt: ") + von;
     document.getElementById("btnCheckSub").textContent = (a.ok ? "Bestätigt. " : "Noch nicht bestätigt. ") + "Abreise: " + fmtTag(a.dep);
-    document.getElementById("aufStatus").innerHTML = a.ok ? "" : '<button type="button" class="ov-weg" data-weg="1">Anfrage nicht bestätigt? Aufenthalt entfernen</button>';
   }
+  document.getElementById("aufStatus").innerHTML = AUFENT ? '<button type="button" class="ov-weg" data-weg="1">Anfrage ' + fmtTag(AUFENT.arr) + ' bis ' + fmtTag(AUFENT.dep) + ' nicht bestätigt? Entfernen</button>' : "";
   const f = document.getElementById("calFam");
   if (f) {
     const h = heuteKey();
