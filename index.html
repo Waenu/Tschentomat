@@ -401,6 +401,7 @@
   .bk.konf { box-shadow: 0 0 0 2.5px #C0392B; }
   .bk .ck { display: inline-block; background: #fff; color: #0B7A32; border-radius: 50%; width: 13px; height: 13px; line-height: 13px; text-align: center; font-size: 10px; font-weight: 900; vertical-align: -1px; margin-left: 3px; }
   .bk.sw { height: 9px; line-height: 9px; padding: 0; background: transparent; border: 2px dashed var(--bk-selbst); border-radius: 5px; opacity: 1; }
+  .bk-leg-h { margin: 12px 0 0; }
   .bk-leg { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 8px 0 0; font-size: var(--t-small); }
   .bk-leg span { display: inline-flex; align-items: center; gap: 6px; }
   .bk-leg i { flex: none; width: 26px; height: 11px; border-radius: 6px; display: inline-block; box-sizing: border-box; }
@@ -531,6 +532,7 @@
     <div class="cal-grid" id="calGrid"></div>
     <div class="note h" id="calBlase" role="status" aria-live="polite" hidden></div>
     <div class="cal-leg" id="calHoch"></div>
+    <p class="hint bk-leg-h">Diese Balken erscheinen im Kalender erst, nachdem die Eltern einen Aufenthalt bestätigt haben:</p>
     <div class="bk-leg"><span id="legSelbst"><i class="k-selbst"></i>reinigt selbst</span><span id="legEltern"><i class="k-eltern"></i>Reinigung durch Eltern</span><span id="legStaffel"><i class="k-sw"></i>Familienstaffel noch offen</span><span id="legProv"><i class="k-prov"></i>schraffiert: provisorisch, Airbnb-Gast hat Vorrang (voller Teil: schon sicher)</span><span id="legSicher"><i class="k-prov k-ck"></i><span id="legSicherTxt">ganz sicher: Abreise in höchstens 3 Tagen</span></span></div>
     <p class="cal-sel" id="calSel" role="status"></p>
     <p class="note h" id="calSpitz" hidden></p>
@@ -565,7 +567,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "1.6.9";
+let VERSION = "1.6.10";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -1169,19 +1171,13 @@ function renderKalender() {
     if (P.lueckeRabatt > 0) h += '<p><i class="sw sw-gap"></i><b>Lücke</b> (' + P.lueckeRabatt + ' % Rabatt) ' + symBtn('b-luecke', '🧩') + '</p>';
     if (RUHE.length) h += '<p><i class="sw sw-ruhe"></i><b>Eigene Wäsche möglich</b> (' + RUHE.map((a) => fmtMD(a[0]) + " bis " + fmtMD(a[1])).join(" und ") + ") " + symBtn("b-ruhe", "🧹") + "</p>";
     if (SPITZ.length) h += '<p><i class="sw sw-spitz"></i><b>Spitzenzeit</b> (Preis auf Anfrage)</p>';
-    h += '<p><i class="sw sw-normal"></i><b>Ohne Farbe:</b> nur mit Endreinigung ' + symBtn("b-endrein", "🪣") + '</p>';
+    h += '<p><i class="sw sw-normal"></i><b>Übrige Zeiten:</b> nur mit Endreinigung ' + symBtn("b-endrein", "🪣") + '</p>';
     h += '<p><i class="sw sw-occ"></i>nicht verfügbar</p>';
     el.innerHTML = h;
     el.hidden = h === "";
   }
-  // Balken-Legende nur zeigen, was es gerade gibt (bestätigte Aufenthalte bzw. offene Staffel)
-  const hat = (f) => BUCH.some(f), L = (id) => document.getElementById(id);
-  L("legSelbst").hidden = !hat((b) => b.sb);
-  L("legEltern").hidden = !hat((b) => !b.sb);
-  L("legStaffel").hidden = !schweifListe().length;
-  L("legProv").hidden = !PROV_AN || !hat((b) => b.prov);
-  L("legSicher").hidden = !PROV_AN || !hat((b) => b.prov && provSicher(b));
-  document.querySelector(".bk-leg").hidden = ["legSelbst", "legEltern", "legStaffel", "legProv", "legSicher"].every((id) => L(id).hidden);
+  document.getElementById("legProv").hidden = !PROV_AN;
+  document.getElementById("legSicher").hidden = !PROV_AN;
   document.getElementById("legSicherTxt").textContent = "ganz sicher: Abreise in höchstens " + VORLAUF + " Tagen (neue Gäste brauchen " + VORLAUF + " Tage Vorlauf)";
   begriffeFuellen();
   const sp = spitzTermin();
