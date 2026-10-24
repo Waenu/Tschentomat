@@ -56,6 +56,7 @@ Preisrechner für die Familie, Chalet Tschenten, Adelboden.
 - Gilt automatisch für alle Aufenthalte, die mindestens eine Nacht ausserhalb der Selbstreinigungs-Zeiten (`selbstReinigung`) haben. Reine Staffel-Aufenthalte (März/April, Oktober bis 18. Dezember) sind fest und werden in Airbnb gesperrt.
 - Kalender: gestreifter Balken mit Umriss. Rote Umrandung = Konflikt, ein Airbnb-Gast hat inzwischen eine dieser Nächte gebucht. Grüner Haken im weissen Kreis = «praktisch sicher» (Abreise innert `airbnbVorlaufTage`, es kann kaum noch jemand buchen).
 - Der Balken ist im sicheren Teil voll, im unsicheren schraffiert. Sicher sind alle Nächte vor «heute plus `airbnbVorlaufTage`», denn ein neuer Airbnb-Gast kann frühestens dann einchecken. Der volle Teil wächst jeden Tag. Liegt die Abreise innerhalb dieser Frist, ist der ganze Balken voll und das Häkchen erscheint. Anfrage, Hilfe und Warnung nennen das Datum («praktisch sicher am …»).
+- Bei provisorischen Terminen lassen sich die Knöpfe «Per WhatsApp senden» und «Anfrage kopieren» erst nach dem Pflicht-Häkchen «Ich habe das Risiko verstanden» benutzen. Der Anfragetext enthält dann den Satz, dass das Risiko bestätigt wurde.
 - «Fest machen» in der Bestätigungsliste entfernt die Markierung. Danach den Termin in Airbnb sperren.
 - Provisorische Nächte sind für andere Familienmitglieder im Kalender belegt, zählen aber nicht für die Lückenberechnung.
 

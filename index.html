@@ -396,6 +396,8 @@
   .bk.selbst { box-shadow: 0 0 0 1.5px var(--bk-selbst-ol); }
   .bk.prov { background-image: repeating-linear-gradient(45deg, transparent 0 5px, rgba(255,255,255,.6) 5px 9px); background-repeat: no-repeat; background-position: var(--sf, 0px) 0; background-size: calc(100% - var(--sf, 0px)) 100%; }
   .risk { color: var(--error-line); font-weight: 700; }
+  label.risiko { display: flex; gap: 10px; align-items: flex-start; margin: 10px 0; padding: 10px; border: 2px solid var(--error-line); border-radius: 12px; background: var(--error-bg); color: var(--error-fg); }
+  label.risiko input { width: 24px; height: 24px; flex: none; margin-top: 2px; }
   .bk.konf { box-shadow: 0 0 0 2.5px #C0392B; }
   .bk .ck { display: inline-block; background: #fff; color: #0B7A32; border-radius: 50%; width: 13px; height: 13px; line-height: 13px; text-align: center; font-size: 10px; font-weight: 900; vertical-align: -1px; margin-left: 3px; }
   .bk.sw { height: 9px; line-height: 9px; padding: 0; background: transparent; border: 2px dashed var(--bk-selbst); border-radius: 5px; opacity: 1; }
@@ -562,7 +564,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "1.5.1";
+let VERSION = "1.5.2";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -1304,7 +1306,7 @@ function anfrageText(r) {
   else z.push("Total laut Rechner: " + chf(r.TOT));
   if (x.SB) z.push("Reinigungskosten sind erst nach Ablauf der Familienstaffel bekannt und werden nachbelastet.");
   if (x.SM && S.selbst === "Nein") { const u = staffelUnterbruch(ARR); if (u.length) z.push("Achtung: Unterbricht die Familienstaffel von " + u.join(", ") + ".") ; }
-  if (provStay(ARR, DEP)) z.push("Provisorisch: Der Termin wird nicht in Airbnb gesperrt, ein Airbnb-Gast hat Vorrang." + " " + provSicherZeile(ARR, DEP));
+  if (provStay(ARR, DEP)) z.push("Provisorisch: Der Termin wird nicht in Airbnb gesperrt, ein Airbnb-Gast hat Vorrang. Das Risiko wurde vom Absender bestätigt." + " " + provSicherZeile(ARR, DEP));
   z.push("");
   z.push("Gruss");
   z.push(ABSENDER);
@@ -1430,16 +1432,20 @@ function elternKasten() {
 }
 const WA_SVG = '<svg class="wa" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true"><path fill="#25D366" d="M16 2.5A13.4 13.4 0 0 0 4.4 22.6L2.5 29.5l7.1-1.9A13.4 13.4 0 1 0 16 2.5z"/><path fill="#fff" d="M22.6 19.4c-.3-.2-2-1-2.3-1.1-.3-.1-.5-.2-.8.2l-1 1.2c-.2.2-.4.3-.7.1a9 9 0 0 1-4.5-3.9c-.3-.6.3-.6.9-1.8.1-.2.1-.4 0-.6l-1-2.4c-.3-.6-.5-.5-.8-.5h-.6a1.2 1.2 0 0 0-.9.4 3.800 3.800 0 0 0-1.2 2.800c0 1.600 1.200 3.200 1.400 3.400.2.200 2.300 3.500 5.600 4.900 2.100.9 2.900 1 4 .8.600-.1 2-.8 2.300-1.600.3-.8.3-1.400.2-1.600l-.6-.3z"/></svg>';
 let LETZTE_EINLADUNG = "";
+let RISIKO_OK = "";   // Aufenthalt (arr_dep), für den das Risiko bestätigt wurde
+const risikoKey = () => ARR + "_" + DEP;
 function anfrageKasten(r) {
   if (!(ARR && DEP)) return "";
   const t = anfrageText(r);
   LETZTE_ANFRAGE = t;
-  const ok = ABSENDER !== "";
+  const prov = provStay(ARR, DEP), rok = !prov || RISIKO_OK === risikoKey();
+  const ok = ABSENDER !== "" && rok;
   let h = '<div class="pay"><strong>💬 Anfrage an die Eltern senden</strong>' +
     '<span class="hint">Das ist nur eine Anfrage und noch keine Buchung. Die Eltern bestätigen den Termin. WhatsApp öffnet sich mit dem fertigen Text. Wähle dort den <b>«Adelboden Airbnb Chat»</b>, nicht den Familien-Chat.</span>' + (provStay(ARR, DEP) ? '<span class="hint"><b>Provisorisch:</b> Der Termin wird nicht in Airbnb gesperrt. Ein Airbnb-Gast hat Vorrang. ' + symBtn('b-prov', '⏳') + '</span>' : '') +
     '<div class="field"><label for="absender">Wer schickt die Anfrage?</label><select id="absender" class="' + (ok ? "done" : "missing") + '"><option value="">– wählen –</option>' +
     ABS.map((n) => '<option value="' + n + '"' + (n === ABSENDER ? " selected" : "") + '>' + n + '</option>').join("") +
-    '</select>' + (ok ? "" : '<p class="hint">Erst den Namen wählen, dann sind die Knöpfe aktiv.</p>') + '</div><div class="btns">';
+    '</select>' + (ABSENDER !== "" ? "" : '<p class="hint">Erst den Namen wählen, dann sind die Knöpfe aktiv.</p>') + '</div>' +
+    (prov ? '<label class="risiko"><input type="checkbox" id="risikoOk"' + (rok ? " checked" : "") + '> <span><b>Ich habe das Risiko verstanden:</b> Dieser Termin ist provisorisch. Kommt eine Airbnb-Buchung, muss ich weichen oder gar nicht erst reisen. Das Risiko trage ich selbst.</span></label>' + (rok ? "" : '<p class="hint">Erst das Risiko bestätigen, dann sind die Knöpfe aktiv.</p>') : "") + '<div class="btns">';
   h += ok ? '<a class="btn" id="waReq" href="https://wa.me/?text=' + encodeURIComponent(t) + '" target="_blank" rel="noopener">' + WA_SVG + 'Per WhatsApp an den «Adelboden Airbnb Chat» senden</a>' : '<span class="btn off" aria-disabled="true">' + WA_SVG + 'Per WhatsApp an den «Adelboden Airbnb Chat» senden</span>';
   h += '<button type="button" class="btn" id="copyReq"' + (ok ? "" : " disabled") + '>📋 Anfrage kopieren</button></div><div class="note h" id="aufHinweis" hidden></div>';
   if (r.d.SB) {
@@ -1597,6 +1603,7 @@ function kopiere(text, btn, fertig, vorher) {
 let LETZTE_ANFRAGE = "";
 let LETZTE_FAMILIE = "";
 document.getElementById("result").addEventListener("change", (e) => {
+  if (e.target && e.target.id === "risikoOk") { RISIKO_OK = e.target.checked ? risikoKey() : ""; render(); return; }
   if (e.target && e.target.id === "absender") {
     ABSENDER = ABS.indexOf(e.target.value) >= 0 ? e.target.value : "";
     try { localStorage.setItem("tm_absender", ABSENDER); } catch (e2) {}
