@@ -21,14 +21,6 @@
       "dep": "2026-11-28",
       "selbst": true,
       "pers": 2
-    },
-    {
-      "name": "Manuel",
-      "arr": "2026-12-01",
-      "dep": "2026-12-03",
-      "selbst": false,
-      "pers": 2,
-      "bescheid": "2026-10-24T17:16"
     }
   ]
 }
