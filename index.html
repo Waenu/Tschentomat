@@ -351,7 +351,8 @@
   .chk-item.erledigt .box { background: var(--accent); color: var(--accent-fg); }
   .chk-alle .chk-item { opacity: 1; text-decoration: none; background: var(--done-bg); border-color: var(--done-line); }
   .chk-alle .chk-item .box { background: var(--done-line); border-color: var(--done-line); color: #fff; }
-  .cal-d small .nm { font-style: normal; display: inline-block; text-decoration: none; }
+  #calGrid { position: relative; }
+  .bk { position: absolute; height: 15px; line-height: 15px; border-radius: 8px; background: var(--accent); color: var(--accent-fg); font-size: 0.68rem; font-weight: 700; padding: 0 6px; box-sizing: border-box; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; pointer-events: none; z-index: 2; opacity: 0.92; }
   #aufStatus { text-align: center; }
   .chk-teil { margin: 10px 0 0; font-size: 1.1rem; color: var(--accent); }
   .chk-danke { background: var(--done-bg); border: 2px solid var(--done-line); border-radius: 10px; padding: 14px; font-size: 1.2rem; font-weight: 700; text-align: center; }
@@ -497,7 +498,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "3.74";
+let VERSION = "3.75";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -891,6 +892,34 @@ function zurueckGehen() {
   setHilfe(z.hilfeAn); setRechner(z.rechnerAn);
   window.scrollTo({ top: z.y, behavior: "auto" });
 }
+// Bestätigte Aufenthalte als Balken im Kalender: von der Mitte des Anreisetags bis zur Mitte des Abreisetags (wie bei Airbnb)
+function zeichneBalken() {
+  const g = document.getElementById("calGrid");
+  g.querySelectorAll(".bk").forEach((e) => e.remove());
+  if (!BUCH.length || g.offsetWidth === 0) return;
+  const zell = new Map();
+  g.querySelectorAll("button.cal-d").forEach((c) => zell.set(c.dataset.k, c));
+  const ks = Array.from(zell.keys()).sort();
+  if (!ks.length) return;
+  BUCH.forEach((b) => {
+    const tage = ks.filter((k) => k >= b.arr && k <= b.dep);
+    if (!tage.length) return;
+    const zeilen = new Map();
+    tage.forEach((k) => { const c = zell.get(k); const y = c.offsetTop; if (!zeilen.has(y)) zeilen.set(y, []); zeilen.get(y).push(k); });
+    zeilen.forEach((arr) => {
+      const c0 = zell.get(arr[0]), c1 = zell.get(arr[arr.length - 1]);
+      const links = c0.offsetLeft + (arr[0] === b.arr ? c0.offsetWidth / 2 : 0);
+      const rechts = c1.offsetLeft + (arr[arr.length - 1] === b.dep ? c1.offsetWidth / 2 : c1.offsetWidth);
+      if (rechts - links < 8) return;
+      const d = document.createElement("div");
+      d.className = "bk";
+      d.textContent = b.name;
+      d.style.left = links + "px"; d.style.width = (rechts - links) + "px";
+      d.style.top = (c0.offsetTop + c0.offsetHeight - 17) + "px";
+      g.appendChild(d);
+    });
+  });
+}
 function renderKalender() {
   const heute = heuteKey();
   const n0 = new Date();
@@ -936,13 +965,13 @@ function renderKalender() {
     const rb = P.lueckeRabatt > 0 ? "−" + P.lueckeRabatt + "%" : "";
     if (!sm && rb && !ARR && GAPSTART.has(k) && !GAPSPERR.has(k)) sm = rb;                       // Beginn einer Luecke
     if (!sm && rb && ARR && !DEP && GAPSTART.get(ARR) === k) sm = rb;        // Abreisetag fuer die ganze Luecke
-    const bn = BUCH_TAG.get(k);
-    if (!sm && bn) sm = '<i class="nm">' + esc(bn.slice(0, 3)) + '</i>';
+    b.dataset.k = k;
     b.innerHTML = '<span>' + d + '</span>' + (sm ? '<small>' + sm + '</small>' : '');
     b.setAttribute("aria-label", fmtTag(k) + (istArr ? ", Anreise" : istDep ? ", Abreise" : (BELEGT.has(k) || GAPSPERR.has(k)) ? ", nicht verfügbar" : "") + (spitzVon(k) ? ", Spitzenzeit" : "") + "");
     if (ok) b.addEventListener("click", () => kalenderKlick(k));
     g.appendChild(b);
   }
+  zeichneBalken();
   const sel = document.getElementById("calSel");
   if (ARR && DEP) sel.textContent = fmtTag(ARR) + " bis " + fmtTag(DEP) + " = " + S.nights + " " + (S.nights === 1 ? "Nacht" : "Nächte") + (S.luecke ? " · Lückenpreis" : "");
   else if (ARR) {
@@ -1270,7 +1299,7 @@ function anfrageKasten(r) {
       (ok ? '<a class="btn" href="https://wa.me/?text=' + encodeURIComponent(f) + '" target="_blank" rel="noopener">' + WA_SVG + 'Umfrage starten</a>' : '<span class="btn off" aria-disabled="true">' + WA_SVG + 'Umfrage starten</span>') +
       '<button type="button" class="btn" id="copyFam"' + (ok ? "" : " disabled") + '>📋 Text kopieren</button></div>';
   }
-  h += '</div>';
+  h += '<div class="note h" id="aufHinweis" hidden></div></div>';
   return h;
 }
 function render() {
@@ -1451,7 +1480,12 @@ document.getElementById("result").addEventListener("click", (e) => {
   if (ce) { kopiere(LETZTE_EINLADUNG, ce, "Einladung kopiert", "Einladung kopieren"); return; }
   const q = e.target.closest("#copyReq");
   if (q) kopiere(LETZTE_ANFRAGE, q, "Anfrage kopiert", "Anfrage kopieren");
-  if (q || e.target.closest("#waReq")) aufentSpeichern();
+  if (q || e.target.closest("#waReq")) { aufentSpeichern(); aufHinweisZeigen(); }
+  if (e.target.closest("#zuKnoepfe")) {
+    setRechner(false);
+    const z = document.getElementById("btnAnreise").hidden ? document.getElementById("btnCheck") : document.getElementById("btnAnreise");
+    z.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
   const fb = e.target.closest("#copyFam");
   if (fb) kopiere(LETZTE_FAMILIE, fb, "Text kopiert", "Text kopieren");
 });
@@ -1534,6 +1568,12 @@ function aufentSpeichern() {
   if (b) { aufentZeigen(); return; }   // schon bestätigt
   AUFENT = { arr: ARR, dep: DEP, sb: x.SB === true, pers: x.FP };
   aufentSichern(); aufentZeigen();
+}
+function aufHinweisZeigen() {
+  const el = document.getElementById("aufHinweis"), a = aufent();
+  if (!el || !a) return;
+  el.hidden = false;
+  el.innerHTML = '<b>✅ Gemerkt.</b> Deine Knöpfe ' + (a.sb ? '«Anreise-Wäsche» und ' : '') + '«Reinigungs-Checkliste» findest du jetzt oben auf der Startseite. <button type="button" class="ov-back" id="zuKnoepfe">👆 Zu den Knöpfen</button>';
 }
 function aufentZeigen() {
   const a = aufent();
@@ -1628,6 +1668,7 @@ document.getElementById("aufStatus").addEventListener("click", aufentWeg);
   });
 })();
 aufentLaden();
+try { new ResizeObserver(() => zeichneBalken()).observe(document.getElementById("calGrid")); } catch (e) {}
 Promise.all([ladeEinstellungen(), ladeBelegt(), ladeBuchungen()]).then(() => {
   {
     const STUFEN = [["klein", 0.92], ["mittel", 1], ["gross", 1.18]];
