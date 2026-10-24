@@ -510,7 +510,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "3.83";
+let VERSION = "3.84";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -1567,9 +1567,10 @@ function aufentSichern() {
 function buchungenAn(j) {
   if (!j || !Array.isArray(j.buchungen)) return false;
   const gut = j.buchungen.filter((b) => b && typeof b.name === "string" && DKEY.test(b.arr) && DKEY.test(b.dep) && b.arr < b.dep);
-  BUCH_ABGEL = gut.filter((b) => b.status === "abgelehnt").map((b) => ({ name: b.name.trim(), arr: b.arr, dep: b.dep }));
+  const bes = (b) => (typeof b.bescheid === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(b.bescheid) ? b.bescheid : "");
+  BUCH_ABGEL = gut.filter((b) => b.status === "abgelehnt").map((b) => ({ name: b.name.trim(), arr: b.arr, dep: b.dep, bescheid: bes(b) }));
   BUCH = gut.filter((b) => b.status !== "abgelehnt")
-    .map((b) => ({ name: b.name.trim(), arr: b.arr, dep: b.dep, sb: b.selbst === true, pers: Math.max(1, Number(b.pers) || 1) }))
+    .map((b) => ({ name: b.name.trim(), arr: b.arr, dep: b.dep, sb: b.selbst === true, pers: Math.max(1, Number(b.pers) || 1), bescheid: bes(b) }))
     .sort((p, q) => (p.arr < q.arr ? -1 : 1));
   BUCH_TAG.clear();
   BUCH.forEach((b) => { for (let k = b.arr; k < b.dep; k = addDays(k, 1)) BUCH_TAG.set(k, b.name); });
@@ -1771,14 +1772,34 @@ function bestZeigen() {
       : '<p class="hint">Keine offenen Anfragen. Tippe in einer Anfrage auf den Bestätigungs-Link, dann erscheint sie hier.</p>';
     s += '<div class="btns"><button type="button" class="btn" data-zeig="B">' + (zeigB ? "Bestätigte ausblenden" : "Bestätigte anzeigen (" + bl.length + ")") + '</button>' +
       '<button type="button" class="btn" data-zeig="A">' + (zeigA ? "Abgelehnte ausblenden" : "Abgelehnte anzeigen (" + ABGEL.length + ")") + "</button></div>";
-    if (zeigB) s += "<b>✅ Bestätigt</b>" + (bl.length ? "<ul>" + bl.map((x) => "<li><b>" + esc(x.name) + "</b>: " + esc(bestBeschr(x)) + ' <button type="button" class="sym" data-bdel="' + esc(bKey(x)) + '" aria-label="Aufenthalt entfernen">✖</button></li>').join("") + "</ul>" : '<p class="hint">Keine bestätigten Aufenthalte.</p>');
-    if (zeigA) s += "<b>✖ Abgelehnt</b>" + (ABGEL.length ? "<ul>" + ABGEL.map((x) => "<li><b>" + esc(x.name) + "</b>: " + esc(bestBeschr(x)) + ' <button type="button" class="ov-back" data-wieder="' + esc(bKey(x)) + '">↩️ wieder offen</button></li>').join("") + "</ul>" : '<p class="hint">Keine abgelehnten Anfragen.</p>');
+    if (zeigB) s += "<b>✅ Bestätigt</b>" + (bl.length ? "<ul>" + bl.map((x) => "<li><b>" + esc(x.name) + "</b>: " + esc(bestBeschr(x)) + ' <button type="button" class="sym" data-bdel="' + esc(bKey(x)) + '" aria-label="Aufenthalt entfernen">✖</button>' + bestBescheidZeile(x, false) + "</li>").join("") + "</ul>" : '<p class="hint">Keine bestätigten Aufenthalte.</p>');
+    if (zeigA) s += "<b>✖ Abgelehnt</b>" + (ABGEL.length ? "<ul>" + ABGEL.map((x) => { const z = BUCH_ABGEL.find((y) => bKey(y) === bKey(x)); const xx = Object.assign({}, x, { bescheid: z ? z.bescheid : "" }); return "<li><b>" + esc(x.name) + "</b>: " + esc(bestBeschr(x)) + ' <button type="button" class="ov-back" data-wieder="' + esc(bKey(x)) + '">↩️ wieder offen</button>' + bestBescheidZeile(xx, true) + "</li>"; }).join("") + "</ul>" : '<p class="hint">Keine abgelehnten Anfragen.</p>');
     if (bestFehler) s += '<p class="hint">⚠️ ' + esc(bestFehler) + "</p>";
   }
   k.innerHTML = s;
 }
 function bestNeuZeichnen() { aufentZeigen(); renderKalender(); bestZeigen(); }
-function bestWaLink(text) { return ' <a class="btn" href="https://wa.me/?text=' + encodeURIComponent(text) + '" target="_blank" rel="noopener">' + WA_SVG + "Dem Kind Bescheid geben</a>"; }
+function bestWaLink(text, key, label) { return ' <a class="btn" data-bescheid="' + esc(key) + '" href="https://wa.me/?text=' + encodeURIComponent(text) + '" target="_blank" rel="noopener">' + WA_SVG + (label || "Dem Kind Bescheid geben") + "</a>"; }
+function bestText(x, abgelehnt) {
+  return abgelehnt
+    ? "Hoi " + x.name + ", deine Anfrage vom " + fmtTagV(x.arr) + " bis " + fmtTagV(x.dep) + " können wir leider nicht bestätigen. Melde dich bei uns, dann suchen wir zusammen eine Lösung."
+    : "Hoi " + x.name + ", dein Aufenthalt vom " + fmtTagV(x.arr) + " bis " + fmtTagV(x.dep) + " ist bestätigt. 🎉 Im TSCHENT-O-MAT findest du jetzt " + (x.sb || x.selbst ? "die Wäsche-Liste für die Anreise und " : "") + "die Checkliste für die Abreise.";
+}
+function bestBescheidZeile(x, abgelehnt) {
+  const b = x.bescheid || "", key = bKey(x);
+  const wann = b ? "✉️ Bescheid gegeben am " + esc(fmtTag(b.slice(0, 10))) + ", " + b.slice(11, 16) + " Uhr" : "✉️ Noch kein Bescheid gegeben";
+  return "<br><span class=\"hint\">" + wann + "</span>" + bestWaLink(bestText(x, abgelehnt), key, b ? (abgelehnt ? "Nochmals Absage schicken" : "Nochmals Bescheid geben") : (abgelehnt ? "Absage schicken" : "Bescheid geben"));
+}
+async function bescheidVermerken(key) {
+  const d = new Date(), p2 = (n) => String(n).padStart(2, "0");
+  const jetzt = d.getFullYear() + "-" + p2(d.getMonth() + 1) + "-" + p2(d.getDate()) + "T" + p2(d.getHours()) + ":" + p2(d.getMinutes());
+  try {
+    const j = await ghAendern((l) => l.map((y) => (bKey(y) === key ? Object.assign({}, y, { bescheid: jetzt }) : y)));
+    buchungenAn(j); try { localStorage.setItem("tm_buchungen", JSON.stringify(j)); } catch (e2) {}
+    bestFehler = "";
+  } catch (err) { bestFehler = "Der Vermerk «Bescheid gegeben» konnte nicht gespeichert werden: " + (err && err.message ? err.message : "Fehler"); }
+  bestZeigen();
+}
 document.getElementById("bestKasten").addEventListener("change", (e) => {
   if (e.target && e.target.id === "ansichtAls") {
     ABSENDER = ABS.indexOf(e.target.value) >= 0 ? e.target.value : "";
@@ -1787,6 +1808,8 @@ document.getElementById("bestKasten").addEventListener("change", (e) => {
   }
 });
 document.getElementById("bestKasten").addEventListener("click", async (e) => {
+  const wa = e.target.closest("[data-bescheid]");
+  if (wa) { bescheidVermerken(wa.getAttribute("data-bescheid")); return; }
   if (bestBusy) return;
   const f = (a) => { const el = e.target.closest("[" + a + "]"); return el ? el.getAttribute(a) : null; };
   const find = (l, key) => l.find((x) => bKey(x) === key);
@@ -1813,7 +1836,7 @@ document.getElementById("bestKasten").addEventListener("click", async (e) => {
       buchungenAn(j); try { localStorage.setItem("tm_buchungen", JSON.stringify(j)); } catch (e2) {}
       OFFEN = OFFEN.filter((y) => y !== x); ABGEL.push(x); listeSichern("tm_offen", OFFEN); listeSichern("tm_abgelehnt", ABGEL);
       const text = "Hoi " + x.name + ", deine Anfrage vom " + fmtTagV(x.arr) + " bis " + fmtTagV(x.dep) + " können wir leider nicht bestätigen. Melde dich bei uns, dann suchen wir zusammen eine Lösung.";
-      bestMsg = "Abgelehnt und gespeichert: " + esc(x.name) + ", " + esc(fmtTag(x.arr)) + " bis " + esc(fmtTag(x.dep)) + ". Im Handy des Kindes erscheint die Absage beim nächsten Öffnen." + bestWaLink(text).replace("Bescheid geben", "Absage schicken");
+      bestMsg = "Abgelehnt und gespeichert: " + esc(x.name) + ", " + esc(fmtTag(x.arr)) + " bis " + esc(fmtTag(x.dep)) + ". Im Handy des Kindes erscheint die Absage beim nächsten Öffnen." + bestWaLink(text, bKey(x), "Absage schicken");
       bestBusy = false; bestNeuZeichnen();
     } catch (err) { bestBusy = false; bestFehler = err && err.message ? err.message : "Das hat nicht geklappt."; bestZeigen(); }
     return;
@@ -1829,7 +1852,7 @@ document.getElementById("bestKasten").addEventListener("click", async (e) => {
       buchungenAn(j); try { localStorage.setItem("tm_buchungen", JSON.stringify(j)); } catch (e2) {}
       OFFEN = OFFEN.filter((y) => bKey(y) !== ja); listeSichern("tm_offen", OFFEN);
       const text = "Hoi " + x.name + ", dein Aufenthalt vom " + fmtTagV(x.arr) + " bis " + fmtTagV(x.dep) + " ist bestätigt. 🎉 Im TSCHENT-O-MAT findest du jetzt " + (x.selbst ? "die Wäsche-Liste für die Anreise und " : "") + "die Checkliste für die Abreise.";
-      bestMsg = "✅ Bestätigt und gespeichert (" + esc(x.name) + "). In 1 bis 2 Minuten sehen es alle." + bestWaLink(text);
+      bestMsg = "✅ Bestätigt und gespeichert (" + esc(x.name) + "). In 1 bis 2 Minuten sehen es alle." + bestWaLink(text, bKey(x));
     } else {
       const [name, arr, dep] = del.split("|");
       if (!confirm("Aufenthalt von " + name + " (" + fmtTag(arr) + " bis " + fmtTag(dep) + ") wirklich entfernen?")) { bestBusy = false; bestZeigen(); return; }
