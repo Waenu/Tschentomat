@@ -374,6 +374,7 @@
   </header>
 
   <nav class="start" aria-label="Start">
+    <div class="note h" id="bestKasten" hidden></div>
     <button type="button" class="bigbtn" id="btnHilfe" aria-expanded="false" aria-controls="hilfe"><span class="bi" aria-hidden="true">💡</span>Anleitung &amp; Infos</button>
     <div id="hilfe" hidden>
     <details class="card" id="b-benutzung">
@@ -445,6 +446,7 @@
     </div>
     </div>
     <a class="bigbtn" id="btnBuch" href="https://drive.google.com/drive/folders/1YXXtl4fYd_xgu7LcYMZ3Q1NrWZpwRWBm" target="_blank" rel="noopener noreferrer" hidden><span class="bi" aria-hidden="true">📒</span>Buchhaltung</a>
+    <div id="tokPanel" class="note h" hidden></div>
   </nav>
 
   <div id="rechner" hidden>
@@ -498,7 +500,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "3.76";
+let VERSION = "3.77";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -1090,7 +1092,7 @@ document.getElementById("btnReserv").addEventListener("click", () => {
     const t = Date.now();
     n = (t - letzter < 1500) ? n + 1 : 1;
     letzter = t;
-    if (n >= 5) { document.getElementById("btnBuch").hidden = false; n = 0; }
+    if (n >= 5) { document.getElementById("btnBuch").hidden = false; tokZeigen(true); n = 0; }
   });
 })();
 document.getElementById("btnChem").addEventListener("click", () => {
@@ -1160,6 +1162,8 @@ function anfrageText(r) {
   z.push("");
   z.push("Gruss");
   z.push(ABSENDER);
+  z.push("");
+  z.push("Zur Bestätigung (nur Eltern): " + bestLink(ABSENDER, ARR, DEP, x.SB === true, x.FP));
   return z.join("\n");
 }
 
@@ -1591,7 +1595,7 @@ function aufentZeigen() {
     const h = heuteKey();
     const l = BUCH.filter((b) => b.dep >= h);
     f.hidden = l.length === 0;
-    f.innerHTML = l.length ? HW + "Bestätigte Aufenthalte der Familie:<ul>" + l.map((b) => "<li><b>" + esc(b.name) + "</b>: " + fmtTag(b.arr) + " bis " + fmtTag(b.dep) + (b.sb ? " (reinigt selbst)" : "") + "</li>").join("") + "</ul>" : "";
+    f.innerHTML = l.length ? HW + "Bestätigte Aufenthalte der Familie:<ul>" + l.map((b) => "<li><b>" + esc(b.name) + "</b>: " + fmtTag(b.arr) + " bis " + fmtTag(b.dep) + (b.sb ? " (reinigt selbst)" : "") + (TOKEN ? ' <button type="button" class="sym" data-bdel="' + esc(b.name) + "|" + b.arr + "|" + b.dep + '" aria-label="Aufenthalt entfernen">✖</button>' : "") + "</li>").join("") + "</ul>" : "";
   }
 }
 function ovOeffnen(id, an) {
@@ -1655,6 +1659,105 @@ document.getElementById("aufStatus").addEventListener("click", aufentWeg);
   if (wk && a) { const w = WAESCHE[Number(wk.dataset.wa)]; if (w) { const h = hk(a); h["w:" + w[0]] = !h["w:" + w[0]]; aufentSichern(); anreiseZeichnen(); } return; }
   aufentWeg(e);
 }));
+// ===== Bestätigen durch die Eltern: Link aus der Anfrage, Eintrag in buchungen.json über die GitHub-Schnittstelle =====
+const GH_REPO = "Waenu/Tschentomat", GH_DATEI = "buchungen.json";
+let TOKEN = "";
+try { TOKEN = localStorage.getItem("tm_token") || ""; } catch (e) {}
+function bestLink(name, arr, dep, selbst, pers) {
+  return location.origin + location.pathname + "?b=" + [name, arr, dep, selbst ? 1 : 0, pers].join("_");
+}
+function bestLesen() {
+  let p = "";
+  try { p = new URLSearchParams(location.search).get("b") || ""; } catch (e) {}
+  const a = p.split("_");
+  if (a.length !== 5) return null;
+  const pers = Number(a[4]);
+  if (ABS.indexOf(a[0]) < 0 || !DKEY.test(a[1]) || !DKEY.test(a[2]) || a[1] >= a[2] || !(a[3] === "0" || a[3] === "1") || !Number.isInteger(pers) || pers < 1 || pers > 8) return null;
+  return { name: a[0], arr: a[1], dep: a[2], selbst: a[3] === "1", pers: pers };
+}
+const b64 = (s) => btoa(unescape(encodeURIComponent(s)));
+const unb64 = (s) => decodeURIComponent(escape(atob(s.replace(/\s+/g, ""))));
+async function ghAendern(fn) {
+  const url = "https://api.github.com/repos/" + GH_REPO + "/contents/" + GH_DATEI;
+  const kopf = { Authorization: "Bearer " + TOKEN, Accept: "application/vnd.github+json" };
+  for (let versuch = 0; versuch < 2; versuch++) {
+    const g = await fetch(url + "?ref=main&t=" + Date.now(), { headers: kopf, cache: "no-store" });
+    if (g.status === 401 || g.status === 403) throw new Error("Das Token wird nicht akzeptiert. Es ist ungültig oder abgelaufen.");
+    if (!g.ok) throw new Error("GitHub antwortet mit Fehler " + g.status + ".");
+    const d = await g.json();
+    const j = JSON.parse(unb64(d.content));
+    if (!Array.isArray(j.buchungen)) j.buchungen = [];
+    j.buchungen = fn(j.buchungen);
+    const neu = JSON.stringify(j, null, 2) + "\n";
+    const r = await fetch(url, { method: "PUT", headers: Object.assign({ "Content-Type": "application/json" }, kopf),
+      body: JSON.stringify({ message: "Buchungen aktualisiert (App)", content: b64(neu), sha: d.sha, branch: "main" }) });
+    if (r.ok) return j;
+    if (r.status === 409 && versuch === 0) continue;
+    if (r.status === 401 || r.status === 403) throw new Error("Das Token darf die Datei nicht ändern (Berechtigung «Contents: Read and write» fehlt oder abgelaufen).");
+    throw new Error("Speichern fehlgeschlagen (Fehler " + r.status + ").");
+  }
+  throw new Error("Speichern fehlgeschlagen.");
+}
+function bestSchliessen() {
+  try { history.replaceState(null, "", location.pathname); } catch (e) {}
+  const k = document.getElementById("bestKasten"); k.hidden = true; k.innerHTML = "";
+}
+function bestZeigen() {
+  const k = document.getElementById("bestKasten"), b = bestLesen();
+  if (!b) { k.hidden = true; return; }
+  const was = "<b>📨 Anfrage von " + esc(b.name) + ":</b> " + fmtTagV(b.arr) + " bis " + fmtTagV(b.dep) + ", " + (b.selbst ? "Selbstreinigung ja" : "Selbstreinigung nein") + ", " + b.pers + (b.pers === 1 ? " Person" : " Personen") + ". ";
+  k.hidden = false;
+  if (!TOKEN) { k.innerHTML = was + "<br>Bestätigen können nur die Eltern. Auf diesem Handy ist der Zugriff nicht eingerichtet." + ' <button type="button" class="ov-back" id="bestZu">Schliessen</button>'; return; }
+  if (BUCH.some((x) => x.name === b.name && x.arr === b.arr && x.dep === b.dep)) { k.innerHTML = was + "<br>✅ Schon bestätigt." + ' <button type="button" class="ov-back" id="bestZu">Schliessen</button>'; return; }
+  k.innerHTML = was + '<div class="btns"><button type="button" class="btn" id="bestJa">✅ Bestätigen</button><button type="button" class="btn" id="bestNein">✖ Ablehnen</button></div><p class="hint" id="bestMeld"></p>';
+}
+document.getElementById("bestKasten").addEventListener("click", async (e) => {
+  const b = bestLesen(), meld = document.getElementById("bestMeld");
+  if (e.target.closest("#bestZu") || e.target.closest("#bestNein")) { bestSchliessen(); return; }
+  if (!e.target.closest("#bestJa") || !b) return;
+  const btn = e.target.closest("#bestJa"); btn.disabled = true; meld.textContent = "Speichere …";
+  try {
+    const j = await ghAendern((l) => l.filter((x) => !(x.name === b.name && x.arr === b.arr && x.dep === b.dep)).concat([{ name: b.name, arr: b.arr, dep: b.dep, selbst: b.selbst, pers: b.pers }]));
+    buchungenAn(j); try { localStorage.setItem("tm_buchungen", JSON.stringify(j)); } catch (e2) {}
+    aufentZeigen(); renderKalender();
+    const text = "Hoi " + b.name + ", dein Aufenthalt vom " + fmtTagV(b.arr) + " bis " + fmtTagV(b.dep) + " ist bestätigt. 🎉 Im TSCHENT-O-MAT findest du jetzt " + (b.selbst ? "die Wäsche-Liste für die Anreise und " : "") + "die Checkliste für die Abreise.";
+    document.getElementById("bestKasten").innerHTML = "<b>✅ Bestätigt und gespeichert.</b> In 1 bis 2 Minuten sehen es alle." +
+      '<div class="btns"><a class="btn" href="https://wa.me/?text=' + encodeURIComponent(text) + '" target="_blank" rel="noopener">' + WA_SVG + 'Dem Kind Bescheid geben</a><button type="button" class="btn" id="bestZu">Schliessen</button></div>';
+  } catch (err) { btn.disabled = false; meld.textContent = "⚠️ " + (err && err.message ? err.message : "Das hat nicht geklappt."); }
+});
+// Familienliste: Eltern können einen bestätigten Aufenthalt entfernen
+document.getElementById("calFam").addEventListener("click", async (e) => {
+  const x = e.target.closest("[data-bdel]");
+  if (!x || !TOKEN) return;
+  const [name, arr, dep] = x.dataset.bdel.split("|");
+  if (!confirm("Aufenthalt von " + name + " (" + fmtTag(arr) + " bis " + fmtTag(dep) + ") wirklich entfernen?")) return;
+  try {
+    const j = await ghAendern((l) => l.filter((y) => !(y.name === name && y.arr === arr && y.dep === dep)));
+    buchungenAn(j); try { localStorage.setItem("tm_buchungen", JSON.stringify(j)); } catch (e2) {}
+    aufentZeigen(); renderKalender();
+  } catch (err) { alert("⚠️ " + (err && err.message ? err.message : "Das hat nicht geklappt.")); }
+});
+// Zugriff einrichten (versteckt: 5 Tipps auf die Versionszeile)
+function tokZeigen(an) {
+  const p = document.getElementById("tokPanel");
+  p.hidden = !an;
+  if (!an) return;
+  p.innerHTML = "<b>🔑 Zugriff für die Eltern</b><br>" + (TOKEN ? "Eingerichtet auf diesem Handy. " : "Noch nicht eingerichtet. ") + "Das Token bleibt nur auf diesem Handy gespeichert." +
+    '<div class="field"><label for="tokIn">GitHub-Token einfügen</label><input id="tokIn" type="password" autocomplete="off" placeholder="github_pat_…"></div>' +
+    '<div class="btns"><button type="button" class="btn" id="tokSave">Speichern</button>' + (TOKEN ? '<button type="button" class="btn" id="tokDel">Entfernen</button>' : "") + '</div><p class="hint" id="tokMeld"></p>';
+}
+document.getElementById("tokPanel").addEventListener("click", (e) => {
+  const m = document.getElementById("tokMeld");
+  if (e.target.closest("#tokSave")) {
+    const v = document.getElementById("tokIn").value.trim();
+    if (!/^(github_pat_|ghp_)[A-Za-z0-9_]{20,}$/.test(v)) { m.textContent = "Das sieht nicht wie ein GitHub-Token aus. Es beginnt mit github_pat_."; return; }
+    TOKEN = v; try { localStorage.setItem("tm_token", TOKEN); } catch (e2) {}
+    tokZeigen(true); bestZeigen(); aufentZeigen();
+  } else if (e.target.closest("#tokDel")) {
+    TOKEN = ""; try { localStorage.removeItem("tm_token"); } catch (e2) {}
+    tokZeigen(true); bestZeigen(); aufentZeigen();
+  }
+});
 // TESTKNOPF (temporär): 3 Tipps auf den Spielautomaten im Titel legen eine Test-Anfrage an
 (function () {
   let n = 0, letzter = 0;
@@ -1704,7 +1807,7 @@ Promise.all([ladeEinstellungen(), ladeBelegt(), ladeBuchungen()]).then(() => {
   document.getElementById("ver").textContent = "Version " + VERSION + " · gültig ab " + GUELTIG_AB;
   initKalenderMonat();
   berechneLuecken();
-  build(); render(); renderKalender(); aufentZeigen();
+  build(); render(); renderKalender(); aufentZeigen(); bestZeigen();
 });
 if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
   window.addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(() => {}); });
