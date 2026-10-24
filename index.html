@@ -395,6 +395,7 @@
   .bk.eltern { background: var(--bk-eltern); color: var(--bk-eltern-fg); box-shadow: 0 0 0 1.5px var(--bk-eltern-ol); }
   .bk.selbst { box-shadow: 0 0 0 1.5px var(--bk-selbst-ol); }
   .bk.prov { background-image: repeating-linear-gradient(45deg, transparent 0 5px, rgba(255,255,255,.6) 5px 9px); background-repeat: no-repeat; background-position: var(--sf, 0px) 0; background-size: calc(100% - var(--sf, 0px)) 100%; }
+  .risk { color: var(--error-line); font-weight: 700; }
   .bk.konf { box-shadow: 0 0 0 2.5px #C0392B; }
   .bk .ck { display: inline-block; background: #fff; color: #0B7A32; border-radius: 50%; width: 13px; height: 13px; line-height: 13px; text-align: center; font-size: 10px; font-weight: 900; vertical-align: -1px; margin-left: 3px; }
   .bk.sw { height: 9px; line-height: 9px; padding: 0; background: transparent; border: 2px dashed var(--bk-selbst); border-radius: 5px; opacity: 1; }
@@ -561,7 +562,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "1.5.0";
+let VERSION = "1.5.1";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -2104,13 +2105,20 @@ document.getElementById("tokPanel").addEventListener("click", (e) => {
       if (d > 0) window.scrollBy({ top: d, behavior: ruhig ? "auto" : "smooth" });
     } else if (r.top < 60) window.scrollBy({ top: r.top - 70, behavior: ruhig ? "auto" : "smooth" });
   };
+  const RISIKO = '<span class="risk">⚠️ Das Risiko tragt ihr selbst: Kommt eine Airbnb-Buchung, müsst ihr weichen oder gar nicht erst reisen. Plant eine Alternative ein. Mit der Anfrage erklärt ihr euch damit einverstanden.</span>';
   function text(k) {
     const heute = heuteKey(), kopf = "<b>" + esc(fmtTag(k)) + "</b>";
     if (k < heute) return kopf + "<p>Dieser Tag liegt in der Vergangenheit.</p>";
     const z = [];
     const stay = BUCH.filter((b) => b.arr <= k && k < b.dep), abr = BUCH.filter((b) => b.dep === k);
     stay.forEach((b) => z.push("Reserviert für <b>" + esc(b.name) + "</b> (" + (b.sb ? "reinigt selbst, blauer Balken" : "Reinigung durch Eltern, gelber Balken") + (b.prov ? ", provisorisch" : "") + ")."));
-    stay.filter((b) => b.prov).forEach((b) => z.push(provKonflikt(b) ? "⚠️ <b>Konflikt:</b> Ein Airbnb-Gast hat sich auf diese Tage eingetragen. Der Aufenthalt muss weichen. " + symBtn("b-prov", "⏳") : provSicher(b) ? "Provisorisch, aber <b>praktisch sicher ✓</b>: Neue Gäste brauchen " + VORLAUF + " Tage Vorlauf, bis zur Abreise kann sich niemand mehr dazwischen buchen. " + symBtn("b-prov", "⏳") : "Provisorisch: nicht in Airbnb gesperrt. Meldet sich ein Airbnb-Gast, hat er Vorrang und der Aufenthalt muss weichen. " + provSicherZeile(b.arr, b.dep) + " " + symBtn("b-prov", "⏳")));
+    stay.filter((b) => b.prov).forEach((b) => {
+      if (provKonflikt(b)) { z.push("⚠️ <b>Konflikt:</b> Ein Airbnb-Gast hat sich auf diese Tage eingetragen. Der Aufenthalt muss weichen. " + symBtn("b-prov", "⏳")); return; }
+      const S = provSicherBis();
+      if (k < S) z.push("✓ <b>Diese Nacht ist sicher.</b> Du bist sicher bis " + esc(fmtTag(S)) + ", denn ein neuer Airbnb-Gast kann frühestens dann einchecken. " + (b.dep > S ? "Die späteren Nächte (schraffiert) sind noch nicht sicher; jeden Tag wird eine Nacht mehr sicher, der ganze Aufenthalt am " + esc(fmtTag(addDays(b.dep, -VORLAUF))) + ". " : "Der ganze Aufenthalt ist sicher. ") + symBtn("b-prov", "⏳"));
+      else z.push("⏳ <b>Diese Nacht ist noch nicht sicher.</b> Ein Airbnb-Gast kann sie noch buchen und hat dann Vorrang. Sicher wird sie am " + esc(fmtTag(addDays(k, 1 - VORLAUF))) + ". " + symBtn("b-prov", "⏳"));
+      if (!provSicherDep(b.dep)) z.push(RISIKO);
+    });
     if (!stay.length && BELEGT.has(k)) z.push("Von Airbnb belegt, nicht buchbar.");
     abr.forEach((b) => z.push("Abreisetag von <b>" + esc(b.name) + "</b>."));
     if (!BELEGT.has(k)) {
@@ -2120,7 +2128,7 @@ document.getElementById("tokPanel").addEventListener("click", (e) => {
       else if (istHoch(k)) z.push("Hochsaison: Airbnb-Zeit, bitte wenn möglich meiden. Eine Anfrage ist trotzdem möglich.");
       else if (istRuhe(k)) z.push("Eigene Wäsche: Ihr reinigt selbst " + symBtn("b-ruhe", "🧹") + ", nur für euch Kinder und ohne externe Gäste. Die Familienstaffel ist möglich " + symBtn("b-staffel", "🔗") + ".");
       else if (!stay.length) z.push("Normale Zeit: normale Familienpreise, Endreinigung nach den Regeln " + symBtn("b-endrein", "🪣") + ". Selbst reinigen geht hier nicht, nur in der Zeit «Eigene Wäsche».");
-      if (provStay(k, addDays(k, 1))) z.push("Ein Aufenthalt wäre hier <b>provisorisch</b>: nicht in Airbnb gesperrt, ein Airbnb-Gast hat Vorrang. " + symBtn("b-prov", "⏳"));
+      if (provStay(k, addDays(k, 1))) { z.push("Ein Aufenthalt wäre hier <b>provisorisch</b>: nicht in Airbnb gesperrt, ein Airbnb-Gast hat Vorrang. " + symBtn("b-prov", "⏳")); z.push(RISIKO); }
       if (schweifListe().some((s) => k >= s.von && k <= s.bis)) z.push("Familienstaffel noch offen (gestrichelter Balken): Wer hier selbst reinigt, führt sie weiter. Mit «Nein» wird sie unterbrochen und die Endreinigung der Gäste davor fällig.");
       const c = grid.querySelector('[data-k="' + k + '"]');
       if (c && c.classList.contains("off") && ARR && !DEP) z.push("Als Abreise nicht möglich: zu kurz, zu lang oder ein belegter Tag liegt dazwischen.");
