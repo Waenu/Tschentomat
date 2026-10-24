@@ -220,7 +220,6 @@
   .marke { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; margin: 28px 0 8px; padding: 10px 0; color: var(--marke); font-family: var(--body); font-weight: 600; font-size: clamp(.78rem, 4.1vw, 1.05rem); letter-spacing: .02em; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; cursor: default; }
   .marke span[data-z] { padding: 10px 3px; }
   .marke .pt { padding: 0 .1em; }
-  .marke-meld { text-align: center; color: var(--marke); font-size: var(--t-small); margin: 0 0 16px; }
   .eltern-zone { min-height: 52px; display: flex; align-items: center; justify-content: space-between; padding: 0 22px; font-size: 1.6rem; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; cursor: default; }
   .eltern-zone span { padding: 8px 14px; }
   .pay { border: 2px solid var(--accent); border-radius: 6px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
@@ -502,8 +501,6 @@
 
   <button type="button" class="reset" id="reset">Neu starten</button>
   </div>
-  <div class="marke" id="marke"><span data-z="0">ankommen</span><span class="pt">·</span><span data-z="1">durchatmen</span><span class="pt">·</span><span data-z="2">geniessen</span></div>
-  <p class="marke-meld" id="markeMeld" role="status" hidden></p>
 </div>
 
 <button type="button" id="zurueck" hidden>↩ zurück</button>
@@ -518,7 +515,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "3.89";
+let VERSION = "3.90";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -1478,7 +1475,7 @@ function render() {
     zahlung +
     '<details><summary>' + symBtn('b-geld', '💰') + ' Geldverwendung</summary><div class="rows">' + GELD_TEXT +
     '</div></details>' +
-    (ELTERN ? elternKasten() : '');
+    '<div class="marke" id="marke"><span data-z="0">ankommen</span><span class="pt">·</span><span data-z="1">durchatmen</span><span class="pt">·</span><span data-z="2">geniessen</span></div>' + (ELTERN ? elternKasten() : '');
 }
 
 document.getElementById("reset").addEventListener("click", () => { ELTERN = false; EMPF = ""; TRINK = ""; RECH_OFFEN = false; TRINK_OFFEN = false; S = Object.assign({}, EMPTY); ARR = ""; DEP = ""; initKalenderMonat(); notice = ""; render(); renderKalender(); ZURUECK = null; document.getElementById("zurueck").hidden = true; setHilfe(false); hilfeZuklappen(); setRechner(false); window.scrollTo({ top: 0 }); });
@@ -1531,14 +1528,11 @@ let ZONE_STAND = 0, ZONE_ZEIT = 0;
 function elternUmschalten() {
   ELTERN = !ELTERN;
   render();
-  const m = document.getElementById("markeMeld");
-  m.textContent = ELTERN ? "Einladung ist eingeschaltet. Du siehst sie im Rechner, sobald ein Termin gewählt ist." : "Einladung ist ausgeblendet.";
-  m.hidden = false; clearTimeout(m._t); m._t = setTimeout(() => { m.hidden = true; }, 3000);
   if (ELTERN) { const b = document.getElementById("elternBox"); if (b) b.scrollIntoView({ block: "center" }); }
 }
 // Versteckte Wörter in der Markenzeile: erst das mittlere, dann das linke, dann das rechte antippen. Öffnet und schliesst die Einladung.
 const ZONE_FOLGE = [1, 0, 2];
-document.getElementById("marke").addEventListener("pointerup", (e) => {
+document.getElementById("result").addEventListener("pointerup", (e) => {
   const z = e.target.closest("[data-z]");
   if (!z) return;
   const i = Number(z.dataset.z);
