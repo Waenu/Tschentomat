@@ -355,6 +355,8 @@
   .chk-stand { color: var(--muted); }
   .ov-weg { font: inherit; color: var(--muted); background: none; border: 0; text-decoration: underline; padding: 10px 0; text-align: left; cursor: pointer; }
   .sign .sub .bg { pointer-events: auto; cursor: pointer; }
+  .bigbtn .bt { display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .bigbtn .bt small { font-size: 0.85rem; font-weight: 400; margin-top: 2px; }
 </style>
 
 </head>
@@ -404,8 +406,8 @@
     </details>
     </div>
     <button type="button" class="bigbtn main" id="btnReserv" aria-controls="rechner"><span class="bi" aria-hidden="true">📅</span>Ich reserviere jetzt</button>
-    <button type="button" class="bigbtn" id="btnAnreise" hidden><span class="bi" aria-hidden="true">🧳</span>Anreise-Wäsche</button>
-    <button type="button" class="bigbtn" id="btnCheck" hidden><span class="bi" aria-hidden="true">✅</span>Reinigungs-Checkliste</button>
+    <button type="button" class="bigbtn" id="btnAnreise" hidden><span class="bi" aria-hidden="true">🧳</span><span class="bt">Anreise-Wäsche<small id="btnAnreiseSub"></small></span></button>
+    <button type="button" class="bigbtn" id="btnCheck" hidden><span class="bi" aria-hidden="true">✅</span><span class="bt">Reinigungs-Checkliste<small id="btnCheckSub"></small></span></button>
     <button type="button" class="bigbtn" id="btnChem" aria-expanded="false" aria-controls="cheminee"><span class="bi" aria-hidden="true">🔥</span>Cheminée-Anleitung</button>
     <div id="cheminee" hidden>
     <div class="card">
@@ -490,7 +492,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "3.70";
+let VERSION = "3.71";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -1485,22 +1487,31 @@ function aufentZeigen() {
   if (AUFENT && heuteKey() > AUFENT.dep) { AUFENT = null; aufentSichern(); }   // am Tag nach der Abreise weg
   document.getElementById("btnAnreise").hidden = !(AUFENT && AUFENT.sb);
   document.getElementById("btnCheck").hidden = !AUFENT;
+  if (AUFENT) {
+    document.getElementById("btnAnreiseSub").textContent = "Aufenthalt von " + fmtTag(AUFENT.arr) + " bis " + fmtTag(AUFENT.dep);
+    document.getElementById("btnCheckSub").textContent = "Abreise: " + fmtTag(AUFENT.dep);
+  }
 }
 function ovOeffnen(id, an) {
   document.getElementById(id).hidden = !an;
   document.body.style.overflow = an ? "hidden" : "";
   if (an) document.getElementById(id).scrollTop = 0;
 }
-const OV_WEG = '<button type="button" class="ov-weg" data-weg="1">Aufenthalt entfernen</button>';
+const ovWeg = () => '<button type="button" class="ov-weg" data-weg="1">Aufenthalt entfernen</button><p class="hint">Die Knöpfe verschwinden am Tag nach der Abreise von selbst (am ' + fmtTagV(addDays(AUFENT.dep, 1)) + ').</p>';
 function anreiseZeichnen() {
   const a = AUFENT; if (!a) return;
   const n = a.pers;
+  const key = (w) => "w:" + w[0];
+  const done = WAESCHE.filter((w) => a.haken[key(w)]).length;
+  const alle = WAESCHE.length > 0 && done === WAESCHE.length;
   document.getElementById("ovAnreiseIn").innerHTML =
     '<button type="button" class="ov-back" data-ov="ovAnreise">← Zurück</button>' +
     '<h2>🧳 Nimm am Anreisetag, ' + fmtTagV(a.arr) + ', folgende Wäsche mit:</h2>' +
-    '<p class="chk-stand">Für ' + n + (n === 1 ? ' Person' : ' Personen') + '</p>' +
-    '<ul class="waesche-liste">' + WAESCHE.map((w) => '<li><b>' + (w[1] * n) + '×</b><span>' + esc(w[0]) + '</span></li>').join("") + '</ul>' +
-    '<p class="hint">Bettdecken und Kissen nie ohne frischen Bezug benutzen. Alles nehmt ihr wieder mit. Nur die Moltons bleiben nach dem Benutzen auf der Matratze.</p>' + OV_WEG;
+    '<p class="chk-stand">Aufenthalt von ' + fmtTag(a.arr) + ' bis ' + fmtTag(a.dep) + ', für ' + n + (n === 1 ? ' Person' : ' Personen') + '.</p>' +
+    (alle ? '<div class="chk-danke">🎉 Danke, du hast alles eingepackt.</div>' : '<p class="chk-stand">' + done + ' von ' + WAESCHE.length + ' eingepackt. Tippe jeden Punkt an, wenn er eingepackt ist.</p>') +
+    '<div class="chk-liste' + (alle ? ' chk-alle' : '') + '">' + WAESCHE.map((w, k) =>
+      '<button type="button" class="chk-item' + (a.haken[key(w)] ? ' erledigt' : '') + '" data-wa="' + k + '" aria-pressed="' + (a.haken[key(w)] ? 'true' : 'false') + '"><span class="box">' + (a.haken[key(w)] ? '✓' : '') + '</span><span><b>' + (w[1] * n) + '×</b> ' + esc(w[0]) + '</span></button>').join("") + '</div>' +
+    '<p class="hint">Bettdecken und Kissen nie ohne frischen Bezug benutzen. Alles nehmt ihr wieder mit. Nur die Moltons bleiben nach dem Benutzen auf der Matratze.</p>' + ovWeg();
 }
 function checkZeichnen() {
   const a = AUFENT; if (!a) return;
@@ -1509,9 +1520,10 @@ function checkZeichnen() {
   document.getElementById("ovCheckIn").innerHTML =
     '<button type="button" class="ov-back" data-ov="ovCheck">← Zurück</button>' +
     '<h2>✅ Reinigungs-Checkliste</h2>' +
+    '<p class="chk-stand">Erledigt am Abreisetag, ' + fmtTagV(a.dep) + '.</p>' +
     (alle ? '<div class="chk-danke">🎉 Danke, du hast all diese Sachen erledigt.</div>' : '<p class="chk-stand">' + done + ' von ' + CHECKLISTE.length + ' erledigt. Tippe jeden Punkt an, wenn er erledigt ist.</p>') +
     '<div class="chk-liste' + (alle ? ' chk-alle' : '') + '">' + CHECKLISTE.map((i, k) =>
-      '<button type="button" class="chk-item' + (a.haken[i] ? ' erledigt' : '') + '" data-chk="' + k + '" aria-pressed="' + (a.haken[i] ? 'true' : 'false') + '"><span class="box">' + (a.haken[i] ? '✓' : '') + '</span><span>' + esc(i) + '</span></button>').join("") + '</div>' + OV_WEG;
+      '<button type="button" class="chk-item' + (a.haken[i] ? ' erledigt' : '') + '" data-chk="' + k + '" aria-pressed="' + (a.haken[i] ? 'true' : 'false') + '"><span class="box">' + (a.haken[i] ? '✓' : '') + '</span><span>' + esc(i) + '</span></button>').join("") + '</div>' + ovWeg();
 }
 document.getElementById("btnAnreise").addEventListener("click", () => { anreiseZeichnen(); ovOeffnen("ovAnreise", true); });
 document.getElementById("btnCheck").addEventListener("click", () => { checkZeichnen(); ovOeffnen("ovCheck", true); });
@@ -1520,6 +1532,8 @@ document.getElementById("btnCheck").addEventListener("click", () => { checkZeich
   if (c) { ovOeffnen(c.dataset.ov, false); return; }
   const k = e.target.closest("[data-chk]");
   if (k && AUFENT) { const i = CHECKLISTE[Number(k.dataset.chk)]; if (i !== undefined) { AUFENT.haken[i] = !AUFENT.haken[i]; aufentSichern(); checkZeichnen(); } return; }
+  const wk = e.target.closest("[data-wa]");
+  if (wk && AUFENT) { const w = WAESCHE[Number(wk.dataset.wa)]; if (w) { const kk = "w:" + w[0]; AUFENT.haken[kk] = !AUFENT.haken[kk]; aufentSichern(); anreiseZeichnen(); } return; }
   if (e.target.closest("[data-weg]") && confirm("Willst du den Aufenthalt wirklich entfernen?")) {
     AUFENT = null; aufentSichern(); aufentZeigen(); ovOeffnen("ovAnreise", false); ovOeffnen("ovCheck", false);
   }
