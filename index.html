@@ -223,10 +223,10 @@
   body.rechner-an #markeStart, body.rechner-an #markeText, body.rechner-an #markeBahn { display: none; }
   .marke-bahn { position: relative; height: 2.2em; margin: -6px 0 0; overflow: hidden; pointer-events: none; }
   .bahn-auto, .bahn-haus, .prost { position: absolute; bottom: 0; font-size: 1.5rem; line-height: 1.3; }
-  .bahn-auto { left: -2em; animation: fahren 3s ease-out forwards; }
-  .bahn-haus { right: 8%; animation: einblenden .6s ease-out both; }
+  .bahn-auto { left: 100%; animation: fahren 3s ease-out forwards; }
+  .bahn-haus { left: 8%; animation: einblenden .6s ease-out both; }
   .prost { left: 50%; margin-left: -.7em; font-size: 1.7rem; animation: prosten 2.4s ease-out forwards; }
-  @keyframes fahren { to { left: 70%; } }
+  @keyframes fahren { to { left: 20%; } }
   @keyframes einblenden { from { opacity: 0; } to { opacity: 1; } }
   @keyframes prosten { 0% { transform: scale(0) rotate(0); } 30% { transform: scale(1.4) rotate(-14deg); } 45% { transform: scale(1.4) rotate(14deg); } 60% { transform: scale(1.4) rotate(-8deg); } 85% { transform: scale(1.2) rotate(0); opacity: 1; } 100% { transform: scale(1.2); opacity: 0; } }
   .marke span[data-e] { display: inline-block; padding: 10px 3px; }
@@ -235,7 +235,7 @@
   .atmet { animation: atmen 8s ease-in-out 1; }
   @keyframes fallen { to { transform: translateY(110vh) rotate(200deg); } }
   .flocke { position: fixed; top: -2.5rem; font-size: 1.4rem; pointer-events: none; z-index: 60; animation: fallen linear 1 forwards; }
-  @media (prefers-reduced-motion: reduce) { .atmet { animation: none; } .flocke { display: none; } .bahn-auto { animation: none; left: 70%; } .bahn-haus { animation: none; } .prost { animation: none; } }
+  @media (prefers-reduced-motion: reduce) { .atmet { animation: none; } .flocke { display: none; } .bahn-auto { animation: none; left: 20%; } .bahn-haus { animation: none; } .prost { animation: none; } }
   .eltern-zone { min-height: 52px; display: flex; align-items: center; justify-content: space-between; padding: 0 22px; font-size: 1.6rem; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; cursor: default; }
   .eltern-zone span { padding: 8px 14px; }
   .pay { border: 2px solid var(--accent); border-radius: 6px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
@@ -534,7 +534,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "3.92";
+let VERSION = "3.93";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
