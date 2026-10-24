@@ -565,7 +565,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "1.6.5";
+let VERSION = "1.6.6";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -599,6 +599,7 @@ const P = {
   reinigungSelbst: 0,   // Reinigung, wenn die Familie selbst reinigt (frische Waesche mitbringen, Betten selbst beziehen)
   lueckeMaxPersonen: 2,  // ganze Lücke: höchstens so viele Personen mit Bett (Kleinkinder im Kinderbettchen zusätzlich)
   lueckeMaxKleinkinder: 1,  // ganze Lücke: höchstens so viele Kleinkinder im Kinderbettchen
+  mindestpreisAbNaechte: 0, // Die Entlastung der Familie (Mindestpreis) gilt erst ab dieser Zahl Nächte (0 = immer)
   mindestpreisWoche: 0, // Boden pro 7 Nächte (CHF, 0 = aus), nur mit Gästen: Übersteigt der Gesamtpreis den Boden (anteilig nach Nächten), entfällt der Anteil der Familie, aber der Gesamtpreis sinkt nie unter den Boden
   lueckeRabatt: 50      // Prozent Ermässigung auf die Übernachtungen, wenn der Aufenthalt in einer Lücke zwischen zwei Airbnb-Buchungen liegt (Reinigung bleibt gleich)
 };
@@ -713,7 +714,7 @@ function calc(s) {
     out.FZ = d.FN * d.nights + d.AF + d.FA;
     out.HZ = d.GE === 0 ? 0 : d.HN * d.nights + d.GS;
     out.WZ = d.WN * d.nights + Math.max(0, d.GE - 1) * d.GS;
-    if (P.mindestpreisWoche > 0 && d.GE > 0) {
+    if (P.mindestpreisWoche > 0 && d.GE > 0 && d.nights >= P.mindestpreisAbNaechte) {
       const boden = Math.ceil(P.mindestpreisWoche * d.nights / 7), D = Math.min(out.FZ, Math.max(0, out.TOT - boden));
       if (D > 0) { out.GRATIS = true; out.BODEN = boden; out.TOT0 = out.TOT; out.FZ0 = out.FZ; out.D = D; out.TOT -= D; out.FZ -= D; }
     }
@@ -933,7 +934,7 @@ function begriffeFuellen() {
     const bsp = (g) => calc({ wer: "Nur ich", gaeste: g, zimmer: "Nein", spar: "Nein", selbst: "Nein", reinig: REINIG[0], nights: 7 });
     let h = "<p>Je mehr Gäste mitkommen, desto günstiger wird es für dich. Dazu ein paar Möglichkeiten:</p><ul>";
     if (P.mindestpreisWoche > 0) {
-      h += "<li><b>Mindestpreis pro Woche:</b> Mit Gästen entfällt dein eigener Anteil, soweit der Gesamtpreis dabei nicht unter " + chf(P.mindestpreisWoche) + " pro 7 Nächte sinkt (bei anderen Längen anteilig). Reicht der Preis, zahlst du nichts. Mehr Gäste oder mehr Nächte werden nie günstiger. Beispiel für 7 Nächte, wenn du mit Gästen kommst (Gäste zahlen je " + chf(P.gast) + " pro Nacht, Reinigung gleichmässig geteilt):<ul>";
+      h += "<li><b>Mindestpreis pro Woche:</b> Mit Gästen ab " + P.mindestpreisAbNaechte + " Nächten entfällt dein eigener Anteil, soweit der Gesamtpreis dabei nicht unter " + chf(P.mindestpreisWoche) + " pro 7 Nächte sinkt (bei anderen Längen anteilig). Reicht der Preis, zahlst du nichts. Mehr Gäste oder mehr Nächte werden nie günstiger. Beispiel für 7 Nächte, wenn du mit Gästen kommst (Gäste zahlen je " + chf(P.gast) + " pro Nacht, Reinigung gleichmässig geteilt):<ul>";
       for (let g = 2; g <= Math.max(2, P.maxPersonen - 1); g++) { const r = bsp(g); if (!r.ok) continue; h += "<li>" + g + " Gäste: Gesamtpreis " + chf(r.TOT) + (r.GRATIS ? (r.FZ === 0 ? ", du zahlst nichts" : ", du zahlst " + chf(r.FZ)) : ", du zahlst " + chf(r.FZ) + " wie normal") + "</li>"; }
       h += "</ul></li>";
     }
@@ -968,7 +969,7 @@ function begriffeFuellen() {
   set("bc-rechnen", "<p>Ein Tipp auf «Preisberechnung» klappt die Rechnung auf: Preis pro Nacht mal Nächte ergibt die Übernachtung, dazu kommt die Reinigung (" + chf(P.reinigung) + "). Mit Gästen steht unter dem Preis auch, wer wie viel zahlt.</p><ul>" +
     "<li>Zimmer 1 unberührt: " + chf(P.sparEin) + " weniger pro Nacht, die Familie zahlt " + chf(P.famPausch - P.sparEin) + " statt " + chf(P.famPausch) + ".</li>" +
     "<li>Lücke: " + P.lueckeRabatt + " Prozent günstiger, auf ganze Franken gerundet.</li>" +
-    (P.mindestpreisWoche > 0 ? "<li>Mit Gästen: Der Anteil der Familie entfällt, soweit der Gesamtpreis dabei nicht unter " + chf(P.mindestpreisWoche) + " pro 7 Nächte sinkt (bei anderen Längen anteilig). Reicht der Preis, zahlt die Familie nichts. Darunter bezahlt sie nur den Rest bis zu diesem Mindestpreis.</li>" : "") +
+    (P.mindestpreisWoche > 0 ? "<li>Mit Gästen ab " + P.mindestpreisAbNaechte + " Nächten: Der Anteil der Familie entfällt, soweit der Gesamtpreis dabei nicht unter " + chf(P.mindestpreisWoche) + " pro 7 Nächte sinkt (bei anderen Längen anteilig). Reicht der Preis, zahlt die Familie nichts. Darunter bezahlt sie nur den Rest bis zu diesem Mindestpreis.</li>" : "") +
     "<li>Selber reinigen: jetzt keine Reinigung, die Endreinigung kommt später.</li></ul>");
   set("bc-geld", GELD_TEXT);
 }
@@ -1200,7 +1201,7 @@ function renderKalender() {
   const msgs = [];
   if (ARR && DEP) {
     for (let k = ARR; k < DEP; k = addDays(k, 1)) if (istHoch(k)) { msgs.push(HW + "🧑‍🏫 Dieser Termin liegt in der Hochsaison. Bitte wenn möglich einen anderen wählen. Eine Anfrage ist trotzdem möglich. 🙏"); break; }
-    if (festStay(ARR, DEP)) msgs.push(HW + "<b>" + esc(festTxt()) + ":</b> Termin ist fest und wird in Airbnb gesperrt, ihr habt damit Sicherheit." + (minFuer(ARR, DEP) > P.minNaechte ? " Mindestens " + minFuer(ARR, DEP) + " Nächte." : "") + (P.mindestpreisWoche > 0 ? " <b>Mit Gästen sparst du:</b> Der Gesamtpreis sinkt nie unter " + chf(P.mindestpreisWoche) + " pro 7 Nächte, dein eigener Anteil entfällt, soweit es der Preis zulässt. " + symBtn("b-sparen", "💸") : ""));
+    if (festStay(ARR, DEP)) msgs.push(HW + "<b>" + esc(festTxt()) + ":</b> Termin ist fest und wird in Airbnb gesperrt, ihr habt damit Sicherheit." + (minFuer(ARR, DEP) > P.minNaechte ? " Mindestens " + minFuer(ARR, DEP) + " Nächte." : "") + (P.mindestpreisWoche > 0 ? " <b>Mit Gästen sparst du:</b> Ab " + P.mindestpreisAbNaechte + " Nächten sinkt der Gesamtpreis nie unter " + chf(P.mindestpreisWoche) + " pro 7 Nächte, dein eigener Anteil entfällt, soweit es der Preis zulässt. " + symBtn("b-sparen", "💸") : ""));
     if (provStay(ARR, DEP)) msgs.push(WA + "<b>Provisorisch:</b> Dieser Termin wird nicht in Airbnb gesperrt. Meldet sich ein Airbnb-Gast für diese Tage, hat er Vorrang und der Aufenthalt muss weichen. Plane eine Alternative ein. " + symBtn("b-prov", "⏳") + " <b>Sicherheit:</b> " + provSicherZeile(ARR, DEP));
     const lg = lueckeVon(ARR);
     if (lg && !S.luecke && P.lueckeRabatt > 0) msgs.push(HW + "Dieser Termin liegt in einer Lücke, aber ohne Rabatt. Mit Anreise am " + fmtTag(lg[0]) + " und Abreise am " + fmtTag(lg[1]) + " (die ganze Lücke) wäre es " + P.lueckeRabatt + " Prozent günstiger auf die Übernachtungen.");
