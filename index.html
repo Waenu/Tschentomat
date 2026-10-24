@@ -565,7 +565,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "1.6.4";
+let VERSION = "1.6.5";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -713,10 +713,9 @@ function calc(s) {
     out.FZ = d.FN * d.nights + d.AF + d.FA;
     out.HZ = d.GE === 0 ? 0 : d.HN * d.nights + d.GS;
     out.WZ = d.WN * d.nights + Math.max(0, d.GE - 1) * d.GS;
-    if (P.mindestpreisWoche > 0 && (d.GE > 0 || s.festMin === true)) {
-      const boden = Math.ceil(P.mindestpreisWoche * d.nights / 7), D = d.GE > 0 ? Math.min(out.FZ, Math.max(0, out.TOT - boden)) : 0;
+    if (P.mindestpreisWoche > 0 && d.GE > 0) {
+      const boden = Math.ceil(P.mindestpreisWoche * d.nights / 7), D = Math.min(out.FZ, Math.max(0, out.TOT - boden));
       if (D > 0) { out.GRATIS = true; out.BODEN = boden; out.TOT0 = out.TOT; out.FZ0 = out.FZ; out.D = D; out.TOT -= D; out.FZ -= D; }
-      else if (s.festMin === true && out.TOT < boden) { out.AUF = boden - out.TOT; out.BODEN = boden; out.TOT0 = out.TOT; out.FZ0 = out.FZ; out.TOT = boden; out.FZ += out.AUF; }
     }
     out.KON = Math.abs(out.FZ + out.HZ + out.WZ - out.TOT) < 0.005;
   }
@@ -914,7 +913,6 @@ function kalenderKlick(k) {
   else if (kannAnreise(k)) { ARR = k; DEP = ""; }
   ELTERN = false;
   S.nights = (ARR && DEP) ? diffDays(ARR, DEP) : null;
-  S.festMin = !!(ARR && DEP && P.mindestpreisWoche > 0 && festStay(ARR, DEP));
   S.luecke = !!(ARR && DEP && P.lueckeRabatt > 0 && GAPSTART.get(ARR) === DEP);
   S.selbstOK = ruheStay() && !S.luecke;
   normalize(); render(); renderKalender();
@@ -943,7 +941,6 @@ function begriffeFuellen() {
     if (P.lueckeRabatt > 0) h += "<li><b>Lücken füllen:</b> " + P.lueckeRabatt + " Prozent auf die Übernachtungen, wenn du eine ganze Lücke zwischen zwei Gästen buchst. " + symBtn("b-luecke", "🧩") + "</li>";
     h += "<li><b>Selber reinigen</b> in den Staffel-Zeiten: keine Reinigung jetzt, die Endreinigung wird unter allen Reisegruppen der Familienstaffel geteilt. " + symBtn("b-ruhe", "🧹") + "</li>";
     h += "<li><b>Reinigung teilen:</b> Mit Gästen kannst du wählen, wie die Reinigung aufgeteilt wird.</li>";
-    if (FEST_MONATE.length && P.mindestpreisWoche > 0) h += "<li><b>Mindestpreis " + esc(festTxt()) + ":</b> Dort kostet ein Aufenthalt immer mindestens " + chf(P.mindestpreisWoche) + " pro 7 Nächte, auch wenn nur wenige Gäste oder gar keine mitkommen. Was die Gäste nicht decken, trägt die Familie. Darum lohnen sich Gäste dort besonders: Mit jedem Gast sinkt dein Anteil.</li>";
     if (FEST_MONATE.length) h += "<li><b>" + esc(festTxt()) + ":</b> mindestens " + (MIN_MONATE[FEST_MONATE[0]] || P.minNaechte) + " Nächte, der Termin ist fest und wird in Airbnb gesperrt. Mit Kollegen zahlt sich eine volle Skiwoche aus.</li>";
     h += "</ul>";
     set("bc-sparen", h);
@@ -1203,7 +1200,7 @@ function renderKalender() {
   const msgs = [];
   if (ARR && DEP) {
     for (let k = ARR; k < DEP; k = addDays(k, 1)) if (istHoch(k)) { msgs.push(HW + "🧑‍🏫 Dieser Termin liegt in der Hochsaison. Bitte wenn möglich einen anderen wählen. Eine Anfrage ist trotzdem möglich. 🙏"); break; }
-    if (festStay(ARR, DEP)) msgs.push(HW + "<b>" + esc(festTxt()) + ":</b> Termin ist fest und wird in Airbnb gesperrt, ihr habt damit Sicherheit." + (minFuer(ARR, DEP) > P.minNaechte ? " Mindestens " + minFuer(ARR, DEP) + " Nächte." : "") + (P.mindestpreisWoche > 0 ? " <b>Mindestpreis:</b> Der Aufenthalt kostet mindestens " + chf(P.mindestpreisWoche) + " pro 7 Nächte. Was die Gäste nicht decken, trägt die Familie. <b>Mit mehr Gästen sparst du:</b> Dein eigener Anteil sinkt bis auf 0. " + symBtn("b-sparen", "💸") : ""));
+    if (festStay(ARR, DEP)) msgs.push(HW + "<b>" + esc(festTxt()) + ":</b> Termin ist fest und wird in Airbnb gesperrt, ihr habt damit Sicherheit." + (minFuer(ARR, DEP) > P.minNaechte ? " Mindestens " + minFuer(ARR, DEP) + " Nächte." : "") + (P.mindestpreisWoche > 0 ? " <b>Mit Gästen sparst du:</b> Der Gesamtpreis sinkt nie unter " + chf(P.mindestpreisWoche) + " pro 7 Nächte, dein eigener Anteil entfällt, soweit es der Preis zulässt. " + symBtn("b-sparen", "💸") : ""));
     if (provStay(ARR, DEP)) msgs.push(WA + "<b>Provisorisch:</b> Dieser Termin wird nicht in Airbnb gesperrt. Meldet sich ein Airbnb-Gast für diese Tage, hat er Vorrang und der Aufenthalt muss weichen. Plane eine Alternative ein. " + symBtn("b-prov", "⏳") + " <b>Sicherheit:</b> " + provSicherZeile(ARR, DEP));
     const lg = lueckeVon(ARR);
     if (lg && !S.luecke && P.lueckeRabatt > 0) msgs.push(HW + "Dieser Termin liegt in einer Lücke, aber ohne Rabatt. Mit Anreise am " + fmtTag(lg[0]) + " und Abreise am " + fmtTag(lg[1]) + " (die ganze Lücke) wäre es " + P.lueckeRabatt + " Prozent günstiger auf die Übernachtungen.");
@@ -1565,12 +1562,10 @@ function render() {
   if (x.GE >= 1) det += row(S.wer === "Nur ich" ? "Reinigung: dein Anteil" : "Reinigung: Anteil Familie", chf(x.FA));
   if (x.GE >= 1) det += row("Reinigung: Anteil pro Gast", chf(x.GS));
   if (r.GRATIS) det += row("Gesamtpreis vorher: " + chf(r.TOT0) + ". Entlastung Familie", "−" + chf(r.D));
-  if (r.AUF) det += row("Mindestpreis: Aufschlag auf die Familie", "+" + chf(r.AUF));
   if (tip > 0) det += row("Trinkgeld für Mami (freiwillig)", chf(tip));
   let notes = "";
   if (x.sp) notes += '<p class="note">Zimmer 1 und rotes Bad bleiben unberührt: ' + chf(P.sparEin) + ' weniger pro Nacht, ' + (S.wer === "Nur ich" ? "du zahlst" : "die Familie zahlt") + ' ' + chf(x.FN0) + ' statt ' + chf(P.famPausch) + '.</p>';
   if (x.LR > 0) notes += '<p class="note">Lückenpreis: Alle Nachtpreise sind ' + x.LR + ' Prozent günstiger, auf ganze Franken gerundet.</p>';
-  if (r.AUF) notes += '<p class="note"><b>Mindestpreis ' + esc(festTxt()) + ':</b> Ein Aufenthalt kostet mindestens ' + chf(r.BODEN) + ' (' + chf(P.mindestpreisWoche) + ' pro 7 Nächte). Was die Rechnung darunter lässt (' + chf(r.AUF) + '), trägt ' + (S.wer === "Nur ich" ? "du" : "die Familie") + '. Mit mehr Gästen wird dein Anteil kleiner.</p>';
   if (r.GRATIS) notes += '<p class="note"><b>Mindestpreis:</b> ' + (r.FZ === 0 ? (S.wer === "Nur ich" ? "Du zahlst deinen" : "Die Familie zahlt ihren") + ' eigenen Anteil (' + chf(r.FZ0) + ') nicht. ' : (S.wer === "Nur ich" ? "Du zahlst" : "Die Familie zahlt") + ' noch ' + chf(r.FZ) + ' statt ' + chf(r.FZ0) + '. ') + 'Der Gesamtpreis sinkt nie unter ' + chf(r.BODEN) + ' (' + chf(P.mindestpreisWoche) + ' pro 7 Nächte). Die Gäste zahlen ihre Anteile wie berechnet.</p>';
   if (x.GE >= 1) notes += '<p class="note">Reinigung aufgeteilt: ' + S.reinig + '.</p>';
   const zahlung = '<div class="pay"><strong>Die Familie überweist den ganzen Betrag: ' + chf(r.TOT + tip) + '</strong>' +
