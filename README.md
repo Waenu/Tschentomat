@@ -34,6 +34,8 @@ Preisrechner für die Familie, Chalet Tschenten, Adelboden.
 | `hochsaisonMonate` | Ganze Monate, die jedes Jahr gelb markiert werden. Januar ist `[1]`, Februar `[2]`, mehrere zum Beispiel `[2, 7]` |
 | `spitzenzeiten` | Zeiten, in denen nur zu hohen Preisen vermietet wird (zum Beispiel Skirennen). Rot markiert, ohne Familienpreis: nur «Preis auf Anfrage». Format: `[["2027-01-15","2027-01-17","Skirennen"]]` (von, bis, Name) |
 | `hochsaison` | Zeiträume, die gelb markiert werden. Format: `[["2026-12-19","2027-01-03"], ["2027-02-06","2027-02-20"]]` (von, bis, beide eingeschlossen) |
+| `festMonate` | Monate (Liste), in denen ein Aufenthalt der Familie nie provisorisch ist, sondern fest. Der Termin wird in Airbnb gesperrt (Anfrage-Text sagt es). Jetzt `[2]` (Februar). Gilt, sobald eine Nacht des Aufenthalts in einem dieser Monate liegt |
+| `minNaechteMonat` | Mindestnächte pro Monat, zum Beispiel `{ "2": 7 }`: Jeder Aufenthalt mit mindestens einer Nacht im Februar braucht 7 Nächte (28.1. bis 4.2. ist ok, 31.1. bis 2.2. nicht) |
 | `provisorisch` | `true`: Aufenthalte der Familie, die mindestens eine Nacht ausserhalb der Selbstreinigungs-Zeiten haben, gelten als provisorisch (siehe unten). `false` schaltet die Funktion ab |
 | `airbnbVorlaufTage` | Vorlaufzeit, die in Airbnb für neue Gäste eingestellt ist (aktuell 3). Ein provisorischer Aufenthalt gilt als «praktisch sicher», wenn die Abreise innerhalb dieser Tage liegt |
 
