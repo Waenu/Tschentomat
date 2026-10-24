@@ -34,9 +34,35 @@ Preisrechner für die Familie, Chalet Tschenten, Adelboden.
 | `hochsaisonMonate` | Ganze Monate, die jedes Jahr gelb markiert werden. Januar ist `[1]`, Februar `[2]`, mehrere zum Beispiel `[2, 7]` |
 | `spitzenzeiten` | Zeiten, in denen nur zu hohen Preisen vermietet wird (zum Beispiel Skirennen). Rot markiert, ohne Familienpreis: nur «Preis auf Anfrage». Format: `[["2027-01-15","2027-01-17","Skirennen"]]` (von, bis, Name) |
 | `hochsaison` | Zeiträume, die gelb markiert werden. Format: `[["2026-12-19","2027-01-03"], ["2027-02-06","2027-02-20"]]` (von, bis, beide eingeschlossen) |
+| `provisorisch` | `true`: Aufenthalte der Familie, die mindestens eine Nacht ausserhalb der Selbstreinigungs-Zeiten haben, gelten als provisorisch (siehe unten). `false` schaltet die Funktion ab |
+| `airbnbVorlaufTage` | Vorlaufzeit, die in Airbnb für neue Gäste eingestellt ist (aktuell 3). Ein provisorischer Aufenthalt gilt als «praktisch sicher», wenn die Abreise innerhalb dieser Tage liegt |
 
 ## Belegung aus Airbnb
 
 - Die Datei `belegt.json` wird alle 3 Stunden automatisch aus dem Airbnb-Kalender erzeugt (Reiter «Actions», «Belegung aktualisieren»). Nicht von Hand ändern.
 - Der Airbnb-Link steht nur als geheimer Eintrag `AIRBNB_ICAL` unter Settings, Secrets and variables, Actions.
 - Von Hand starten: Reiter «Actions», «Belegung aktualisieren», «Run workflow».
+
+## Bestätigung in der App
+
+- Die Kinder senden die Anfrage per WhatsApp. Der Text enthält einen Link (`?b=Name_Anreise_Abreise_…`).
+- Auf dem Handy der Eltern (GitHub-Token gespeichert, Schlüssel `tm_token` im Browser, nur dort) landet der Link unter «Offen». Knöpfe: Bestätigen, Ablehnen, «Fest machen» (bei provisorischen Terminen), Bescheid vermerken.
+- Gespeichert wird in `buchungen.json` (wird von der App über die GitHub-API geschrieben, nicht von Hand ändern ausser zum Löschen von Testeinträgen). Felder pro Eintrag: `name`, `arr`, `dep`, `selbst`, `pers`, optional `status` (`"abgelehnt"`), `bescheid`, `prov` (`true` = provisorisch).
+- Das Token läuft nach einem Jahr ab (aktuell ca. Oktober 2027) und muss dann neu erstellt werden.
+
+## Provisorische Termine
+
+- Idee: Lücken füllen, die sonst leer blieben, ohne den Termin in Airbnb zu sperren. Ein Airbnb-Gast hat immer Vorrang, die Familie muss dann räumen oder gar nicht erst gehen. Normale Kosten.
+- Gilt automatisch für alle Aufenthalte, die mindestens eine Nacht ausserhalb der Selbstreinigungs-Zeiten (`selbstReinigung`) haben. Reine Staffel-Aufenthalte (März/April, Oktober bis 18. Dezember) sind fest und werden in Airbnb gesperrt.
+- Kalender: gestreifter Balken mit Umriss. Rote Umrandung = Konflikt, ein Airbnb-Gast hat inzwischen eine dieser Nächte gebucht. Grüner Haken im weissen Kreis = «praktisch sicher» (Abreise innert `airbnbVorlaufTage`, es kann kaum noch jemand buchen).
+- «Fest machen» in der Bestätigungsliste entfernt die Markierung. Danach den Termin in Airbnb sperren.
+- Provisorische Nächte sind für andere Familienmitglieder im Kalender belegt, zählen aber nicht für die Lückenberechnung.
+
+## Hilfe im Kalender
+
+Der schwebende «?»-Knopf (nur sichtbar, solange der Kalender im Bild ist) schaltet die Hilfe ein. Danach erklärt ein Tipp auf einen Tag, warum er so aussieht. Die Hilfe merkt sich ihren Zustand im Browser (`tm_hilfe`). Ausführliche Erklärungen stehen in der App unter «Anleitung», «Begriffe».
+
+## Versionen und Rückkehr
+
+- Bis 3.99 wurde in 0.01-Schritten gezählt, danach 1.0.0: letzte Stelle = kleine Änderung, mittlere = grössere Funktion, erste = grundlegender Umbau.
+- Ältere Stände liegen als Branches auf GitHub: `stand-3.93` (vor der Kalender-Hilfe) und `stand-1.3.1` (vor den provisorischen Terminen). Zurück: `index.html` aus dem Branch übernehmen.
