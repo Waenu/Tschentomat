@@ -285,6 +285,8 @@
   .sw-sperr { border-color: var(--sperr-line); background: var(--sperr-bg); }
   #famDet > summary { display: block; min-height: 0; border: 0; padding: 0; background: none; font-weight: 400; font-size: var(--t-text); white-space: normal; cursor: pointer; }
   #famDet > summary::after { content: " ▾"; margin: 0; padding: 0; }
+  #famDet[open] > summary { background: none; color: inherit; border: 0; margin-bottom: 8px; }
+  #famDet[open] > summary::after { content: " ▴"; }
   #famDet ul { margin: 8px 0 0; }
   .cal-leg { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 8px 0 0; font-size: var(--t-small); }
   .cal-leg p { margin: 0; }
