@@ -565,7 +565,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "1.6.7";
+let VERSION = "1.6.8";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -748,8 +748,8 @@ const FIELDS = [
     hint: () => "Kinder bis etwa 2½ Jahren. Sie belegen kein Bett und zählen bei der Reinigung nicht mit.",
     visible: (d) => d.kkMax > 0 && !d.kkFix, opts: (d) => range(d.kkMin, d.kkMax) },
   { id: "gaeste", label: "🧑‍🤝‍🧑 Gäste (ausserhalb der Familie)", type: "num",
-    hint: (d) => d.frei === 0 ? "Es ist kein Platz mehr frei." : (d.frei === 1 ? "Es ist noch 1 Platz frei." : "Noch " + d.frei + " Plätze frei.") + " Maximal " + P.maxPersonen + " Personen mit Bett.",
-    visible: (d) => d.frei > 0, opts: (d) => range(0, d.frei) },
+    hint: (d) => (d.frei === 0 ? "Es ist kein Platz mehr frei." : (d.frei === 1 ? "Es ist noch 1 Platz frei." : "Noch " + d.frei + " Plätze frei.") + " Maximal " + P.maxPersonen + " Personen mit Bett.") + (S.festMin ? " Im " + festTxt() + " sind mindestens " + P.festMinGaeste + " Gäste nötig" + (d.frei < P.festMinGaeste ? ", mit dieser Familiengrösse ist das nicht möglich." : ", damit sich die Woche für alle lohnt (Gesamtpreis mindestens " + chf(P.mindestpreisWoche) + " pro 7 Nächte).") : ""),
+    visible: (d) => d.frei > 0, opts: (d) => (S.festMin && d.frei >= P.festMinGaeste) ? range(P.festMinGaeste, d.frei) : range(0, d.frei) },
   { id: "zimmer", label: "💤 Schläft ein Gast im selben Zimmer wie ich?", type: "str",
     hint: (d) => (S.wer === "Nur ich" && d.base + d.GE <= P.sparMaxPers)
       ? "Ein Gast im selben Zimmer zahlt " + chf(P.gastZimmer) + " statt " + chf(P.gast) + " pro Nacht, du dann nur " + chf(P.famAnteil) + " statt " + chf(P.famPausch) + ". Ihr teilt dann Zimmer 2 und das blaue Bad, Zimmer 1 und das rote Bad bleiben unberührt. Es sind ein Zimmer und ein Doppelbett weniger zu beziehen und zu reinigen."
@@ -777,6 +777,7 @@ function normalize() {
     else { S.gaeste = null; notice = "Es ist nur noch Platz für " + d.frei + " " + gastWort(d.frei) + ". Bitte die Gäste neu wählen."; }
     d = derive(S);
   }
+  if (S.festMin && typeof S.gaeste === "number" && S.gaeste < P.festMinGaeste && d.frei >= P.festMinGaeste) { S.gaeste = null; notice = "Im " + festTxt() + " sind mindestens " + P.festMinGaeste + " Gäste nötig. Bitte die Gäste neu wählen."; d = derive(S); }
   if (d.frei === 0 && d.FP <= P.maxPersonen && typeof S.wer === "string" && S.wer && (S.wer !== MFG || typeof S.fam === "number")) { S.gaeste = 0; d = derive(S); }
   if (d.GE === 0) { S.zimmer = ""; S.reinig = ""; }
   if (d.voll) S.zimmer = "";
