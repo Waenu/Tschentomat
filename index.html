@@ -220,6 +220,14 @@
   .marke { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; margin: 28px 0 8px; padding: 10px 0; color: var(--marke); font-family: var(--body); font-weight: 600; font-size: clamp(.78rem, 4.1vw, 1.05rem); letter-spacing: .02em; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; cursor: default; }
   .marke span[data-z] { padding: 10px 3px; }
   .marke .pt { padding: 0 .1em; }
+  body.rechner-an #markeStart, body.rechner-an #markeText { display: none; }
+  .marke span[data-e] { display: inline-block; padding: 10px 3px; }
+  .marke-text { text-align: center; color: var(--marke); font-size: var(--t-small); min-height: 1.4em; margin: 0 0 18px; }
+  @keyframes atmen { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.22); } }
+  .atmet { animation: atmen 8s ease-in-out 1; }
+  @keyframes fallen { to { transform: translateY(110vh) rotate(200deg); } }
+  .flocke { position: fixed; top: -2.5rem; font-size: 1.4rem; pointer-events: none; z-index: 60; animation: fallen linear 1 forwards; }
+  @media (prefers-reduced-motion: reduce) { .atmet { animation: none; } .flocke { display: none; } }
   .eltern-zone { min-height: 52px; display: flex; align-items: center; justify-content: space-between; padding: 0 22px; font-size: 1.6rem; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; cursor: default; }
   .eltern-zone span { padding: 8px 14px; }
   .pay { border: 2px solid var(--accent); border-radius: 6px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
@@ -501,6 +509,8 @@
 
   <button type="button" class="reset" id="reset">Neu starten</button>
   </div>
+  <div class="marke" id="markeStart"><span data-e="0">ankommen</span><span class="pt">·</span><span data-e="1">durchatmen</span><span class="pt">·</span><span data-e="2">geniessen</span></div>
+  <p class="marke-text" id="markeText" role="status" aria-live="polite"></p>
 </div>
 
 <button type="button" id="zurueck" hidden>↩ zurück</button>
@@ -515,7 +525,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "3.90";
+let VERSION = "3.91";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -1922,6 +1932,46 @@ document.getElementById("tokPanel").addEventListener("click", (e) => {
     tokZeigen(true); bestZeigen(); aufentZeigen();
   }
 });
+// Startseite: «durchatmen» antippen = ein Atemzug. ankommen, durchatmen, geniessen nacheinander = Gruss mit Schneeflocken (Nov bis Mär) oder Blüten.
+(function () {
+  const z = document.getElementById("markeStart"), txt = document.getElementById("markeText");
+  if (!z) return;
+  let stand = 0, zeit = 0, atmet = false, tm = [];
+  const weg = () => { tm.forEach(clearTimeout); tm = []; };
+  const sag = (s, ms) => { txt.textContent = s; tm.push(setTimeout(() => { if (txt.textContent === s) txt.textContent = ""; }, ms)); };
+  function atmen(el) {
+    if (atmet) return;
+    atmet = true;
+    el.classList.add("atmet");
+    sag("ein …", 4000);
+    tm.push(setTimeout(() => { txt.textContent = "aus …"; }, 4000));
+    tm.push(setTimeout(() => { el.classList.remove("atmet"); atmet = false; if (txt.textContent === "aus …") txt.textContent = ""; }, 8000));
+  }
+  function gruss() {
+    const m = new Date().getMonth() + 1, flocke = (m >= 11 || m <= 3) ? "❄️" : "🌸";
+    sag("schön, dass ihr da seid.", 6000);
+    for (let i = 0; i < 16; i++) {
+      const f = document.createElement("span");
+      f.className = "flocke"; f.textContent = flocke; f.setAttribute("aria-hidden", "true");
+      f.style.left = (Math.random() * 94) + "%";
+      f.style.animationDuration = (3 + Math.random() * 2.5) + "s";
+      f.style.animationDelay = (Math.random() * 1.4) + "s";
+      document.body.appendChild(f);
+      setTimeout(() => f.remove(), 7500);
+    }
+  }
+  z.addEventListener("pointerup", (e) => {
+    const w = e.target.closest("[data-e]");
+    if (!w) return;
+    const i = Number(w.dataset.e), t = Date.now();
+    if (stand > 0 && t - zeit > 4000) stand = 0;
+    zeit = t;
+    if (i === 1) atmen(w);
+    if (i === stand) stand++;
+    else stand = (i === 0) ? 1 : 0;
+    if (stand === 3) { stand = 0; gruss(); }
+  });
+})();
 aufentLaden();
 try { new ResizeObserver(() => zeichneBalken()).observe(document.getElementById("calGrid")); } catch (e) {}
 Promise.all([ladeEinstellungen(), ladeBelegt(), ladeBuchungen()]).then(() => {
