@@ -22,6 +22,13 @@
       "selbst": false,
       "pers": 1,
       "prov": true
+    },
+    {
+      "name": "Miriam",
+      "arr": "2026-11-18",
+      "dep": "2026-11-20",
+      "selbst": true,
+      "pers": 2
     }
   ]
 }
