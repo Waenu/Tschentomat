@@ -120,6 +120,7 @@
   .wrap { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
 
   .sign {
+    position: relative;
     background: var(--head-bg);
     color: var(--head-fg);
     border-radius: 6px;
@@ -134,6 +135,7 @@
   #fsBtn .s1 { font-size: 0.8rem; } #fsBtn .s2 { font-size: 1rem; } #fsBtn .s3 { font-size: 1.3rem; }
   #themeBtn { width: 44px; height: 44px; font-size: 1.3rem; line-height: 1; background: var(--surface); color: var(--fg); border: 2px solid var(--line); border-radius: 50%; cursor: pointer; padding: 0; }
   #themeBtn[data-mode="light"] { background: #000; border-color: #000; }
+  #testTip { position: absolute; left: 10px; bottom: 4px; width: 150px; height: 84px; padding: 0; border: 0; background: transparent; opacity: 0; z-index: 2; cursor: default; -webkit-tap-highlight-color: transparent; }
   .sign .sub { text-align: center; padding: 2px 0; }
   .sign .sub p { display: inline-block; position: relative; font-weight: 600; }
   .sign .sub .bg { position: absolute; left: 100%; top: 50%; margin-left: 8px; font-size: 1.9rem; line-height: 1; transform: translateY(-50%) rotate(-14deg); pointer-events: none; }
@@ -456,6 +458,7 @@
 <div class="wrap">
   <div class="themeRow"><button type="button" id="fsBtn" aria-label="Schriftgrösse ändern"><span class="s1">A</span><span class="s2">A</span><span class="s3">A</span></button><button type="button" id="themeBtn" aria-label="Hell- oder Dunkelmodus umschalten"></button></div>
   <header class="sign">
+    <button type="button" id="testTip" tabindex="-1" aria-hidden="true"></button>
     <h1>TSCHENT-O-MAT</h1>
     <div class="sub"><p>Preisrechner Chalet Tschenten<span class="bg" aria-hidden="true">🎰</span></p></div>
     <p class="ver" id="ver"></p>
@@ -597,7 +600,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "1.9.0";
+let VERSION = "1.9.1";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -860,6 +863,8 @@ const diffDays = (a, b) => Math.round((dparse(b) - dparse(a)) / 86400000);
 // Testmodus: ?heute=JJJJ-MM-TT rechnet so, als wäre dieser Tag heute (nur Anzeige, speichert nichts)
 let TESTHEUTE = null;
 try { const p = new URLSearchParams(location.search).get("heute"); if (/^\d{4}-\d{2}-\d{2}$/.test(p || "")) TESTHEUTE = p; } catch (e) {}
+let TESTMERKEN = false;   // Testmodus per Dreifach-Tipp im Kopf eingeschaltet: bleibt auf diesem Gerät, bis «Echt» getippt wird
+try { const m = localStorage.getItem("tm_testheute"); if (!TESTHEUTE && /^\d{4}-\d{2}-\d{2}$/.test(m || "")) { TESTHEUTE = m; TESTMERKEN = true; } } catch (e) {}
 const heuteDate = () => { if (TESTHEUTE) { const q = TESTHEUTE.split("-").map(Number); return new Date(q[0], q[1] - 1, q[2]); } return new Date(); };
 const heuteKey = () => { const n = heuteDate(); return dkey(n.getFullYear(), n.getMonth(), n.getDate()); };
 const WT_VOLL = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
@@ -2382,6 +2387,19 @@ Promise.all([ladeEinstellungen(), ladeBelegt(), ladeBuchungen()]).then(() => {
       zeige();
     });
   }
+  (function () {   // versteckter Schalter: dreimal links oben im Kopf tippen schaltet den Testmodus ein oder aus
+    const tip = document.getElementById("testTip"); let zeiten = [];
+    if (tip) tip.addEventListener("click", () => {
+      const t = Date.now(); zeiten = zeiten.filter((x) => t - x < 1500); zeiten.push(t);
+      if (zeiten.length < 3) return;
+      zeiten = [];
+      try {
+        if (TESTMERKEN || localStorage.getItem("tm_testheute")) localStorage.removeItem("tm_testheute");
+        else { const n = new Date(); localStorage.setItem("tm_testheute", n.getFullYear() + "-" + String(n.getMonth() + 1).padStart(2, "0") + "-" + String(n.getDate()).padStart(2, "0")); }
+      } catch (e) {}
+      location.href = location.pathname;
+    });
+  })();
   document.getElementById("ver").textContent = "Version " + VERSION + " · gültig ab " + GUELTIG_AB;
   initKalenderMonat();
   berechneLuecken();
@@ -2392,7 +2410,8 @@ Promise.all([ladeEinstellungen(), ladeBelegt(), ladeBuchungen()]).then(() => {
     const mk = (txt, fn) => { const b = document.createElement("button"); b.type = "button"; b.textContent = txt; b.style.cssText = "font:inherit;padding:4px 12px;border-radius:8px;border:0"; b.onclick = fn; return b; };
     const lab = document.createElement("span");
     const neu = () => { lab.textContent = "TEST · heute = " + fmtTag(heuteKey()); initKalenderMonat(); berechneLuecken(); build(); render(); renderKalender(); aufentZeigen(); bestZeigen(); };
-    tb.append(mk("◀", () => { TESTHEUTE = addDays(heuteKey(), -1); neu(); }), lab, mk("▶", () => { TESTHEUTE = addDays(heuteKey(), 1); neu(); }), mk("Echt", () => { location.search = ""; }));
+    const merke = () => { if (TESTMERKEN) { try { localStorage.setItem("tm_testheute", TESTHEUTE); } catch (e) {} } };
+    tb.append(mk("◀", () => { TESTHEUTE = addDays(heuteKey(), -1); merke(); neu(); }), lab, mk("▶", () => { TESTHEUTE = addDays(heuteKey(), 1); merke(); neu(); }), mk("Echt", () => { try { localStorage.removeItem("tm_testheute"); } catch (e) {} location.href = location.pathname; }));
     document.body.prepend(tb); document.body.style.paddingTop = "44px"; lab.textContent = "TEST · heute = " + fmtTag(heuteKey());
   }
 });
