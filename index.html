@@ -600,7 +600,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "1.9.1";
+let VERSION = "1.9.2";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -2409,7 +2409,7 @@ Promise.all([ladeEinstellungen(), ladeBelegt(), ladeBuchungen()]).then(() => {
     tb.style.cssText = "position:fixed;top:0;left:0;right:0;z-index:99;display:flex;gap:8px;align-items:center;justify-content:center;padding:6px;background:#C0392B;color:#fff;font:600 14px system-ui";
     const mk = (txt, fn) => { const b = document.createElement("button"); b.type = "button"; b.textContent = txt; b.style.cssText = "font:inherit;padding:4px 12px;border-radius:8px;border:0"; b.onclick = fn; return b; };
     const lab = document.createElement("span");
-    const neu = () => { lab.textContent = "TEST · heute = " + fmtTag(heuteKey()); initKalenderMonat(); berechneLuecken(); build(); render(); renderKalender(); aufentZeigen(); bestZeigen(); };
+    const neu = () => { lab.textContent = "TEST · heute = " + fmtTag(heuteKey()); berechneLuecken(); render(); renderKalender(); aufentZeigen(); bestZeigen(); };   // Monat, Auswahl und Formular bleiben, wie sie sind
     const merke = () => { if (TESTMERKEN) { try { localStorage.setItem("tm_testheute", TESTHEUTE); } catch (e) {} } };
     tb.append(mk("◀", () => { TESTHEUTE = addDays(heuteKey(), -1); merke(); neu(); }), lab, mk("▶", () => { TESTHEUTE = addDays(heuteKey(), 1); merke(); neu(); }), mk("Echt", () => { try { localStorage.removeItem("tm_testheute"); } catch (e) {} location.href = location.pathname; }));
     document.body.prepend(tb); document.body.style.paddingTop = "44px"; lab.textContent = "TEST · heute = " + fmtTag(heuteKey());
