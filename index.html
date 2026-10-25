@@ -567,7 +567,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "1.7.0";
+let VERSION = "1.7.1";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -612,12 +612,11 @@ const WERL = ["Nur ich", "Ich und Partner", "Ich und 1 Kind", "Ich und 2 Kinder"
 // Ganze Lücke: nur 2 Erwachsene in den Betten (Partner, Bruder oder Schwester), dazu höchstens 1 Kleinkind im Kinderbettchen
 const LWERL = ["Nur ich", "Ich und 1 Familienmitglied", "Ich und Kleinkind", "Ich, Familienmitglied, Kleinkind"];
 const REINIG = [
-  "Gleichmässig: Familie zählt als 1, jeder Gast als 1",
   "Nach Personen: ab 2½ Jahren zählt jede Person gleich",
-  "Gäste zahlen die ganze Reinigung",
   "Familie ¼, Gäste ¾",
   "Hälfte Familie, Hälfte Gäste",
   "Familie ¾, Gäste ¼",
+  "Gäste zahlen die ganze Reinigung",
   "Familie zahlt die ganze Reinigung"
 ];
 const nz = (v) => (typeof v === "number" && isFinite(v)) ? v : 0;
@@ -675,13 +674,13 @@ function derive(s) {
   const ri = REINIG.indexOf(s.reinig);
   let FA = RE;
   if (GE > 0) {
-    if (ri === 1) FA = RE * FP / (FP + GE);
-    else if (ri === 2) FA = 0;
-    else if (ri === 3) FA = RE / 4;
-    else if (ri === 4) FA = RE / 2;
-    else if (ri === 5) FA = RE * 3 / 4;
-    else if (ri === 6) FA = RE;
-    else FA = RE / (1 + GE);
+    if (ri === 0) FA = RE * FP / (FP + GE);
+    else if (ri === 1) FA = RE / 4;
+    else if (ri === 2) FA = RE / 2;
+    else if (ri === 3) FA = RE * 3 / 4;
+    else if (ri === 4) FA = 0;
+    else if (ri === 5) FA = RE;
+    else FA = RE * FP / (FP + GE);
   }
   const GS = GE > 0 ? (RE - FA) / GE : 0;
   return { LG, lock, voll, base, kkMax, kkMin, kkFix, KK, sp, sparLock, sparGrund, FP, frei, GE, PT, ZE, SO, SM, SB, LR, FN0, FN, GN, HN, WN, PN, nights, UE, AF, AG, RE, FA, GS };
@@ -940,7 +939,7 @@ function begriffeFuellen() {
     const bsp = (g) => calc({ wer: "Nur ich", gaeste: g, zimmer: "Nein", spar: "Nein", selbst: "Nein", reinig: REINIG[0], nights: 7 });
     let h = "<p>Je mehr Gäste mitkommen, desto günstiger wird es für dich. Dazu ein paar Möglichkeiten:</p><ul>";
     if (P.mindestpreisWoche > 0) {
-      h += "<li><b>Mindestpreis pro Woche:</b> Mit Gästen ab " + P.mindestpreisAbNaechte + " Nächten entfällt dein eigener Anteil, soweit der Gesamtpreis dabei nicht unter " + chf(P.mindestpreisWoche) + " pro 7 Nächte sinkt (bei anderen Längen anteilig). Reicht der Preis, zahlst du nichts. Mehr Gäste oder mehr Nächte werden nie günstiger. Beispiel für 7 Nächte, wenn du mit Gästen kommst (Gäste zahlen je " + chf(P.gast) + " pro Nacht, Reinigung gleichmässig geteilt):<ul>";
+      h += "<li><b>Mindestpreis pro Woche:</b> Mit Gästen ab " + P.mindestpreisAbNaechte + " Nächten entfällt dein eigener Anteil, soweit der Gesamtpreis dabei nicht unter " + chf(P.mindestpreisWoche) + " pro 7 Nächte sinkt (bei anderen Längen anteilig). Reicht der Preis, zahlst du nichts. Mehr Gäste oder mehr Nächte werden nie günstiger. Beispiel für 7 Nächte, wenn du mit Gästen kommst (Gäste zahlen je " + chf(P.gast) + " pro Nacht, Reinigung nach Personen geteilt):<ul>";
       for (let g = 2; g <= Math.max(2, P.maxPersonen - 1); g++) { const r = bsp(g); if (!r.ok) continue; h += "<li>" + g + " Gäste: Gesamtpreis " + chf(r.TOT) + (r.GRATIS ? (r.FZ === 0 ? ", du zahlst nichts" : ", du zahlst " + chf(r.FZ)) : ", du zahlst " + chf(r.FZ) + " wie normal") + "</li>"; }
       h += "</ul></li>";
     }
