@@ -345,7 +345,8 @@
   #auswahlTxt { display: flex; flex-direction: column; gap: 8px; }
   #auswahlTxt p { margin: 0; }
   .exbild { margin: 4px 0 2px; }
-  .exbild-cap { margin: 10px 0 0; font-size: var(--t-small); color: var(--muted); }
+  details.sub .bc .exbild-cap { margin: 8px 0 0; font-size: var(--t-small); color: var(--muted); }
+  details.sub .bc .extl { margin: 0 0 4px; }
   .exlist { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
   .exlist div { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 9px 14px; border-bottom: 1px solid var(--line); font-size: var(--t-text); line-height: 1.25; }
   .exlist div:last-child { border-bottom: 0; }
@@ -355,6 +356,22 @@
   .exgap .cal-d { cursor: default; display: flex; align-items: center; justify-content: center; min-height: 40px; }
   .exgap .ex-lab { font-size: var(--t-small); text-align: center; font-weight: 700; padding: 3px 2px; border-radius: 6px; border: 1px solid var(--line); }
   .exgap .ex-lab.gap { background: var(--sperr-bg); border-color: var(--sperr-line); }
+  .exb { height: 24px; border-radius: 12px; display: flex; align-items: center; padding: 0 9px; font-size: 0.75rem; font-weight: 700; box-sizing: border-box; white-space: nowrap; overflow: hidden; min-width: 0; }
+  .exb.selbst { background: var(--bk-selbst); color: var(--bk-selbst-fg); box-shadow: 0 0 0 1.5px var(--bk-selbst-ol); }
+  .exb.eltern { background: var(--bk-eltern); color: var(--bk-eltern-fg); box-shadow: 0 0 0 1.5px var(--bk-eltern-ol); }
+  .exb.stf { background: transparent; border: 2px dashed var(--bk-selbst); color: var(--fg); }
+  .exb.occ { background: repeating-linear-gradient(45deg, transparent 0 4px, var(--line) 4px 6px); border: 1px solid var(--line); color: var(--muted); }
+  .exb.prov { background: var(--bk-eltern); background-image: repeating-linear-gradient(45deg, transparent 0 5px, rgba(255,255,255,.6) 5px 9px); color: var(--bk-eltern-fg); box-shadow: 0 0 0 1.5px var(--bk-eltern-ol); }
+  .exb.gast { background: var(--hoch-bg); color: var(--fg); border: 1px solid #C98A1B; }
+  .exb.fam { background: var(--accent); color: var(--accent-fg); }
+  .exrow { display: flex; gap: 4px; align-items: center; }
+  .exrow + .exrow { margin-top: 6px; }
+  .exgrid { display: grid; gap: 4px; align-items: center; }
+  .extl { font-size: var(--t-small); color: var(--muted); font-weight: 700; }
+  .exmark { border-left: 2px solid var(--error-line); padding-left: 4px; color: var(--error-fg); }
+  .exyear { position: relative; height: 26px; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: transparent; }
+  .exyear i { position: absolute; top: 0; bottom: 0; background: var(--ruhe-line); opacity: .55; border-left: 2px solid var(--ruhe-line); border-right: 2px solid var(--ruhe-line); box-sizing: border-box; }
+  .exmon { display: grid; grid-template-columns: repeat(12, 1fr); font-size: 0.62rem; color: var(--muted); text-align: center; margin-top: 2px; }
   .exfields { display: flex; flex-direction: column; gap: 8px; }
   .exf { display: flex; align-items: center; gap: 12px; }
   .exsel { flex: 0 0 150px; border: 2px solid; border-radius: 8px; padding: 10px 12px; font-size: var(--t-text); }
@@ -462,7 +479,7 @@
       <summary>📚 Begriffe</summary>
       <div class="rows">
         <details class="sub" id="b-wunschtermin"><summary>📅 Wunschtermin</summary><div class="bc" id="bc-wunschtermin"></div></details>
-        <details class="sub" id="b-kalender"><summary>🗓️ Erklärung Kalender</summary><div class="bc"><p id="calHint"></p><p>Die Farben stehen als Legende direkt unter dem Kalender. Ist die Hilfe «?» an, erklärt sich jeder angetippte Tag.</p></div></details>
+        <details class="sub" id="b-kalender"><summary>🗓️ Erklärung Kalender</summary><div class="bc"><p id="calHint"></p><p>Die Farben stehen als Legende direkt unter dem Kalender. Ist die Hilfe «?» an, erklärt sich jeder angetippte Tag.</p><div id="bildKalender"></div></div></details>
         <details class="sub" id="b-auswahl"><summary>🔽 Auswahlfelder</summary><div class="bc" id="auswahlTxt">
           <p>Felder und Fragen zeigen, wo ihr steht:</p>
           <div class="exfields">
@@ -478,7 +495,7 @@
           <li><b>Blaues Badezimmer:</b> von der ganzen Wohnung aus zugänglich.</li>
         </ul></div></details>
         <details class="sub" id="b-reisegruppe"><summary>👨‍👩‍👧‍👦 Reisegruppe</summary><div class="bc"><p>Jede und jeder aus der Familie, in welcher Konstellation auch immer. Wer zusammen kommt, ist eine Reisegruppe, z. B. Jerome, Rahel, Malik und Jon, Manuel und Sarah, Deborah mit Kindern, Miriam mit Baby oder jemand allein.</p></div></details>
-        <details class="sub" id="b-staffel"><summary>🔗 Familienstaffel</summary><div class="bc"><p>Reisegruppen, die die Wohnung nacheinander benutzen, ohne dass die Eltern dazwischen reinigen. Sie endet, sobald die Eltern oder ein Airbnb-Gast kommen, oder wenn jemand von euch nicht selber reinigen will. Wer nicht selber reinigt, verursacht damit den anderen Kosten.</p></div></details>
+        <details class="sub" id="b-staffel"><summary>🔗 Familienstaffel</summary><div class="bc" id="bc-staffel"><p>Reisegruppen, die die Wohnung nacheinander benutzen, ohne dass die Eltern dazwischen reinigen. Sie endet, sobald die Eltern oder ein Airbnb-Gast kommen, oder wenn jemand von euch nicht selber reinigen will. Wer nicht selber reinigt, verursacht damit den anderen Kosten.</p></div></details>
         <details class="sub" id="b-prov"><summary>⏳ Termin unter Vorbehalt</summary><div class="bc" id="bc-prov"></div></details>
         <details class="sub" id="b-luecke"><summary>🧩 Lücken</summary><div class="bc" id="bc-luecke"></div></details>
         <details class="sub" id="b-ruhe"><summary>🧹 Selber reinigen</summary><div class="bc" id="bc-ruhe"></div></details>
@@ -956,6 +973,57 @@ function bildLuecke() {
   const an = tag0 + vor, ab = tag0 + vor + n;
   return h + '<p class="exbild-cap">Beispiel: Der erste Airbnb-Gast reist am ' + wd[(start + vor) % 7] + ' ' + an + '. ab, der nächste kommt am ' + wd[(start + vor + n) % 7] + ' ' + ab + '. Dazwischen liegen ' + n + ' freie Nächte, das ist die Lücke. Ihr bucht sie ganz: Anreise ' + wd[(start + vor) % 7] + ' ' + an + '., Abreise ' + wd[(start + vor + n) % 7] + ' ' + ab + '. (' + n + ' Nächte, ' + P.lueckeRabatt + ' Prozent günstiger).</p></div>';
 }
+function bildStaffel() {
+  const bar = (k, t, f) => '<div class="exb ' + k + '" style="flex:' + f + '">' + t + '</div>';
+  let h = '<div class="exbild" role="img" aria-label="Beispiel einer Familienstaffel">';
+  h += '<p class="extl">So läuft die Staffel</p><div class="exrow">' + bar("selbst", "Jerome", 3) + bar("selbst", "Deborah", 3) + bar("selbst", "Manuel", 3) + bar("occ", "Airbnb", 3) + '</div>';
+  h += '<p class="exbild-cap">Alle reinigen selbst. Erst wenn der Airbnb-Gast kommt, fällt die Endreinigung an. Manuel zahlt sie zuerst und holt die Anteile von Jerome und Deborah zurück.</p>';
+  h += '<p class="extl" style="margin-top:12px">So endet sie früher</p><div class="exrow">' + bar("selbst", "Jerome", 3) + bar("eltern", "Deborah", 4) + bar("selbst", "Manuel", 3) + '</div>';
+  h += '<p class="exbild-cap">Deborah will nicht selber reinigen, die Eltern reinigen (gelb). Damit endet die Staffel für Jerome, seine Endreinigung ist jetzt fällig. Manuel beginnt danach eine neue Staffel und trägt seine Endreinigung allein.</p></div>';
+  return h;
+}
+function bildVorbehalt() {
+  const v = VORLAUF, n = v + 6, tot = n + 1;
+  let h = '<div class="exbild" role="img" aria-label="Beispiel eines Termins unter Vorbehalt"><div class="exgrid" style="grid-template-columns:repeat(' + tot + ',minmax(0,1fr))">';
+  h += '<div class="extl exmark" style="grid-column:1;grid-row:1">heute</div>';
+  h += '<div class="extl exmark" style="grid-column:' + (v + 1) + ';grid-row:1;grid-column-end:span 4;white-space:nowrap">heute +' + v + ' Tage</div>';
+  h += '<div class="exb prov" style="grid-column:2/span ' + (v - 1) + ';grid-row:2;background-image:none">✓</div>';
+  h += '<div class="exb prov" style="grid-column:' + (v + 1) + '/span ' + (n - v + 1) + ';grid-row:2">Termin unter Vorbehalt</div>';
+  h += '<div class="extl" style="grid-column:2/span ' + (v - 1) + ';grid-row:3;font-size:0.65rem">voll</div>';
+  h += '<div class="extl" style="grid-column:' + (v + 1) + '/span ' + (n - v + 1) + ';grid-row:3;font-size:0.65rem">gestreift</div></div>';
+  return h + '<p class="exbild-cap">Der volle Teil ist sicher: Dort kann kein neuer Airbnb-Gast mehr buchen. Der gestreifte Teil ist noch unsicher. Jeden Tag wächst der volle Teil ein Stück weiter, bis der ganze Balken voll ist.</p></div>';
+}
+function bildKalender() {
+  const wd = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+  let h = '<div class="exbild" role="img" aria-label="Beispiel der Balken im Kalender"><div class="exgrid" style="grid-template-columns:repeat(7,minmax(0,1fr))">';
+  wd.forEach((w) => { h += '<div class="cal-wd">' + w + '</div>'; });
+  for (let i = 1; i <= 7; i++) h += '<div class="cal-d ' + (i >= 6 ? "occ" : "") + '" style="cursor:default;display:flex;align-items:center;justify-content:center">' + i + '</div>';
+  h += '<div class="exb selbst" style="grid-column:1/span 2">Jerome</div><div class="exb stf" style="grid-column:3/span 2">Staffel offen</div><div class="exb occ" style="grid-column:6/span 2">Airbnb</div>';
+  h += '</div><p class="exbild-cap">Blau: reinigt selbst. Gelb: Reinigung durch die Eltern. Gestrichelt: Die Familienstaffel ist noch offen. Gestreift: Airbnb-Gast. Die Balken erscheinen im Kalender erst, nachdem die Eltern einen Aufenthalt bestätigt haben.</p></div>';
+  return h;
+}
+function bildSparen(bsp) {
+  const zeilen = [];
+  for (let g = 2; g <= Math.max(2, P.maxPersonen - 1); g++) { const r = bsp(g); if (r.ok) zeilen.push([g, r]); }
+  if (!zeilen.length) return "";
+  const max = Math.max.apply(null, zeilen.map((z) => z[1].TOT)), z0 = (x) => Math.round(x).toLocaleString("de-CH");
+  let h = '<div class="exbild" role="img" aria-label="Wer zahlt wie viel bei 7 Nächten"><p class="extl">7 Nächte, Beträge in CHF</p>';
+  zeilen.forEach((z) => {
+    const g = z[0], r = z[1], du = r.FZ, ga = r.TOT - r.FZ, w = (r.TOT / max) * 100;
+    h += '<div class="exrow" style="margin-top:8px"><span class="extl" style="flex:0 0 52px">' + g + ' Gäste</span><div style="flex:1;display:flex;gap:2px;min-width:0;width:' + w + '%;max-width:' + w + '%">';
+    if (du > 0) h += '<div class="exb fam" style="flex:' + Math.max(du, 1) + ';min-width:44px;justify-content:center">' + z0(du) + '</div>';
+    h += '<div class="exb gast" style="flex:' + Math.max(ga, 1) + ';justify-content:center">' + z0(ga) + '</div></div><span class="extl" style="flex:0 0 52px;text-align:right">' + z0(r.TOT) + '</span></div>';
+  });
+  return h + '<p class="exbild-cap"><span class="exb fam" style="display:inline-flex;height:16px;padding:0 6px">du</span> <span class="exb gast" style="display:inline-flex;height:16px;padding:0 6px">Gäste</span> Rechts steht der Gesamtpreis. Je mehr Gäste, desto weniger zahlst du. Der Gesamtpreis sinkt nie unter ' + chf(P.mindestpreisWoche) + ' pro Woche.</p></div>';
+}
+function bildRuhe() {
+  const mt = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31], mn = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
+  const tag = (md) => { const p = md.split("-").map(Number); let t = 0; for (let i = 0; i < p[0] - 1; i++) t += mt[i]; return t + p[1]; };
+  let h = '<div class="exbild" role="img" aria-label="Zeiten, in denen ihr selbst reinigen könnt"><div class="exyear">';
+  RUHE.forEach((a) => { const von = tag(a[0]) - 1, bis = tag(a[1]); h += '<i style="left:' + (von / 365 * 100) + '%;width:' + ((bis - von) / 365 * 100) + '%"></i>'; });
+  h += '</div><div class="exmon">' + mn.map((m) => '<span>' + m + '</span>').join("") + '</div>';
+  return h + '<p class="exbild-cap">Blau: Zeiten, in denen ihr selbst reinigen könnt (' + RUHE.map((a) => fmtMD(a[0]) + " bis " + fmtMD(a[1])).join(" und ") + ').</p></div>';
+}
 function begriffeFuellen() {
   const ruhe = RUHE.length ? RUHE.map((a) => fmtMD(a[0]) + " bis " + fmtMD(a[1])).join(" und ") : "";
   const set = (id, html) => { const e = document.getElementById(id); if (e) e.innerHTML = html; };
@@ -967,7 +1035,7 @@ function begriffeFuellen() {
     if (P.mindestpreisWoche > 0) {
       h += "<li><b>Mindestpreis pro Woche:</b> Mit Gästen ab " + P.mindestpreisAbNaechte + " Nächten entfällt dein eigener Anteil, soweit der Gesamtpreis dabei nicht unter " + chf(P.mindestpreisWoche) + " pro 7 Nächte sinkt (bei anderen Längen anteilig). Reicht der Preis, zahlst du nichts. Mehr Gäste oder mehr Nächte werden nie günstiger. Beispiel für 7 Nächte, wenn du mit Gästen kommst (Gäste zahlen je " + chf(P.gast) + " pro Nacht, Reinigung nach Personen geteilt):<ul>";
       for (let g = 2; g <= Math.max(2, P.maxPersonen - 1); g++) { const r = bsp(g); if (!r.ok) continue; h += "<li>" + g + " Gäste: Gesamtpreis " + chf(r.TOT) + (r.GRATIS ? (r.FZ === 0 ? ", du zahlst nichts" : ", du zahlst " + chf(r.FZ)) : ", du zahlst " + chf(r.FZ) + " wie normal") + "</li>"; }
-      h += "</ul></li>";
+      h += "</ul>" + bildSparen(bsp) + "</li>";
     }
     h += "<li><b>Zimmer 1 unberührt:</b> " + chf(P.sparEin) + " weniger pro Nacht, wenn Zimmer 1 und das rote Bad unberührt bleiben (bis " + P.sparMaxPers + " Personen insgesamt).</li>";
     if (P.lueckeRabatt > 0) h += "<li><b>Lücken füllen:</b> " + P.lueckeRabatt + " Prozent auf die Übernachtungen, wenn du eine ganze Lücke zwischen zwei Gästen buchst. " + symBtn("b-luecke", "🧩") + "</li>";
@@ -977,10 +1045,12 @@ function begriffeFuellen() {
     h += "</ul>";
     set("bc-sparen", h);
   })();
-  set("bc-prov", "<p>Ausserhalb der Staffel-Zeiten (" + (RUHE.length ? RUHE.map((a) => fmtMD(a[0]) + " bis " + fmtMD(a[1])).join(" und ") : "keine festgelegt") + ") sperren die Eltern euren Termin <b>nicht in Airbnb</b>. Er steht <b>unter Vorbehalt</b>: Meldet sich ein Airbnb-Gast für dieselben Tage, hat er Vorrang und euer Aufenthalt muss weichen.</p><p>Habt ihr noch nicht begonnen, fällt nichts an. Seid ihr schon im Chalet, zahlt ihr die normalen Kosten für die Tage, die ihr dort wart. Plant deshalb eine Alternative ein, besonders in der Hochsaison.</p><p><b>Praktisch sicher ✓:</b> Ein neuer Airbnb-Gast braucht " + VORLAUF + " Tage Vorlauf. Nächte, die früher als " + VORLAUF + " Tage ab heute liegen, kann kein neuer Gast mehr buchen: Der Balken wird dort <b>voll</b> statt schraffiert und wächst jeden Tag. Endet euer Aufenthalt innerhalb der nächsten " + VORLAUF + " Tage, ist der ganze Balken voll und der Haken erscheint. Je länger der Aufenthalt und je weiter voraus, desto später wird er sicher.</p><p>In den Staffel-Zeiten" + (FEST_MONATE.length ? " und im " + festTxt() : "") + " sind Termine <b>fest</b>. Balken von Terminen unter Vorbehalt sind im unsicheren Teil gestreift, ein roter Rand zeigt einen Konflikt mit einem Airbnb-Gast.</p>");
+  set("bc-staffel", document.getElementById("bc-staffel").innerHTML.replace(/<div class="exbild"[\s\S]*$/, "") + bildStaffel());
+  set("bildKalender", bildKalender());
+  set("bc-prov", "<p>Ausserhalb der Staffel-Zeiten (" + (RUHE.length ? RUHE.map((a) => fmtMD(a[0]) + " bis " + fmtMD(a[1])).join(" und ") : "keine festgelegt") + ") sperren die Eltern euren Termin <b>nicht in Airbnb</b>. Er steht <b>unter Vorbehalt</b>: Meldet sich ein Airbnb-Gast für dieselben Tage, hat er Vorrang und euer Aufenthalt muss weichen.</p><p>Habt ihr noch nicht begonnen, fällt nichts an. Seid ihr schon im Chalet, zahlt ihr die normalen Kosten für die Tage, die ihr dort wart. Plant deshalb eine Alternative ein, besonders in der Hochsaison.</p><p><b>Praktisch sicher ✓:</b> Ein neuer Airbnb-Gast braucht " + VORLAUF + " Tage Vorlauf. Nächte, die früher als " + VORLAUF + " Tage ab heute liegen, kann kein neuer Gast mehr buchen: Der Balken wird dort <b>voll</b> statt schraffiert und wächst jeden Tag. Endet euer Aufenthalt innerhalb der nächsten " + VORLAUF + " Tage, ist der ganze Balken voll und der Haken erscheint. Je länger der Aufenthalt und je weiter voraus, desto später wird er sicher.</p>" + bildVorbehalt() + "<p>In den Staffel-Zeiten" + (FEST_MONATE.length ? " und im " + festTxt() : "") + " sind Termine <b>fest</b>. Balken von Terminen unter Vorbehalt sind im unsicheren Teil gestreift, ein roter Rand zeigt einen Konflikt mit einem Airbnb-Gast.</p>");
   set("bc-wunschtermin", "<p>Den Wunschtermin wählt ihr im Kalender. Wie das geht, steht unter «Erklärung Kalender». Die Farben stehen als Legende unter dem Kalender. " + symBtn("b-kalender", "🗓️") + "</p>");
   set("bc-luecke", "<p><b>Ein Angebot für kurze Lücken 🧩</b> Lücken bis " + LUECKE_MAX + " Nächte kann Airbnb nicht vermieten (Mindestaufenthalt dort " + (LUECKE_MAX + 1) + " Nächte). Wer die ganze Lücke bucht, vom ersten bis zum letzten freien Tag, zahlt für die Übernachtungen " + P.lueckeRabatt + " Prozent weniger. Einzelne Nächte daraus sind nicht buchbar.</p>" + bildLuecke() + "<p>Es gilt:</p>" + lueckenRegeln());
-  set("bc-ruhe", RUHE.length ? "<ul><li>Möglich vom " + ruhe.replace(" und ", " und vom ") + ".</li>" +
+  set("bc-ruhe", RUHE.length ? bildRuhe() + "<ul><li>Möglich vom " + ruhe.replace(" und ", " und vom ") + ".</li>" +
     "<li>Nur für euch Kinder mit Partnern und Kindern, ohne externe Gäste.</li>" +
     "<li>Frische Bettwäsche, Handtücher und Küchentücher mitbringen und selbst beziehen. Bettdecken und Kissen nie ohne frischen Duvet- und Kissenbezug benutzen. Alles nehmt ihr wieder mit. Nur die Moltons bleiben nach dem Benutzen auf der Matratze.</li>" +
     "<li>Wer geht, reinigt: WC putzen, staubsaugen, Küche sauber, Abfall entsorgen, alles picobello.</li>" +
