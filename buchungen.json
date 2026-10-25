@@ -8,13 +8,6 @@
       "selbst": false,
       "pers": 1,
       "prov": true
-    },
-    {
-      "name": "Manuel",
-      "arr": "2026-11-26",
-      "dep": "2026-11-28",
-      "selbst": true,
-      "pers": 2
     }
   ]
 }
