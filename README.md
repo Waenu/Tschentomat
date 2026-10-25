@@ -39,7 +39,7 @@ Preisrechner für die Familie, Chalet Tschenten, Adelboden.
 | `mindestpreisWoche` | Boden pro 7 Nächte in CHF (anteilig nach Nächten, aufgerundet), nur mit Gästen. Liegt der Gesamtpreis darüber, entfällt der Anteil der Familie so weit, wie der Preis nicht unter den Boden sinkt. Reicht der Preis, zahlt die Familie nichts, sonst nur den Rest bis zum Boden. Mehr Nächte oder Gäste werden dadurch nie günstiger. `0` schaltet die Regel ab |
 | `festMonate` | Monate (Liste), in denen ein Aufenthalt der Familie nie provisorisch ist, sondern fest. Der Termin wird in Airbnb gesperrt (Anfrage-Text sagt es). Jetzt `[2]` (Februar). Gilt, sobald eine Nacht des Aufenthalts in einem dieser Monate liegt |
 | `minNaechteMonat` | Mindestnächte pro Monat, zum Beispiel `{ "2": 7 }`: Jeder Aufenthalt mit mindestens einer Nacht im Februar braucht 7 Nächte (28.1. bis 4.2. ist ok, 31.1. bis 2.2. nicht) |
-| `provisorisch` | `true`: Aufenthalte der Familie, die mindestens eine Nacht ausserhalb der Selbstreinigungs-Zeiten haben, gelten als provisorisch (siehe unten). `false` schaltet die Funktion ab |
+| `provisorisch` | `true`: Aufenthalte der Familie, die mindestens eine Nacht ausserhalb der Selbstreinigungs-Zeiten haben, gelten als Termin unter Vorbehalt (siehe unten). `false` schaltet die Funktion ab |
 | `airbnbVorlaufTage` | Vorlaufzeit, die in Airbnb für neue Gäste eingestellt ist (aktuell 3). Ein provisorischer Aufenthalt gilt als «praktisch sicher», wenn die Abreise innerhalb dieser Tage liegt |
 
 ## Belegung aus Airbnb
@@ -55,7 +55,7 @@ Preisrechner für die Familie, Chalet Tschenten, Adelboden.
 - Gespeichert wird in `buchungen.json` (wird von der App über die GitHub-API geschrieben, nicht von Hand ändern ausser zum Löschen von Testeinträgen). Felder pro Eintrag: `name`, `arr`, `dep`, `selbst`, `pers`, optional `status` (`"abgelehnt"`), `bescheid`, `prov` (`true` = provisorisch).
 - Das Token läuft nach einem Jahr ab (aktuell ca. Oktober 2027) und muss dann neu erstellt werden.
 
-## Provisorische Termine
+## Termine unter Vorbehalt (provisorisch)
 
 - Idee: Lücken füllen, die sonst leer blieben, ohne den Termin in Airbnb zu sperren. Ein Airbnb-Gast hat immer Vorrang, die Familie muss dann räumen oder gar nicht erst gehen. Normale Kosten.
 - Gilt automatisch für alle Aufenthalte, die mindestens eine Nacht ausserhalb der Selbstreinigungs-Zeiten (`selbstReinigung`) haben. Reine Staffel-Aufenthalte (März/April, Oktober bis 18. Dezember) sind fest und werden in Airbnb gesperrt.
