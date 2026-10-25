@@ -600,7 +600,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "1.9.5";
+let VERSION = "1.9.6";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -963,7 +963,7 @@ const GELD_TEXT = "<p>Damit decken wir die laufenden Kosten des Chalets: Kurtaxe
 const HW = "<b>ℹ️ Hinweis:</b> ", WA = "<b>⚠️ Warnung:</b> ";
 function symBtn(id, emoji) { return '<button type="button" class="sym" data-info="' + id + '" aria-label="Zur Erklärung springen">' + emoji + '</button>'; }
 function lueckenRegeln() {
-  return "<ul><li>Höchstens " + P.lueckeMaxPersonen + " Erwachsene in den Betten (Partner, Bruder oder Schwester), zusätzlich höchstens " + P.lueckeMaxKleinkinder + " Kleinkind im Kinderbettchen.</li><li>Keine externen Gäste. Es kommt nur die Familie: Partner, Bruder oder Schwester.</li><li>Nur Zimmer 2 mit dem blauen Bad. Das Kleinkind schläft bei den Erwachsenen in Zimmer 2 oder im Kinderbettchen in Zimmer 3. Zimmer 1 und das rote Bad bleiben unberührt.</li><li>Frische Bettwäsche, Handtücher und Küchentücher mitbringen und selbst beziehen. Bettdecken und Kissen nie ohne frischen Duvet- und Kissenbezug benutzen. Alles nehmt ihr wieder mit. Nur die Moltons bleiben nach dem Benutzen auf der Matratze.</li><li>Die Eltern reinigen für " + chf(P.reinigung) + ".</li></ul>";
+  return "<ul><li>Höchstens " + P.lueckeMaxPersonen + " Erwachsene in den Betten (Partner, Bruder oder Schwester), zusätzlich höchstens " + P.lueckeMaxKleinkinder + " Kleinkind im Kinderbettchen.</li><li>Keine externen Gäste. Es kommt nur die Familie: Partner, Bruder oder Schwester.</li><li>Nur Zimmer 2 mit dem blauen Bad. Das Kleinkind schläft bei den Erwachsenen in Zimmer 2 oder im Kinderbettchen in Zimmer 3. Zimmer 1 und das rote Bad bleiben unberührt.</li><li>Frische Bettwäsche, Handtücher und Küchentücher mitbringen und selbst beziehen. Bettdecken und Kissen nie ohne frischen Duvet- und Kissenbezug benutzen. Alles nehmt ihr wieder mit. Nur die Moltons bleiben nach dem Benutzen auf der Matratze. Das Kleinkind-Bettchen braucht nichts, dort ist die Wäsche immer vorhanden.</li><li>Wie bei der Selbstreinigung steht in der Anfrage der Hinweis zur eigenen Wäsche. Nach der Bestätigung durch die Eltern erscheint oben der Knopf «Anreise-Wäsche» mit der Liste, gerechnet für die Erwachsenen in den Betten.</li><li>Die Eltern reinigen für " + chf(P.reinigung) + ".</li></ul>";
 }
 function bildAuswahl() {
   let h = '<div class="exlist" role="img" aria-label="Beispiel einer geöffneten Auswahlliste">';
@@ -1483,7 +1483,8 @@ function anfrageText(r) {
   z.push("Gruss");
   z.push(ABSENDER);
   z.push("");
-  z.push("Zur Bestätigung (nur Eltern): " + bestLink(ABSENDER, ARR, DEP, x.SB === true, x.FP));
+  if (x.LG) { z.push(""); z.push("Wir bitten euch, eigene Bettwäsche, Frottee- und Küchentücher mitzubringen, so wie im Tschent-O-Mat beschrieben. Die Reinigung übernehmen die Eltern."); }
+  z.push("Zur Bestätigung (nur Eltern): " + bestLink(ABSENDER, ARR, DEP, x.SB === true, x.FP, x.LG === true));
   return z.join("\n");
 }
 
@@ -1855,7 +1856,7 @@ const DKEY = /^\d{4}-\d{2}-\d{2}$/;
 function aufentLaden() {
   try {
     const j = JSON.parse(localStorage.getItem("tm_aufenthalt"));
-    if (j && DKEY.test(j.arr) && DKEY.test(j.dep)) AUFENT = { arr: j.arr, dep: j.dep, sb: j.sb === true, pers: Math.max(1, Number(j.pers) || 1) };
+    if (j && DKEY.test(j.arr) && DKEY.test(j.dep)) AUFENT = { arr: j.arr, dep: j.dep, sb: j.sb === true, lg: j.lg === true, pers: Math.max(1, Number(j.pers) || 1) };
   } catch (e) {}
   try { const h = JSON.parse(localStorage.getItem("tm_haken")); if (h && typeof h === "object") HAKEN = h; } catch (e) {}
 }
@@ -1871,7 +1872,7 @@ function buchungenAn(j) {
   const bes = (b) => (typeof b.bescheid === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(b.bescheid) ? b.bescheid : "");
   BUCH_ABGEL = gut.filter((b) => b.status === "abgelehnt").map((b) => ({ name: b.name.trim(), arr: b.arr, dep: b.dep, bescheid: bes(b) }));
   BUCH = gut.filter((b) => b.status !== "abgelehnt")
-    .map((b) => ({ name: b.name.trim(), arr: b.arr, dep: b.dep, sb: b.selbst === true, prov: PROV_AN && b.prov === true, pers: Math.max(1, Number(b.pers) || 1), bescheid: bes(b) }))
+    .map((b) => ({ name: b.name.trim(), arr: b.arr, dep: b.dep, sb: b.selbst === true, lg: b.luecke === true, prov: PROV_AN && b.prov === true, pers: Math.max(1, Number(b.pers) || 1), bescheid: bes(b) }))
     .sort((p, q) => (p.arr < q.arr ? -1 : 1));
   BUCH_TAG.clear();
   BUCH.forEach((b) => { for (let k = b.arr; k < b.dep; k = addDays(k, 1)) BUCH_TAG.set(k, b.name); });
@@ -1896,9 +1897,9 @@ function aufAbgelehnt() { return !!(AUFENT && ABSENDER && BUCH_ABGEL.some((x) =>
 function aufent() {
   const h = heuteKey();
   if (AUFENT && AUFENT.dep < h) { AUFENT = null; aufentSichern(); }   // am Tag nach der Abreise weg
-  const l = ABSENDER ? BUCH.filter((x) => x.name === ABSENDER && x.dep >= h).map((b) => ({ arr: b.arr, dep: b.dep, sb: b.sb, pers: b.pers, ok: true })) : [];
+  const l = ABSENDER ? BUCH.filter((x) => x.name === ABSENDER && x.dep >= h).map((b) => ({ arr: b.arr, dep: b.dep, sb: b.sb, lg: b.lg, pers: b.pers, ok: true })) : [];
   if (AUFENT && aufAbgelehnt()) { /* abgelehnt: keine Knöpfe */ }
-  else if (AUFENT && !l.some((x) => x.arr === AUFENT.arr && x.dep === AUFENT.dep)) l.push({ arr: AUFENT.arr, dep: AUFENT.dep, sb: AUFENT.sb, pers: AUFENT.pers, ok: false });
+  else if (AUFENT && !l.some((x) => x.arr === AUFENT.arr && x.dep === AUFENT.dep)) l.push({ arr: AUFENT.arr, dep: AUFENT.dep, sb: AUFENT.sb, lg: AUFENT.lg, pers: AUFENT.pers, ok: false });
   else if (AUFENT) { AUFENT = null; aufentSichern(); }   // inzwischen bestätigt
   l.sort((p, q) => (p.arr < q.arr ? -1 : 1));
   return l[0] || null;
@@ -1909,18 +1910,18 @@ function aufentSpeichern() {
   const x = derive(S);
   const b = ABSENDER ? BUCH.find((y) => y.name === ABSENDER && y.arr === ARR && y.dep === DEP) : null;
   if (b) { aufentZeigen(); return; }   // schon bestätigt
-  AUFENT = { arr: ARR, dep: DEP, sb: x.SB === true, pers: x.FP };
+  AUFENT = { arr: ARR, dep: DEP, sb: x.SB === true, lg: x.LG === true, pers: x.FP };
   aufentSichern(); aufentZeigen();
 }
 function aufHinweisZeigen() {
   const el = document.getElementById("aufHinweis"), a = aufent();
   if (!el || !a) return;
   el.hidden = false;
-  el.innerHTML = '<b>✅ Gemerkt.</b> Deine Knöpfe ' + (a.sb ? '«Anreise-Wäsche» und ' : '') + '«Reinigungs-Checkliste» findest du jetzt oben auf der Startseite. <button type="button" class="ov-back" id="zuKnoepfe">👆 Zu den Knöpfen</button>';
+  el.innerHTML = '<b>✅ Gemerkt.</b> Deine Knöpfe ' + ((a.sb || a.lg) ? '«Anreise-Wäsche» und ' : '') + '«Reinigungs-Checkliste» findest du jetzt oben auf der Startseite. <button type="button" class="ov-back" id="zuKnoepfe">👆 Zu den Knöpfen</button>';
 }
 function aufentZeigen() {
   const a = aufent();
-  document.getElementById("btnAnreise").hidden = !(a && a.sb);
+  document.getElementById("btnAnreise").hidden = !(a && (a.sb || a.lg));
   document.getElementById("btnCheck").hidden = !a;
   document.getElementById("aufStatus").hidden = !AUFENT;
   if (a) {
@@ -2009,17 +2010,17 @@ document.getElementById("aufStatus").addEventListener("click", aufentWeg);
 const GH_REPO = "Waenu/Tschentomat", GH_DATEI = "buchungen.json";
 let TOKEN = "";
 try { TOKEN = localStorage.getItem("tm_token") || ""; } catch (e) {}
-function bestLink(name, arr, dep, selbst, pers) {
-  return location.origin + location.pathname + "?b=" + [name, arr, dep, selbst ? 1 : 0, pers].join("_");
+function bestLink(name, arr, dep, selbst, pers, luecke) {
+  return location.origin + location.pathname + "?b=" + [name, arr, dep, selbst ? 1 : 0, pers].concat(luecke ? ["L"] : []).join("_");
 }
 function bestLesen() {
   let p = "";
   try { p = new URLSearchParams(location.search).get("b") || ""; } catch (e) {}
   const a = p.split("_");
-  if (a.length !== 5) return null;
+  if (a.length !== 5 && !(a.length === 6 && a[5] === "L")) return null;
   const pers = Number(a[4]);
   if (ABS.indexOf(a[0]) < 0 || !DKEY.test(a[1]) || !DKEY.test(a[2]) || a[1] >= a[2] || !(a[3] === "0" || a[3] === "1") || !Number.isInteger(pers) || pers < 1 || pers > 8) return null;
-  return { name: a[0], arr: a[1], dep: a[2], selbst: a[3] === "1", pers: pers };
+  return { name: a[0], arr: a[1], dep: a[2], selbst: a[3] === "1", pers: pers, luecke: a.length === 6 };
 }
 const b64 = (s) => btoa(unescape(encodeURIComponent(s)));
 const unb64 = (s) => decodeURIComponent(escape(atob(s.replace(/\s+/g, ""))));
@@ -2098,7 +2099,7 @@ function bestWaLink(text, key, label) { return ' <a class="btn" data-bescheid="'
 function bestText(x, abgelehnt) {
   return abgelehnt
     ? "Hoi " + x.name + ", deine Anfrage vom " + fmtTagV(x.arr) + " bis " + fmtTagV(x.dep) + " können wir leider nicht bestätigen. Melde dich bei uns, dann suchen wir zusammen eine Lösung."
-    : "Hoi " + x.name + ", dein Aufenthalt vom " + fmtTagV(x.arr) + " bis " + fmtTagV(x.dep) + " ist bestätigt. 🎉 Im TSCHENT-O-MAT findest du jetzt " + (x.sb || x.selbst ? "die Wäsche-Liste für die Anreise und " : "") + "die Checkliste für die Abreise." + (provVon(x) ? " Achtung: Der Termin steht unter Vorbehalt und ist nicht in Airbnb gesperrt. Kommt ein Airbnb-Gast, hat er Vorrang, dann müsst ihr ausweichen." : "");
+    : "Hoi " + x.name + ", dein Aufenthalt vom " + fmtTagV(x.arr) + " bis " + fmtTagV(x.dep) + " ist bestätigt. 🎉 Im TSCHENT-O-MAT findest du jetzt " + (x.sb || x.selbst || x.luecke ? "die Wäsche-Liste für die Anreise und " : "") + "die Checkliste für die Abreise." + (provVon(x) ? " Achtung: Der Termin steht unter Vorbehalt und ist nicht in Airbnb gesperrt. Kommt ein Airbnb-Gast, hat er Vorrang, dann müsst ihr ausweichen." : "");
 }
 function bestBescheidZeile(x, abgelehnt) {
   const b = x.bescheid || "", key = bKey(x);
@@ -2175,10 +2176,11 @@ document.getElementById("bestKasten").addEventListener("click", async (e) => {
       const x = find(OFFEN, ja); if (!x) { bestBusy = false; bestZeigen(); return; }
       const pv = provStay(x.arr, x.dep), eintrag = { name: x.name, arr: x.arr, dep: x.dep, selbst: x.selbst, pers: x.pers };
       if (pv) eintrag.prov = true;
+      if (x.luecke) eintrag.luecke = true;
       const j = await ghAendern((l) => l.filter((y) => bKey(y) !== ja).concat([eintrag]));
       buchungenAn(j); try { localStorage.setItem("tm_buchungen", JSON.stringify(j)); } catch (e2) {}
       OFFEN = OFFEN.filter((y) => bKey(y) !== ja); listeSichern("tm_offen", OFFEN);
-      const text = bestText({ name: x.name, arr: x.arr, dep: x.dep, selbst: x.selbst, prov: pv });
+      const text = bestText({ name: x.name, arr: x.arr, dep: x.dep, selbst: x.selbst, luecke: x.luecke, prov: pv });
       bestMsg = "✅ Bestätigt und gespeichert (" + esc(x.name) + "). In 1 bis 2 Minuten sehen es alle." + (pv ? " <b>Unter Vorbehalt: nicht in Airbnb sperren.</b>" : "") + bestWaLink(text, bKey(x));
     } else {
       const [name, arr, dep] = del.split("|");
