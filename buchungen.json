@@ -29,6 +29,13 @@
       "dep": "2026-11-28",
       "selbst": true,
       "pers": 2
+    },
+    {
+      "name": "Manuel",
+      "arr": "2026-11-16",
+      "dep": "2026-11-19",
+      "selbst": true,
+      "pers": 2
     }
   ]
 }
