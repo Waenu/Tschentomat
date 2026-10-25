@@ -344,6 +344,17 @@
   #b-kalender .note + .note { margin-top: 8px; }
   #auswahlTxt { display: flex; flex-direction: column; gap: 8px; }
   #auswahlTxt p { margin: 0; }
+  .exbild { margin: 4px 0 2px; }
+  .exbild-cap { margin: 6px 0 0; font-size: var(--t-small); color: var(--muted); }
+  .exlist { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+  .exlist div { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 9px 14px; border-bottom: 1px solid var(--line); font-size: var(--t-text); line-height: 1.25; }
+  .exlist div:last-child { border-bottom: 0; }
+  .exr { flex: none; width: 18px; height: 18px; border: 2px solid var(--muted); border-radius: 50%; box-sizing: border-box; }
+  .exr.on { border-color: var(--accent); background: var(--accent); box-shadow: inset 0 0 0 3px var(--surface); }
+  .exgap { display: grid; gap: 4px; }
+  .exgap .cal-d { cursor: default; display: flex; align-items: center; justify-content: center; min-height: 40px; }
+  .exgap .ex-lab { font-size: var(--t-small); text-align: center; font-weight: 700; padding: 3px 2px; border-radius: 6px; border: 1px solid var(--line); }
+  .exgap .ex-lab.gap { background: var(--sperr-bg); border-color: var(--sperr-line); }
   .exfields { display: flex; flex-direction: column; gap: 8px; }
   .exf { display: flex; align-items: center; gap: 12px; }
   .exsel { flex: 0 0 150px; border: 2px solid; border-radius: 8px; padding: 10px 12px; font-size: var(--t-text); }
@@ -458,6 +469,7 @@
             <div class="exf"><span class="exsel missing">– wählen –</span><span>orange: noch wählen</span></div>
             <div class="exf"><span class="exsel done">Beispiel ✓</span><span>grün: gewählt</span></div>
           </div>
+          <div class="exbild" id="bildAuswahl"></div>
           <p><b>Erst wenn alle Felder grün sind, erscheint das Resultat mit dem Preis.</b></p>
         </div></details>
         <details class="sub" id="b-zimmer"><summary>🛌 Zimmer</summary><div class="bc"><ul>
@@ -930,6 +942,21 @@ function symBtn(id, emoji) { return '<button type="button" class="sym" data-info
 function lueckenRegeln() {
   return "<ul><li>Höchstens " + P.lueckeMaxPersonen + " Erwachsene in den Betten (Partner, Bruder oder Schwester), zusätzlich höchstens " + P.lueckeMaxKleinkinder + " Kleinkind im Kinderbettchen.</li><li>Keine externen Gäste. Es kommt nur die Familie: Partner, Bruder oder Schwester.</li><li>Nur Zimmer 2 mit dem blauen Bad. Das Kleinkind schläft bei den Erwachsenen in Zimmer 2 oder im Kinderbettchen in Zimmer 3. Zimmer 1 und das rote Bad bleiben unberührt.</li><li>Frische Bettwäsche, Handtücher und Küchentücher mitbringen und selbst beziehen. Bettdecken und Kissen nie ohne frischen Duvet- und Kissenbezug benutzen. Alles nehmt ihr wieder mit. Nur die Moltons bleiben nach dem Benutzen auf der Matratze.</li><li>Die Eltern reinigen für " + chf(P.reinigung) + ".</li></ul>";
 }
+function bildAuswahl() {
+  let h = '<div class="exlist" role="img" aria-label="Beispiel einer geöffneten Auswahlliste">';
+  h += '<div><span>– wählen –</span><i class="exr on"></i></div>';
+  REINIG.forEach((t) => { h += '<div><span>' + esc(t) + '</span><i class="exr"></i></div>'; });
+  return h + '</div><p class="exbild-cap">So sieht eine geöffnete Liste aus (Beispiel: «Wie wird die Reinigung aufgeteilt?»). Tippt die passende Zeile an.</p>';
+}
+function bildLuecke() {
+  const n = LUECKE_MAX, wd = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"], vor = 3, total = vor + n + 1, start = 5, tag0 = 10;
+  let h = '<div class="exbild"><div class="exgap" style="grid-template-columns:repeat(' + total + ',minmax(0,1fr))" role="img" aria-label="Beispiel einer Lücke zwischen zwei Airbnb-Buchungen">';
+  for (let i = 0; i < total; i++) h += '<div class="cal-wd">' + wd[(start + i) % 7] + '</div>';
+  for (let i = 0; i < total; i++) { const gap = i >= vor && i < vor + n; h += '<div class="cal-d ' + (gap ? "gap" : "occ") + '">' + (tag0 + i) + '</div>'; }
+  h += '<div class="ex-lab" style="grid-column:span ' + vor + '">Airbnb-Gast</div><div class="ex-lab gap" style="grid-column:span ' + n + '">Lücke 🧩</div><div class="ex-lab">Gast</div></div>';
+  const an = tag0 + vor, ab = tag0 + vor + n;
+  return h + '<p class="exbild-cap">Beispiel: Der erste Airbnb-Gast reist am ' + wd[(start + vor) % 7] + ' ' + an + '. ab, der nächste kommt am ' + wd[(start + vor + n) % 7] + ' ' + ab + '. Dazwischen liegen ' + n + ' freie Nächte, das ist die Lücke. Ihr bucht sie ganz: Anreise ' + wd[(start + vor) % 7] + ' ' + an + '., Abreise ' + wd[(start + vor + n) % 7] + ' ' + ab + '. (' + n + ' Nächte, ' + P.lueckeRabatt + ' Prozent günstiger).</p></div>';
+}
 function begriffeFuellen() {
   const ruhe = RUHE.length ? RUHE.map((a) => fmtMD(a[0]) + " bis " + fmtMD(a[1])).join(" und ") : "";
   const set = (id, html) => { const e = document.getElementById(id); if (e) e.innerHTML = html; };
@@ -953,7 +980,8 @@ function begriffeFuellen() {
   })();
   set("bc-prov", "<p>Ausserhalb der Staffel-Zeiten (" + (RUHE.length ? RUHE.map((a) => fmtMD(a[0]) + " bis " + fmtMD(a[1])).join(" und ") : "keine festgelegt") + ") sperren die Eltern euren Termin <b>nicht in Airbnb</b>. Er steht <b>unter Vorbehalt</b>: Meldet sich ein Airbnb-Gast für dieselben Tage, hat er Vorrang und euer Aufenthalt muss weichen.</p><p>Habt ihr noch nicht begonnen, fällt nichts an. Seid ihr schon im Chalet, zahlt ihr die normalen Kosten für die Tage, die ihr dort wart. Plant deshalb eine Alternative ein, besonders in der Hochsaison.</p><p><b>Praktisch sicher ✓:</b> Ein neuer Airbnb-Gast braucht " + VORLAUF + " Tage Vorlauf. Nächte, die früher als " + VORLAUF + " Tage ab heute liegen, kann kein neuer Gast mehr buchen: Der Balken wird dort <b>voll</b> statt schraffiert und wächst jeden Tag. Endet euer Aufenthalt innerhalb der nächsten " + VORLAUF + " Tage, ist der ganze Balken voll und der Haken erscheint. Je länger der Aufenthalt und je weiter voraus, desto später wird er sicher.</p><p>In den Staffel-Zeiten" + (FEST_MONATE.length ? " und im " + festTxt() : "") + " sind Termine <b>fest</b>. Balken von Terminen unter Vorbehalt sind im unsicheren Teil gestreift, ein roter Rand zeigt einen Konflikt mit einem Airbnb-Gast.</p>");
   set("bc-wunschtermin", "<p>Den Wunschtermin wählt ihr im Kalender. Wie das geht, steht unter «Erklärung Kalender». Die Farben stehen als Legende unter dem Kalender. " + symBtn("b-kalender", "🗓️") + "</p>");
-  set("bc-luecke", "<p><b>Ein Angebot für kurze Lücken 🧩</b> Lücken bis " + LUECKE_MAX + " Nächte kann Airbnb nicht vermieten (Mindestaufenthalt dort " + (LUECKE_MAX + 1) + " Nächte). Wer die ganze Lücke bucht, vom ersten bis zum letzten freien Tag, zahlt für die Übernachtungen " + P.lueckeRabatt + " Prozent weniger. Einzelne Nächte daraus sind nicht buchbar. Es gilt:</p>" + lueckenRegeln());
+  set("bildAuswahl", bildAuswahl());
+  set("bc-luecke", "<p><b>Ein Angebot für kurze Lücken 🧩</b> Lücken bis " + LUECKE_MAX + " Nächte kann Airbnb nicht vermieten (Mindestaufenthalt dort " + (LUECKE_MAX + 1) + " Nächte). Wer die ganze Lücke bucht, vom ersten bis zum letzten freien Tag, zahlt für die Übernachtungen " + P.lueckeRabatt + " Prozent weniger. Einzelne Nächte daraus sind nicht buchbar.</p>" + bildLuecke() + "<p>Es gilt:</p>" + lueckenRegeln());
   set("bc-ruhe", RUHE.length ? "<ul><li>Möglich vom " + ruhe.replace(" und ", " und vom ") + ".</li>" +
     "<li>Nur für euch Kinder mit Partnern und Kindern, ohne externe Gäste.</li>" +
     "<li>Frische Bettwäsche, Handtücher und Küchentücher mitbringen und selbst beziehen. Bettdecken und Kissen nie ohne frischen Duvet- und Kissenbezug benutzen. Alles nehmt ihr wieder mit. Nur die Moltons bleiben nach dem Benutzen auf der Matratze.</li>" +
