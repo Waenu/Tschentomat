@@ -469,7 +469,6 @@
             <div class="exf"><span class="exsel missing">– wählen –</span><span>orange: noch wählen</span></div>
             <div class="exf"><span class="exsel done">Beispiel ✓</span><span>grün: gewählt</span></div>
           </div>
-          <div class="exbild" id="bildAuswahl"></div>
           <p><b>Erst wenn alle Felder grün sind, erscheint das Resultat mit dem Preis.</b></p>
         </div></details>
         <details class="sub" id="b-zimmer"><summary>🛌 Zimmer</summary><div class="bc"><ul>
@@ -579,7 +578,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "1.8.0";
+let VERSION = "1.8.1";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -946,7 +945,7 @@ function bildAuswahl() {
   let h = '<div class="exlist" role="img" aria-label="Beispiel einer geöffneten Auswahlliste">';
   h += '<div><span>– wählen –</span><i class="exr on"></i></div>';
   REINIG.forEach((t) => { h += '<div><span>' + esc(t) + '</span><i class="exr"></i></div>'; });
-  return h + '</div><p class="exbild-cap">So sieht eine geöffnete Liste aus (Beispiel: «Wie wird die Reinigung aufgeteilt?»). Tippt die passende Zeile an.</p>';
+  return h + '</div><p class="exbild-cap">So sieht die Auswahl «Wie wird die Reinigung aufgeteilt?» aus. Tippt die passende Zeile an.</p>';
 }
 function bildLuecke() {
   const n = LUECKE_MAX, wd = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"], vor = 3, total = vor + n + 1, start = 5, tag0 = 10;
@@ -961,7 +960,7 @@ function begriffeFuellen() {
   const ruhe = RUHE.length ? RUHE.map((a) => fmtMD(a[0]) + " bis " + fmtMD(a[1])).join(" und ") : "";
   const set = (id, html) => { const e = document.getElementById(id); if (e) e.innerHTML = html; };
   set("bc-trinkgeld", "<p>Es war ein Anliegen von Mami, dass die Kinder günstiger nach Adelboden gehen können. Dafür macht sie viel Arbeit: Fahrt, Reinigung und Wäsche, siehe «Endreinigung» " + symBtn("b-endrein", "🪣") + ".</p><p>Wer möchte, gibt Mami deshalb ein Trinkgeld. Das ist freiwillig, aber ein schönes Zeichen der Wertschätzung. Gebt, was euch passt: Es freut sie, und ihr dürft grosszügig sein 😉</p><p>Wenn ihr unter «Trinkgeld für Mami» einen Betrag eintragt, wird er zum Preis dazugerechnet und extra ausgewiesen.</p>");
-  set("bc-zahlung", "<p>Die Familie überweist den ganzen Betrag, auch wenn Gäste dabei sind. Spätestens " + ZAHL_TAGE + " Tage nach dem letzten Ferientag, ohne Aufforderung.</p><p>" + esc(BANK) + "</p><p>Bitte mit Name und Datum der Ferien überweisen.</p>");
+  set("bc-zahlung", "<p>Die Familie überweist den ganzen Betrag, auch wenn Gäste dabei sind. Spätestens " + ZAHL_TAGE + " Tage nach dem letzten Ferientag, ohne Aufforderung.</p><p>" + esc(BANK) + "</p><p>Bitte mit Name und Datum der Ferien überweisen.</p><p>Wie die Reinigung unter euch und den Gästen aufgeteilt wird, entscheidet ihr selbst. Das Total bleibt gleich, nur wer wie viel zahlt ändert sich.</p><div class=\"exbild\">" + bildAuswahl() + "</div>");
   (function () {
     const bsp = (g) => calc({ wer: "Nur ich", gaeste: g, zimmer: "Nein", spar: "Nein", selbst: "Nein", reinig: REINIG[0], nights: 7 });
     let h = "<p>Je mehr Gäste mitkommen, desto günstiger wird es für dich. Dazu ein paar Möglichkeiten:</p><ul>";
@@ -980,7 +979,6 @@ function begriffeFuellen() {
   })();
   set("bc-prov", "<p>Ausserhalb der Staffel-Zeiten (" + (RUHE.length ? RUHE.map((a) => fmtMD(a[0]) + " bis " + fmtMD(a[1])).join(" und ") : "keine festgelegt") + ") sperren die Eltern euren Termin <b>nicht in Airbnb</b>. Er steht <b>unter Vorbehalt</b>: Meldet sich ein Airbnb-Gast für dieselben Tage, hat er Vorrang und euer Aufenthalt muss weichen.</p><p>Habt ihr noch nicht begonnen, fällt nichts an. Seid ihr schon im Chalet, zahlt ihr die normalen Kosten für die Tage, die ihr dort wart. Plant deshalb eine Alternative ein, besonders in der Hochsaison.</p><p><b>Praktisch sicher ✓:</b> Ein neuer Airbnb-Gast braucht " + VORLAUF + " Tage Vorlauf. Nächte, die früher als " + VORLAUF + " Tage ab heute liegen, kann kein neuer Gast mehr buchen: Der Balken wird dort <b>voll</b> statt schraffiert und wächst jeden Tag. Endet euer Aufenthalt innerhalb der nächsten " + VORLAUF + " Tage, ist der ganze Balken voll und der Haken erscheint. Je länger der Aufenthalt und je weiter voraus, desto später wird er sicher.</p><p>In den Staffel-Zeiten" + (FEST_MONATE.length ? " und im " + festTxt() : "") + " sind Termine <b>fest</b>. Balken von Terminen unter Vorbehalt sind im unsicheren Teil gestreift, ein roter Rand zeigt einen Konflikt mit einem Airbnb-Gast.</p>");
   set("bc-wunschtermin", "<p>Den Wunschtermin wählt ihr im Kalender. Wie das geht, steht unter «Erklärung Kalender». Die Farben stehen als Legende unter dem Kalender. " + symBtn("b-kalender", "🗓️") + "</p>");
-  set("bildAuswahl", bildAuswahl());
   set("bc-luecke", "<p><b>Ein Angebot für kurze Lücken 🧩</b> Lücken bis " + LUECKE_MAX + " Nächte kann Airbnb nicht vermieten (Mindestaufenthalt dort " + (LUECKE_MAX + 1) + " Nächte). Wer die ganze Lücke bucht, vom ersten bis zum letzten freien Tag, zahlt für die Übernachtungen " + P.lueckeRabatt + " Prozent weniger. Einzelne Nächte daraus sind nicht buchbar.</p>" + bildLuecke() + "<p>Es gilt:</p>" + lueckenRegeln());
   set("bc-ruhe", RUHE.length ? "<ul><li>Möglich vom " + ruhe.replace(" und ", " und vom ") + ".</li>" +
     "<li>Nur für euch Kinder mit Partnern und Kindern, ohne externe Gäste.</li>" +
