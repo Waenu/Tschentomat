@@ -1089,6 +1089,9 @@ function begriffeFuellen() {
       const ex = [];
       for (let g = 0; g <= Math.max(0, P.maxPersonen - 1); g++) { const r = bsp(g); if (r.ok) ex.push("<li>" + (g === 0 ? "Allein" : g + (g === 1 ? " Gast" : " Gäste")) + ": Total " + chf(r.TOT) + ", du zahlst " + (Math.round(r.FZ) === 0 ? "nichts" : chf(r.FZ)) + "</li>"); }
       if (ex.length) h += " Beispiel für 7 Nächte, wenn du allein von der Familie kommst (Reinigung nach Personen geteilt):<ul>" + ex.join("") + "</ul>";
+      const ex2 = [];
+      for (let g = 0; g <= 2; g++) { const r = calc({ wer: "Ich, Partner und 2 Kinder", kk: 0, gaeste: g, zimmer: "Nein", spar: "Nein", selbst: "Nein", reinig: REINIG[0], nights: 7, festBoden: true }); if (r.ok) ex2.push("<li>" + (g === 0 ? "Ohne Gäste" : g + (g === 1 ? " Gast" : " Gäste")) + ": Total " + chf(r.TOT) + ", Familie zahlt " + chf(r.FZ) + (g > 0 ? ", jeder Gast " + chf((r.HZ + r.WZ) / g) : "") + "</li>"); }
+      if (ex2.length) h += " Beispiel für 7 Nächte mit Partner und 2 Kindern (4 Personen, es bleiben 2 Betten für Gäste):<ul>" + ex2.join("") + "</ul>";
       h += "</li>";
     }
     h += "</ul>";
