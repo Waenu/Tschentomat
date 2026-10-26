@@ -1,4 +1,12 @@
 {
   "_hinweis": "Bestätigte Aufenthalte der Familie. Pro Eintrag: name (Jerome, Deborah, Miriam oder Manuel), arr = Anreise, dep = Abreise (JJJJ-MM-TT), selbst = true wenn die Kinder selbst reinigen, pers = Personen mit Bett. Eintrag löschen = Storno. status = \"abgelehnt\" markiert eine von den Eltern abgelehnte Anfrage (nur für die Rückmeldung an das Kind, wird nach der Abreise automatisch entfernt). prov = true markiert einen provisorischen Aufenthalt (ausserhalb der Staffel-Zeit, nicht in Airbnb gesperrt, ein Airbnb-Gast hat Vorrang). Wird von der App beim Bestätigen gesetzt und mit «Fest machen» wieder entfernt.",
-  "buchungen": []
+  "buchungen": [
+    {
+      "name": "Jerome",
+      "arr": "2026-11-21",
+      "dep": "2026-11-28",
+      "selbst": false,
+      "pers": 1
+    }
+  ]
 }
