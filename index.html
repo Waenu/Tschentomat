@@ -482,6 +482,7 @@
         <p>Hinweise erkennt ihr am blauen Rahmen. <b>ℹ️ Hinweis</b> erklärt etwas, <b>⚠️ Warnung</b> macht auf etwas aufmerksam, das den Aufenthalt oder den Preis verändert.</p>
         <p><b>❓ Kalender-Hilfe:</b> Im Kalender schwebt unten rechts ein runder Knopf «?». Ist er grün gefüllt, erklärt sich jeder Tag, den ihr antippt, in einer Box unter dem Kalender. Mit einem Tipp auf den Knopf schaltet ihr die Hilfe aus (der Knopf ist dann durchgestrichen) und wieder ein. Euer Handy merkt sich das. Warnungen bleiben immer sichtbar.</p>
         <p>Der Knopf <b>↑ Menü</b> unten links erscheint, sobald ihr nach unten scrollt. Ein Tipp darauf bringt euch nach oben zu den grossen Schaltflächen. Eure Eingaben bleiben dabei erhalten.</p>
+        <p><b>Nach der Anfrage:</b> Sobald du die Anfrage sendest, merkt sich dein Handy den Aufenthalt. Auf der Startseite erscheinen dann deine Knöpfe <b>🧳 Anreise-Wäsche</b> (nur bei Selbstreinigung oder ganzer Lücke) und <b>✅ Reinigungs-Checkliste</b>. Die Wäsche-Liste zeigt dir die Mengen für deine Personenzahl, die Checkliste die Arbeiten am Abreisetag. Tippe jeden Punkt an, wenn er erledigt ist. Sobald Papi bestätigt hat, steht bei den Knöpfen «Bestätigt». Am Tag nach der Abreise verschwinden sie wieder.</p>
       </div>
     </details>
     <details class="card" id="b-begriffe">
@@ -605,7 +606,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "1.10.2";
+let VERSION = "1.10.3";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -1054,7 +1055,7 @@ function bildRuhe() {
 function begriffeFuellen() {
   const ruhe = RUHE.length ? RUHE.map((a) => fmtMD(a[0]) + " bis " + fmtMD(a[1])).join(" und ") : "";
   const set = (id, html) => { const e = document.getElementById(id); if (e) e.innerHTML = html; };
-  set("bc-trinkgeld", "<p>Es war ein Anliegen von Mami, dass die Kinder günstiger nach Adelboden gehen können. Dafür macht sie viel Arbeit: Fahrt, Reinigung und Wäsche, siehe «Endreinigung» " + symBtn("b-endrein", "🪣") + ".</p><p>Wer möchte, gibt Mami deshalb ein Trinkgeld. Das ist freiwillig, aber ein schönes Zeichen der Wertschätzung. Gebt, was euch passt: Es freut sie, und ihr dürft grosszügig sein 😉</p><p>Wenn ihr unter «Trinkgeld für Mami» einen Betrag eintragt, wird er zum Preis dazugerechnet und extra ausgewiesen.</p>");
+  set("bc-trinkgeld", "<p>Es war ein Anliegen von Mami, dass die Kinder günstiger nach Adelboden gehen können. Dafür macht sie viel Arbeit: Fahrt, Reinigung und Wäsche, siehe «Endreinigung» " + symBtn("b-endrein", "🪣") + ".</p><p>Auch Papi packt selbstverständlich mit an: Er reinigt, repariert und hält das Chalet in Schuss.</p><p>Wer möchte, gibt Mami deshalb ein Trinkgeld. Das ist freiwillig, aber ein schönes Zeichen der Wertschätzung. Gebt, was euch passt: Es freut sie, und ihr dürft grosszügig sein 😉</p><p>Wenn ihr unter «Trinkgeld für Mami» einen Betrag eintragt, wird er zum Preis dazugerechnet und extra ausgewiesen.</p>");
   set("bc-zahlung", "<p>Die Familie überweist den ganzen Betrag, auch wenn Gäste dabei sind. Spätestens " + ZAHL_TAGE + " Tage nach dem letzten Ferientag, ohne Aufforderung.</p><p>" + esc(BANK) + "</p><p>Bitte mit Name und Datum der Ferien überweisen.</p><p>Wie die Reinigung unter euch und den Gästen aufgeteilt wird, entscheidet ihr selbst. Das Total bleibt gleich, nur wer wie viel zahlt ändert sich.</p><div class=\"exbild\">" + bildAuswahl() + "</div>");
   (function () {
     const bsp = (g) => calc({ wer: "Nur ich", gaeste: g, zimmer: "Nein", spar: "Nein", selbst: "Nein", reinig: REINIG[0], nights: 7 });
