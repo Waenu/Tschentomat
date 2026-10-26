@@ -605,7 +605,7 @@
    Nach jeder Änderung die Versionsnummer erhöhen und das Datum anpassen.
    ============================================================ */
 // Standardwerte (Reserve). Die gültigen Werte stehen in der Datei einstellungen.json.
-let VERSION = "1.10.1";
+let VERSION = "1.10.2";
 let GUELTIG_AB = "01.01.2027";
 let IBAN = "CH25 0878 4046 4374 6612 8";
 let BANK = "Spar- und Leihkasse Frutigen (SLF)";
@@ -1084,7 +1084,7 @@ function begriffeFuellen() {
     h += "<li><b>Mindestens " + mn + " Nächte.</b>" + (nurFeb ? " Zum Beispiel geht 28.1. bis 4.2. (7 Nächte). 31.1. bis 2.2. (nur 2 Nächte) geht nicht, obwohl auch er den Februar berührt." : "") + "</li>";
     h += "<li><b>Fest, mit Sicherheit.</b> Euer Termin wird in Airbnb gesperrt und nie unter Vorbehalt geführt. So könnt ihr eure Skiferien sicher planen.</li>";
     if (P.festBodenWoche > 0) {
-      h += "<li><b>Mindestpreis " + chf(P.festBodenWoche) + " pro 7 Nächte</b> (bei anderen Längen anteilig), inklusive Endreinigung. Im " + esc(mon) + " ist das Chalet nicht zum tiefen Familienpreis zu haben. Über Airbnb ist es teurer.</li>";
+      h += "<li><b>Mindestpreis " + chf(P.festBodenWoche) + " pro 7 Nächte</b> (bei mehr Nächten anteilig), inklusive Endreinigung. Im " + esc(mon) + " ist das Chalet nicht zum tiefen Familienpreis zu haben. Über Airbnb ist es teurer.</li>";
       h += "<li><b>Allein oder mit Kollegen:</b> Allein zahlst du den Mindestpreis. Mit Kollegen zahlt jeder Gast seinen Satz (" + chf(P.gast) + " pro Nacht, " + chf(P.gastZimmer) + " im Zimmer eines Familienmitglieds, dazu den Anteil an der Reinigung " + symBtn("b-endrein", "🪣") + "). Gratis geht ein Gast nie. Reicht das Total dann noch nicht bis zum Mindestpreis, wird der Rest gleichmässig auf alle Personen verteilt, dich eingeschlossen. Mit jedem Gast wird es für dich günstiger.";
       const ex = [];
       for (let g = 0; g <= Math.max(0, P.maxPersonen - 1); g++) { const r = bsp(g); if (r.ok) ex.push("<li>" + (g === 0 ? "Allein" : g + (g === 1 ? " Gast" : " Gäste")) + ": Total " + chf(r.TOT) + ", du zahlst " + (Math.round(r.FZ) === 0 ? "nichts" : chf(r.FZ)) + "</li>"); }
