@@ -2,7 +2,7 @@ name: Belegung aktualisieren
 
 on:
   schedule:
-    - cron: "17 */3 * * *"   # alle 3 Stunden
+    - cron: "17 * * * *"   # jede Stunde
   workflow_dispatch:         # auch von Hand startbar (Actions, Run workflow)
     inputs:
       test_issue:
